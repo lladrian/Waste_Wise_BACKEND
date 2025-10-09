@@ -1,0 +1,275 @@
+import crypto from 'crypto';
+import asyncHandler from 'express-async-handler';
+import moment from 'moment-timezone';
+// import dotenv from 'dotenv';
+import User from '../models/user.js';
+// import OTP from '../models/otp.js';
+
+function storeCurrentDate(expirationAmount, expirationUnit) {
+    // Get the current date and time in Asia/Manila timezone
+    const currentDateTime = moment.tz("Asia/Manila");
+    // Calculate the expiration date and time
+    const expirationDateTime = currentDateTime.clone().add(expirationAmount, expirationUnit);
+
+    // Format the current date and expiration date
+    const formattedExpirationDateTime = expirationDateTime.format('YYYY-MM-DD HH:mm:ss');
+
+    // Return both current and expiration date-time
+    return formattedExpirationDateTime;
+}
+
+
+function hashConverterMD5(password) {
+    return crypto.createHash('md5').update(String(password)).digest('hex');
+}
+
+
+function create_user_validation(input_data) {
+    if (!input_data.first_name ||
+        !input_data.middle_name ||
+        !input_data.last_name ||
+        !input_data.gender ||
+        !input_data.contact_number ||
+        !input_data.email ||
+        !input_data.password ||
+        !input_data.role) {
+        return "Please provide all fields (email, password, first_name, middle_name, last_name, gender, contact_number, role).";
+    }
+
+    return null;
+}
+
+async function update_specific_user(id, input_data) {
+    const updatedUser = await User.findById(id);
+
+    if (!updatedUser) {
+        return "User not found";
+    }
+
+    updatedUser.first_name = input_data.first_name ? input_data.first_name : updatedUser.first_name;
+    updatedUser.middle_name = input_data.middle_name ? input_data.middle_name : updatedUser.middle_name;
+    updatedUser.last_name = input_data.last_name ? input_data.last_name : updatedUser.last_name;
+    updatedUser.gender = input_data.gender ? input_data.gender : updatedUser.gender;
+    updatedUser.contact_number = input_data.contact_number ? input_data.contact_number : updatedUser.contact_number;
+    updatedUser.email = input_data.email ? input_data.email : updatedUser.email;
+    updatedUser.role = input_data.role ? input_data.role : updatedUser.role;
+
+    updatedUser.save();
+
+    return null;
+}
+
+function save_new_user(hash_password, input_data) {
+    const isStudent = input_data.role === "student";
+
+    const newUserData = {
+        first_name: input_data.first_name,
+        middle_name: input_data.middle_name,
+        last_name: input_data.last_name,
+        gender: input_data.gender,
+        contact_number: input_data.contact_number,
+        role: input_data.role,
+        course: input_data.course,
+        department: input_data.department,
+        password: hash_password,
+        email: input_data.email,
+        created_at: storeCurrentDate(0, 'hours'),
+        ...(isStudent
+            ? { student_id_number: input_data.student_id_number }
+            : { employee_id_number: input_data.employee_id_number }
+        )
+    };
+
+    const newUser = new User(newUserData);
+    newUser.save();
+
+    // const newOTP = new OTP({
+    //     user: newUser._id
+    // });
+
+    // newOTP.save();
+}
+
+
+export const create_user = asyncHandler(async (req, res) => {
+    const { first_name, middle_name, last_name, gender, contact_number, password, email, role } = req.body;
+
+    try {
+        const input_data = {
+            first_name,
+            middle_name,
+            last_name,
+            gender,
+            contact_number,
+            password,
+            email,
+            role
+        };
+
+        const validationError = create_user_validation(input_data);
+
+        if (validationError) {
+            return res.status(400).json({ message: validationError });
+        }
+
+        if (await User.findOne({ email })) return res.status(400).json({ message: 'Email already exists' });
+
+        save_new_user(hashConverterMD5(password), input_data);
+
+        return res.status(200).json({ data: 'New user account successfully created.' });
+    } catch (error) {
+        return res.status(500).json({ error: 'Failed to create user account.' });
+    }
+});
+
+export const get_all_user = asyncHandler(async (req, res) => {
+    try {
+        const users = await User.find();
+
+        return res.status(200).json({ data: users });
+    } catch (error) {
+        return res.status(500).json({ error: 'Failed to get all users.' });
+    }
+});
+
+export const get_specific_user = asyncHandler(async (req, res) => {
+    const { id } = req.params; // Get the meal ID from the request parameters
+
+    try {
+        const user = await User.findById(id);
+
+        res.status(200).json({ data: user });
+    } catch (error) {
+        return res.status(500).json({ error: 'Failed to get specific user.' });
+    }
+});
+
+
+export const login_user = asyncHandler(async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        // Check if both email and password are provided
+        if (!email || !password) {
+            return res.status(400).json({ message: 'Please provide both email and password' });
+        }
+
+        // Find the user by email
+        let user = await User.findOne({ email: email }); // Don't use .lean() here
+        const hash = hashConverterMD5(password);
+
+        // Check if the admin exists and if the password is correct
+        if (user && user.password == hash) {
+            return res.status(200).json({ data: user });
+        }
+
+        return res.status(400).json({ message: 'Wrong email or password.' });
+    } catch (error) {
+        return res.status(500).json({ error: 'Failed to login ' });
+    }
+});
+
+
+export const update_user = asyncHandler(async (req, res) => {
+    const { id } = req.params; // Get the meal ID from the request parameters
+    const { first_name, middle_name, last_name, gender, contact_number, password, email, role } = req.body;
+
+    try {
+        const input_data = {
+            first_name,
+            middle_name,
+            last_name,
+            gender,
+            contact_number,
+            password,
+            email,
+            role
+        };
+
+        const validationError = create_user_validation(input_data);
+
+        if (validationError) {
+            return res.status(400).json({ message: validationError });
+        }
+
+        const updateSpecificUser = await update_specific_user(id, input_data);
+
+        if (updateSpecificUser) {
+            return res.status(400).json({ message: updateSpecificUser });
+        }
+
+        return res.status(200).json({ data: 'User account successfully updated.' });
+    } catch (error) {
+        return res.status(500).json({ error: 'Failed to update user account.' });
+    }
+});
+
+
+
+export const update_user_password_recovery = asyncHandler(async (req, res) => {
+    const { password, email } = req.body;
+
+    try {
+        if (!password || !email) {
+            return res.status(400).json({ message: "All fields are required: (password, email)." });
+        }
+
+        const hash = hashConverterMD5(password);
+        const updatedUser = await User.findOne({ email });
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: "User not found." });
+        }
+
+        updatedUser.password = password ? hash : updatedUser.password;
+
+        await updatedUser.save();
+
+        return res.status(200).json({ data: 'User password reset successfully.' });
+    } catch (error) {
+        return res.status(500).json({ error: 'Failed to reset user password.' });
+    }
+});
+
+
+
+export const update_user_password = asyncHandler(async (req, res) => {
+    const { id } = req.params; // Get the meal ID from the request parameters
+    const { password } = req.body;
+
+    try {
+        if (!password) {
+            return res.status(400).json({ message: "All fields are required: password." });
+        }
+
+        const hash = hashConverterMD5(password);
+        const updatedUser = await User.findById(id);
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        updatedUser.password = password ? hash : updatedUser.password;
+
+        await updatedUser.save();
+
+        return res.status(200).json({ data: 'User password successfully updated.' });
+    } catch (error) {
+        return res.status(500).json({ error: 'Failed to update user password.' });
+    }
+});
+
+
+export const delete_user = asyncHandler(async (req, res) => {
+    const { id } = req.params; // Get the meal ID from the request parameters
+
+    try {
+        const deletedUser = await User.findByIdAndDelete(id);
+
+        if (!deletedUser) return res.status(404).json({ message: 'User not found' });
+
+        return res.status(200).json({ data: 'User account successfully deleted.' });
+    } catch (error) {
+        return res.status(500).json({ error: 'Failed to delete user account.' });
+    }
+});
