@@ -12,7 +12,7 @@ const app = express();
 
 // CORS middleware - allow anyone to connect
 app.use(cors({
-  origin: "*", // Reflects the request origin
+  origin: (origin, callback) => callback(null, true),
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
