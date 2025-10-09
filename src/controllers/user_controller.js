@@ -3,7 +3,7 @@ import asyncHandler from 'express-async-handler';
 import moment from 'moment-timezone';
 // import dotenv from 'dotenv';
 import User from '../models/user.js';
-// import OTP from '../models/otp.js';
+import OTP from '../models/otp.js';
 
 function storeCurrentDate(expirationAmount, expirationUnit) {
     // Get the current date and time in Asia/Manila timezone
@@ -60,7 +60,6 @@ async function update_specific_user(id, input_data) {
 }
 
 function save_new_user(hash_password, input_data) {
-    const isStudent = input_data.role === "student";
 
     const newUserData = {
         first_name: input_data.first_name,
@@ -74,20 +73,16 @@ function save_new_user(hash_password, input_data) {
         password: hash_password,
         email: input_data.email,
         created_at: storeCurrentDate(0, 'hours'),
-        ...(isStudent
-            ? { student_id_number: input_data.student_id_number }
-            : { employee_id_number: input_data.employee_id_number }
-        )
     };
 
     const newUser = new User(newUserData);
     newUser.save();
 
-    // const newOTP = new OTP({
-    //     user: newUser._id
-    // });
+    const newOTP = new OTP({
+        user: newUser._id
+    });
 
-    // newOTP.save();
+    newOTP.save();
 }
 
 
