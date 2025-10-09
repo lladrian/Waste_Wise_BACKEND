@@ -68,8 +68,6 @@ function save_new_user(hash_password, input_data) {
         gender: input_data.gender,
         contact_number: input_data.contact_number,
         role: input_data.role,
-        course: input_data.course,
-        department: input_data.department,
         password: hash_password,
         email: input_data.email,
         created_at: storeCurrentDate(0, 'hours'),
