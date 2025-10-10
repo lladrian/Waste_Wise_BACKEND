@@ -110,7 +110,6 @@ export const create_otp = asyncHandler(async (req, res) => {
 
         const updatedOTP = await OTP.findOne({ user: user._id })
         const otp = generateSecureOTP();
-        mailer(email, "OTP Code", otp);
 
 
 
@@ -134,6 +133,8 @@ export const create_otp = asyncHandler(async (req, res) => {
 
             await updatedOTP.save();
         }
+
+        mailer(email, "OTP Code", otp);
 
         return res.status(200).json({ data: "OTP successfully created." });
     } catch (error) {
