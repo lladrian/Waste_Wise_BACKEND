@@ -65,11 +65,8 @@ export const verify_otp = asyncHandler(async (req, res) => {
             return res.status(400).json({ message: "Invalid otp_type." });
         }
 
-        // 4. Find OTP document with the matching otp and field
-        const query = {};
-        query[selected.field] = otp;
+        const otpRecord = await OTP.findOne({ user: user._id });
 
-        const otpRecord = await OTP.findOne(query);
         if (!otpRecord) {
             return res.status(400).json({ message: "Invalid OTP." });
         }
@@ -111,27 +108,20 @@ export const create_otp = asyncHandler(async (req, res) => {
         const otp = generateSecureOTP();
 
 
-
-        if (otp_type === "recovery") {
+        if (otp_type === 'recovery') {
             updatedOTP.otp_recovery = otp ? otp : updatedOTP.otp_recovery;
             updatedOTP.otp_recovery_created = storeCurrentDate(0, "hours");
 
             await updatedOTP.save();
         }
 
-        if (otp_type === "verification") {
+        if (otp_type === 'verification') {
             updatedOTP.otp_verification = otp ? otp : updatedOTP.otp_verification;
             updatedOTP.otp_verification_created = storeCurrentDate(0, "hours");
 
             await updatedOTP.save();
         }
 
-        if (otp_type === "approval") {
-            updatedOTP.otp_approval = otp ? otp : updatedOTP.otp_approval;
-            updatedOTP.otp_approval_created = storeCurrentDate(0, "hours");
-
-            await updatedOTP.save();
-        }
 
         await mailer(email, "OTP Code", otp);
 

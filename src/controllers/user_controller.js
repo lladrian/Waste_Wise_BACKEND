@@ -36,8 +36,9 @@ function create_user_validation(input_data, type) {
             !input_data.gender ||
             !input_data.contact_number ||
             !input_data.email ||
+            !input_data.is_disabled ||
             !input_data.role) {
-            return "Please provide all fields (email, first_name, middle_name, last_name, gender, contact_number, role).";
+            return "Please provide all fields (email, first_name, middle_name, last_name, gender, contact_number, role, is_disabled).";
         }
     }
 
@@ -71,6 +72,14 @@ async function update_specific_user(id, input_data) {
     updatedUser.contact_number = input_data.contact_number ? input_data.contact_number : updatedUser.contact_number;
     updatedUser.email = input_data.email ? input_data.email : updatedUser.email;
     updatedUser.role = input_data.role ? input_data.role : updatedUser.role;
+
+    if (input_data.is_disabled === 'true' || input_data.is_disabled === true) {
+        updatedUser.is_disabled = input_data.is_disabled ? input_data.is_disabled  : updatedUser.is_disabled;
+        updatedUser.disabled_at = storeCurrentDate(0, "hours");
+    } else {
+        updatedUser.is_disabled = null;
+        updatedUser.disabled_at = null;
+    }
 
     updatedUser.save();
 
@@ -125,7 +134,9 @@ async function save_new_user(hash_password, input_data) {
         role: format_role(input_data.role),
     };
 
-    await credential_mailer(input_data.email, formatted_input_data);
+    if (input_data.role !== 'resident') {
+        await credential_mailer(input_data.email, formatted_input_data);
+    }
 }
 
 
@@ -223,7 +234,7 @@ export const update_user_verified = asyncHandler(async (req, res) => {
             return "User not found";
         }
 
-        if (verify === true) {
+        if (verify === true || verify === 'true') {
             updatedUserVerify.is_verified = verify ? verify : updatedUserVerify.is_verified;
             updatedUserVerify.verified_at = storeCurrentDate(0, "hours");
 
@@ -242,43 +253,10 @@ export const update_user_verified = asyncHandler(async (req, res) => {
 });
 
 
-export const update_user_disabled = asyncHandler(async (req, res) => {
-    const { id } = req.params; // Get the meal ID from the request parameters
-    const { disable } = req.body;
-
-    try {
-        if (!disable) {
-            return res.status(400).json({ message: "Please provide all fields (disable)." });
-        }
-
-        const updatedUserDisable = await User.findById(id);
-
-        if (!updatedUserDisable) {
-            return "User not found";
-        }
-
-        if (disable === true) {
-            updatedUserDisable.is_disabled = disable ? disable : updatedUserDisable.is_disabled;
-            updatedUserDisable.disabled_at = storeCurrentDate(0, "hours");
-
-            await updatedUserDisable.save();
-        } else {
-            updatedUserDisable.is_disabled = null;
-            updatedUserDisable.disabled_at = null;
-
-            await updatedUserDisable.save();
-        }
-
-        return res.status(200).json({ data: 'User account successfully disabled.' });
-    } catch (error) {
-        return res.status(500).json({ error: 'Failed to disable user account.' });
-    }
-});
-
 
 export const update_user = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters
-    const { first_name, middle_name, last_name, gender, contact_number, email, role } = req.body;
+    const { first_name, middle_name, last_name, gender, contact_number, email, role, is_disabled } = req.body;
 
     try {
         const input_data = {
@@ -288,7 +266,8 @@ export const update_user = asyncHandler(async (req, res) => {
             gender,
             contact_number,
             email,
-            role
+            role,
+            is_disabled
         };
 
         const validationError = create_user_validation(input_data, 'update_user');
@@ -370,8 +349,10 @@ export const delete_user = asyncHandler(async (req, res) => {
 
     try {
         const deletedUser = await User.findByIdAndDelete(id);
+        const deletedOTP = await OTP.deleteMany({ user: id });
 
-        if (!deletedUser) return res.status(404).json({ message: 'User not found' });
+
+        if (!deletedUser || !deletedOTP) return res.status(404).json({ message: 'User not found' });
 
         return res.status(200).json({ data: 'User account successfully deleted.' });
     } catch (error) {
