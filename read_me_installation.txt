@@ -5,4 +5,6 @@ npm install --save-dev nodemon
 npm install -g nodemon
 npm install express-async-handler
 npm install moment-timezone
+npm install nodemailer 
+
  

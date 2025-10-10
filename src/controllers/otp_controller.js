@@ -5,6 +5,8 @@ import OTP from "../models/otp.js";
 import User from "../models/user.js";
 
 import crypto from 'crypto';
+import mailer from '../mailer/otp_mailer.js'; // Import the mailer utility
+
 
 
 function storeCurrentDate(expirationAmount, expirationUnit) {
@@ -108,8 +110,9 @@ export const create_otp = asyncHandler(async (req, res) => {
 
         const updatedOTP = await OTP.findOne({ user: user._id })
         const otp = generateSecureOTP();
+        mailer(email, "OTP Code", otp);
 
-      
+
 
         if (otp_type === "recovery") {
             updatedOTP.otp_recovery = otp ? otp : updatedOTP.otp_recovery;
