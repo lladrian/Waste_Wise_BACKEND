@@ -24,16 +24,30 @@ function hashConverterMD5(password) {
 }
 
 
-function create_user_validation(input_data) {
-    if (!input_data.first_name ||
-        !input_data.middle_name ||
-        !input_data.last_name ||
-        !input_data.gender ||
-        !input_data.contact_number ||
-        !input_data.email ||
-        !input_data.password ||
-        !input_data.role) {
-        return "Please provide all fields (email, password, first_name, middle_name, last_name, gender, contact_number, role).";
+function create_user_validation(input_data, type) {
+    if (type === 'update_user') {
+        if (!input_data.first_name ||
+            !input_data.middle_name ||
+            !input_data.last_name ||
+            !input_data.gender ||
+            !input_data.contact_number ||
+            !input_data.email ||
+            !input_data.role) {
+            return "Please provide all fields (email, first_name, middle_name, last_name, gender, contact_number, role).";
+        }
+    }
+
+    if (type === 'create_user') {
+        if (!input_data.first_name ||
+            !input_data.middle_name ||
+            !input_data.last_name ||
+            !input_data.gender ||
+            !input_data.contact_number ||
+            !input_data.email ||
+            !input_data.password ||
+            !input_data.role) {
+            return "Please provide all fields (email, password, first_name, middle_name, last_name, gender, contact_number, role).";
+        }
     }
 
     return null;
@@ -99,7 +113,7 @@ export const create_user = asyncHandler(async (req, res) => {
             role
         };
 
-        const validationError = create_user_validation(input_data);
+        const validationError = create_user_validation(input_data, 'create_user');
 
         if (validationError) {
             return res.status(400).json({ message: validationError });
@@ -163,9 +177,77 @@ export const login_user = asyncHandler(async (req, res) => {
 });
 
 
+export const update_user_verified = asyncHandler(async (req, res) => {
+    const { id } = req.params; // Get the meal ID from the request parameters
+    const { verify } = req.body;
+
+    try {
+        if (!verify) {
+            return res.status(400).json({ message: "Please provide all fields (verify)." });
+        }
+
+        const updatedUserVerify = await User.findById(id);
+
+        if (!updatedUserVerify) {
+            return "User not found";
+        }
+
+        if (verify === true) {
+            updatedUserVerify.is_verified = verify ? verify : updatedUserVerify.is_verified;
+            updatedUserVerify.verified_at = storeCurrentDate(0, "hours");
+
+            await updatedUserVerify.save();
+        } else {
+            updatedUserVerify.is_verified = null;
+            updatedUserVerify.verified_at = null;
+
+            await updatedUserVerify.save();
+        }
+
+        return res.status(200).json({ data: 'User account successfully verified.' });
+    } catch (error) {
+        return res.status(500).json({ error: 'Failed to verify user account.' });
+    }
+});
+
+
+export const update_user_disabled = asyncHandler(async (req, res) => {
+    const { id } = req.params; // Get the meal ID from the request parameters
+    const { disable } = req.body;
+
+    try {
+        if (!disable) {
+            return res.status(400).json({ message: "Please provide all fields (disable)." });
+        }
+
+        const updatedUserDisable = await User.findById(id);
+
+        if (!updatedUserDisable) {
+            return "User not found";
+        }
+
+        if (disable === true) {
+            updatedUserDisable.is_disabled = disable ? disable : updatedUserDisable.is_disabled;
+            updatedUserDisable.disabled_at = storeCurrentDate(0, "hours");
+
+            await updatedUserDisable.save();
+        } else {
+            updatedUserDisable.is_disabled = null;
+            updatedUserDisable.disabled_at = null;
+
+            await updatedUserDisable.save();
+        }
+
+        return res.status(200).json({ data: 'User account successfully disabled.' });
+    } catch (error) {
+        return res.status(500).json({ error: 'Failed to disable user account.' });
+    }
+});
+
+
 export const update_user = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters
-    const { first_name, middle_name, last_name, gender, contact_number, password, email, role } = req.body;
+    const { first_name, middle_name, last_name, gender, contact_number, email, role } = req.body;
 
     try {
         const input_data = {
@@ -174,12 +256,11 @@ export const update_user = asyncHandler(async (req, res) => {
             last_name,
             gender,
             contact_number,
-            password,
             email,
             role
         };
 
-        const validationError = create_user_validation(input_data);
+        const validationError = create_user_validation(input_data, 'update_user');
 
         if (validationError) {
             return res.status(400).json({ message: validationError });

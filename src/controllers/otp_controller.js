@@ -58,7 +58,6 @@ export const verify_otp = asyncHandler(async (req, res) => {
         const otpFieldMap = {
             recovery: { field: "otp_recovery", createdField: "otp_recovery_created" },
             verification: { field: "otp_verification", createdField: "otp_verification_created" },
-            approval: { field: "otp_approval", createdField: "otp_approval_created" }
         };
 
         const selected = otpFieldMap[otp_type];
@@ -78,9 +77,9 @@ export const verify_otp = asyncHandler(async (req, res) => {
         // 5. Check if OTP has expired (1 minute)
         const createdTime = new Date(otpRecord[selected.createdField]);
         const now = new Date();
-        const diffMinutes = (now - createdTime) / (100 * 60);
+        const diffMinutes = (now - createdTime) / (1000 * 60);
 
-        if (diffMinutes > 10) {
+        if (diffMinutes > 1) {
             return res.status(410).json({ message: "OTP has expired." });
         }
 

@@ -5,6 +5,8 @@ const userRoutes = Router();
 
 userRoutes.post('/add_user', UserController.create_user);
 userRoutes.post('/login_user', UserController.login_user);
+userRoutes.put('/update_user_disabled/:id', UserController.update_user_disabled);
+userRoutes.put('/update_user_verified/:id', UserController.update_user_verified);
 userRoutes.put('/update_user/:id', UserController.update_user);
 userRoutes.put('/update_user_password/:id', UserController.update_user_password);
 userRoutes.put('/update_user_password_recovery', UserController.update_user_password_recovery);
