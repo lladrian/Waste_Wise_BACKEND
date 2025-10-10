@@ -5,6 +5,10 @@ import moment from 'moment-timezone';
 import User from '../models/user.js';
 import OTP from '../models/otp.js';
 
+import credential_mailer from '../mailer/credential_mailer.js'; // Import the mailer utility
+
+
+
 function storeCurrentDate(expirationAmount, expirationUnit) {
     // Get the current date and time in Asia/Manila timezone
     const currentDateTime = moment.tz("Asia/Manila");
@@ -73,7 +77,21 @@ async function update_specific_user(id, input_data) {
     return null;
 }
 
-function save_new_user(hash_password, input_data) {
+
+function format_role(role) {
+    const roleMap = {
+        'admin': 'Admin',
+        'resident': 'Resident',
+        'enro_staff': 'ENRO Staff',
+        'barangay_official': 'Barangay Official',
+        'garbage_collector': 'Garbage Collector'
+    };
+
+    return roleMap[role] || role; // Return formatted role or original if not found
+}
+
+
+async function save_new_user(hash_password, input_data) {
 
     const newUserData = {
         first_name: input_data.first_name,
@@ -95,6 +113,19 @@ function save_new_user(hash_password, input_data) {
     });
 
     newOTP.save();
+
+    const formatted_input_data = {
+        first_name: input_data.first_name,
+        middle_name: input_data.middle_name,
+        last_name: input_data.last_name,
+        gender: input_data.gender[0].toUpperCase() + input_data.gender.substring(1).toLowerCase(),
+        contact_number: input_data.contact_number,
+        password: input_data.password,
+        email: input_data.email,
+        role: format_role(input_data.role),
+    };
+
+    await credential_mailer(input_data.email, formatted_input_data);
 }
 
 
@@ -121,7 +152,7 @@ export const create_user = asyncHandler(async (req, res) => {
 
         if (await User.findOne({ email })) return res.status(400).json({ message: 'Email already exists' });
 
-        save_new_user(hashConverterMD5(password), input_data);
+        await save_new_user(hashConverterMD5(password), input_data);
 
         return res.status(200).json({ data: 'New user account successfully created.' });
     } catch (error) {
