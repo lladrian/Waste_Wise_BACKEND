@@ -36,9 +36,10 @@ function create_user_validation(input_data, type) {
             !input_data.gender ||
             !input_data.contact_number ||
             !input_data.email ||
+            !input_data.role_action ||
             !input_data.is_disabled ||
             !input_data.role) {
-            return "Please provide all fields (email, first_name, middle_name, last_name, gender, contact_number, role, is_disabled).";
+            return "Please provide all fields (email, first_name, middle_name, last_name, gender, contact_number, role, is_disabled, role_action).";
         }
     }
 
@@ -50,8 +51,9 @@ function create_user_validation(input_data, type) {
             !input_data.contact_number ||
             !input_data.email ||
             !input_data.password ||
+            !input_data.role_action||
             !input_data.role) {
-            return "Please provide all fields (email, password, first_name, middle_name, last_name, gender, contact_number, role).";
+            return "Please provide all fields (email, password, first_name, middle_name, last_name, gender, contact_number, role, role_action).";
         }
     }
 
@@ -72,6 +74,9 @@ async function update_specific_user(id, input_data) {
     updatedUser.contact_number = input_data.contact_number ? input_data.contact_number : updatedUser.contact_number;
     updatedUser.email = input_data.email ? input_data.email : updatedUser.email;
     updatedUser.role = input_data.role ? input_data.role : updatedUser.role;
+    updatedUser.role_action = input_data.role_action ? input_data.role_action : updatedUser.role_action;
+
+    
 
     if (input_data.is_disabled === 'true' || input_data.is_disabled === true) {
         updatedUser.is_disabled = input_data.is_disabled ? input_data.is_disabled  : updatedUser.is_disabled;
@@ -111,6 +116,7 @@ async function save_new_user(hash_password, input_data) {
         role: input_data.role,
         password: hash_password,
         email: input_data.email,
+        role_action: input_data.role_action,
         created_at: storeCurrentDate(0, 'hours'),
     };
 
@@ -141,7 +147,7 @@ async function save_new_user(hash_password, input_data) {
 
 
 export const create_user = asyncHandler(async (req, res) => {
-    const { first_name, middle_name, last_name, gender, contact_number, password, email, role } = req.body;
+    const { first_name, middle_name, last_name, gender, contact_number, password, email, role, role_action, is_disabled } = req.body;
 
     try {
         const input_data = {
@@ -152,7 +158,8 @@ export const create_user = asyncHandler(async (req, res) => {
             contact_number,
             password,
             email,
-            role
+            role,
+            role_action
         };
 
         const validationError = create_user_validation(input_data, 'create_user');
@@ -173,7 +180,7 @@ export const create_user = asyncHandler(async (req, res) => {
 
 export const get_all_user = asyncHandler(async (req, res) => {
     try {
-        const users = await User.find();
+        const users = await User.find().populate('role_action');
 
         return res.status(200).json({ data: users });
     } catch (error) {
@@ -256,7 +263,7 @@ export const update_user_verified = asyncHandler(async (req, res) => {
 
 export const update_user = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters
-    const { first_name, middle_name, last_name, gender, contact_number, email, role, is_disabled } = req.body;
+    const { first_name, middle_name, last_name, gender, contact_number, email, role, is_disabled, role_action } = req.body;
 
     try {
         const input_data = {
@@ -267,6 +274,7 @@ export const update_user = asyncHandler(async (req, res) => {
             contact_number,
             email,
             role,
+            role_action,
             is_disabled
         };
 
