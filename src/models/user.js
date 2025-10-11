@@ -39,10 +39,14 @@ const UserSchema = new mongoose.Schema({
         ],
         default: 'resident',
     },
-    permission: {
-        type: [String],
-        default: ['none']
+    role_action: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Action',
     },
+    // role_action: {
+    //     type: [String], // Array of strings
+    //     default: ['none'], // Default as array with one element
+    // },
     is_disabled: {
         type: Boolean,
         default: false

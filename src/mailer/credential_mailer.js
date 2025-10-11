@@ -68,7 +68,7 @@ const sendEmail = async (email, data) => {
                                 <div style="color: #1e40af; font-weight: 600;">${data.gender.charAt(0).toUpperCase() + data.gender.slice(1).toLowerCase()}</div>
                             </div>
                             <div style="border-bottom: 1px solid #e0f2fe; padding-bottom: 8px;">
-                                <div style="color: #475569; font-weight: 500; margin-bottom: 4px;">Role:</div>
+                                <div style="color: #475569; font-weight: 500; margin-bottom: 4px;">Account Type:</div>
                                 <div style="color: #1e40af; font-weight: 600;">${data.role}</div>
                             </div>
                             <div style="padding-bottom: 8px;">

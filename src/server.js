@@ -6,6 +6,9 @@ import connectDB from './config/db.js';
 
 import userRoutes from "./routes/user_route.js";
 import otpRoutes from "./routes/otp_route.js";
+import roleActionRoutes from "./routes/action_route.js";
+
+
 
 dotenv.config();
 
@@ -29,6 +32,8 @@ app.get('/', (req, res) => {
 
 app.use("/users", userRoutes);
 app.use("/otp", otpRoutes);
+app.use("/actions", roleActionRoutes);
+
 
 // Optionally use separate DB connect file
 connectDB();
