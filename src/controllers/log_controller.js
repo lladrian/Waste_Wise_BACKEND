@@ -85,8 +85,11 @@ export const generate_report_login_log = asyncHandler(async (req, res) => {
             return res.status(400).json({ message: "Please provide all fields (start_date, end_date)." });
         }
 
-        const startDateString = `${start_date} 00:00:00`;
-        const endDateString = `${end_date} 23:59:59`;
+        // const startDateString = `${start_date} 00:00:00`;
+        // const endDateString = `${end_date} 23:59:59`;
+
+        const startDateString = new Date(`${start_date}T00:00:00Z`);
+        const endDateString = new Date(`${end_date}T23:59:59Z`);
 
         const logs = await LoginLog.find({
             created_at: {
