@@ -85,11 +85,8 @@ export const generate_report_login_log = asyncHandler(async (req, res) => {
             return res.status(400).json({ message: "Please provide all fields (start_date, end_date)." });
         }
 
-        // const startDateString = `${start_date} 00:00:00`;
-        // const endDateString = `${end_date} 23:59:59`;
-
-        const startDateString = new Date(`${start_date}T00:00:00Z`);
-        const endDateString = new Date(`${end_date}T23:59:59Z`);
+        const startDateString = `${start_date} 00:00:00`;
+        const endDateString = `${end_date} 23:59:59`;
 
         const logs = await LoginLog.find({
             created_at: {
@@ -197,17 +194,17 @@ export const generate_report_login_log = asyncHandler(async (req, res) => {
         worksheet.getColumn(1).width = 30; // Set column A width manually
 
         // Create reports directory if not exists
-        const reportsDir = path.join(__dirname, '../reports');
-        try {
-            await fs.access(reportsDir);
-        } catch {
-            await fs.mkdir(reportsDir, { recursive: true });
-        }
+        // const reportsDir = path.join(__dirname, '../reports');
+        // try {
+        //     await fs.access(reportsDir);
+        // } catch {
+        //     await fs.mkdir(reportsDir, { recursive: true });
+        // }
 
         // Save file to server
-        const timestamp = Date.now();
-        const fileName = `login-logs-report-${timestamp}.xlsx`;
-        const filePath = path.join(reportsDir, fileName);
+        // const timestamp = Date.now();
+        // const fileName = `login-logs-report-${timestamp}.xlsx`;
+        // const filePath = path.join(reportsDir, fileName);
         // await workbook.xlsx.writeFile(filePath);
 
         res.setHeader(
