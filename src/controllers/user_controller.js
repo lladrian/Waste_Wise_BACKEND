@@ -324,11 +324,11 @@ export const update_user_verified = asyncHandler(async (req, res) => {
         }
 
         if (verify === true || verify === 'true') {
-            const log = await LoginLog.find({ user: user._id, remark: "First Login" });
+            const log = await LoginLog.find({ user: updatedUserVerify._id, remark: "First Login" });
 
             if (log.length === 0) {
                 const newLoginLog = new LoginLog({
-                    user: user._id,
+                    user: updatedUserVerify._id,
                     status: 'Success',
                     device: deviceInfo.device,
                     platform: deviceInfo.platform,
