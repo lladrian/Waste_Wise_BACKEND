@@ -5,6 +5,10 @@ const LoginLogSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   },
+  os: {
+    type: String,
+    required: false
+  },
   device: {
     type: String,
     required: false

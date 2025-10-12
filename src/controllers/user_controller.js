@@ -237,9 +237,6 @@ export const login_user = asyncHandler(async (req, res) => {
         const hash = hashConverterMD5(password);
         const deviceInfo = getDeviceInfo(req);
 
-        return res.status(200).json({ data: deviceInfo });
-
-
 
         // Check if the admin exists and if the password is correct
         if (user && user.password == hash) {
@@ -251,6 +248,7 @@ export const login_user = asyncHandler(async (req, res) => {
                     status: 'Success',
                     device: deviceInfo.device,
                     platform: deviceInfo.platform,
+                    os: deviceInfo.os,
                     remark: "First Login",
                     created_at: storeCurrentDate(0, 'hours'),
                 });
@@ -265,6 +263,7 @@ export const login_user = asyncHandler(async (req, res) => {
                     status: 'Failed',
                     device: deviceInfo.device,
                     platform: deviceInfo.platform,
+                    os: deviceInfo.os,
                     remark: "Disabled Account",
                     created_at: storeCurrentDate(0, 'hours'),
                 });
@@ -279,6 +278,7 @@ export const login_user = asyncHandler(async (req, res) => {
                     status: 'Failed',
                     device: deviceInfo.device,
                     platform: deviceInfo.platform,
+                    os: deviceInfo.os,
                     remark: "Verifying Account",
                     created_at: storeCurrentDate(0, 'hours'),
                 });
@@ -292,6 +292,7 @@ export const login_user = asyncHandler(async (req, res) => {
                 status: 'Success',
                 device: deviceInfo.device,
                 platform: deviceInfo.platform,
+                os: deviceInfo.os,
                 remark: "Normal Login",
                 created_at: storeCurrentDate(0, 'hours'),
             });
@@ -306,6 +307,7 @@ export const login_user = asyncHandler(async (req, res) => {
                 status: 'Failed',
                 device: deviceInfo.device,
                 platform: deviceInfo.platform,
+                os: deviceInfo.os,
                 remark: "Wrong Password",
                 created_at: storeCurrentDate(0, 'hours'),
             });

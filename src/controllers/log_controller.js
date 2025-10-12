@@ -104,6 +104,7 @@ export const generate_report_login_log = asyncHandler(async (req, res) => {
             { key: 'time_logged_in', width: 15 },
             { key: 'device', width: 20 },
             { key: 'platform', width: 20 },
+            { key: 'operating_system', width: 20 },
             { key: 'status', width: 15 },
             { key: 'remark', width: 25 },
         ];
@@ -121,7 +122,8 @@ export const generate_report_login_log = asyncHandler(async (req, res) => {
 
         const tableHeaderRow = worksheet.addRow([
             'Log ID', 'Complete Name', 'Account Type', 'Role Action',
-            'Date Logged In', 'Time Logged In', 'Device', 'Platform', 'Status', 'Remark'
+            'Date Logged In', 'Time Logged In', 'Device', 'Platform', 'Operating System', 
+            'Status', 'Remark'
         ]);
         tableHeaderRow.font = { bold: true };
         tableHeaderRow.fill = {
@@ -141,6 +143,7 @@ export const generate_report_login_log = asyncHandler(async (req, res) => {
                 time_logged_in: time_logged_in(new Date(log.created_at)),
                 device: log.device,
                 platform: log.platform,
+                operating_system: log.os,
                 status: log.status,
                 remark: log.remark
             });
