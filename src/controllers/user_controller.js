@@ -240,38 +240,8 @@ export const login_user = asyncHandler(async (req, res) => {
 
         // Check if the admin exists and if the password is correct
         if (user && user.password == hash) {
-            const log = await LoginLog.find({ user: user._id, remark: "First Login" });
 
-            if (log.length === 0) {
-                const newLoginLog = new LoginLog({
-                    user: user._id,
-                    status: 'Success',
-                    device: deviceInfo.device,
-                    platform: deviceInfo.platform,
-                    os: deviceInfo.os,
-                    remark: "First Login",
-                    created_at: storeCurrentDate(0, 'hours'),
-                });
-
-                newLoginLog.save();
-                return res.status(200).json({ data: user });
-            }
-
-            if (user.is_disabled === true) {
-                const newLoginLog = new LoginLog({
-                    user: user._id,
-                    status: 'Failed',
-                    device: deviceInfo.device,
-                    platform: deviceInfo.platform,
-                    os: deviceInfo.os,
-                    remark: "Disabled Account",
-                    created_at: storeCurrentDate(0, 'hours'),
-                });
-
-                newLoginLog.save();
-                return res.status(200).json({ data: user });
-            }
-
+                  
             if (user.is_verified === false) {
                 const newLoginLog = new LoginLog({
                     user: user._id,
@@ -280,6 +250,22 @@ export const login_user = asyncHandler(async (req, res) => {
                     platform: deviceInfo.platform,
                     os: deviceInfo.os,
                     remark: "Verifying Account",
+                    created_at: storeCurrentDate(0, 'hours'),
+                });
+
+                newLoginLog.save();
+                return res.status(200).json({ data: user });
+            }
+
+          
+            if (user.is_disabled === true) {
+                const newLoginLog = new LoginLog({
+                    user: user._id,
+                    status: 'Failed',
+                    device: deviceInfo.device,
+                    platform: deviceInfo.platform,
+                    os: deviceInfo.os,
+                    remark: "Disabled Account",
                     created_at: storeCurrentDate(0, 'hours'),
                 });
 
@@ -338,6 +324,23 @@ export const update_user_verified = asyncHandler(async (req, res) => {
         }
 
         if (verify === true || verify === 'true') {
+            const log = await LoginLog.find({ user: user._id, remark: "First Login" });
+
+            if (log.length === 0) {
+                const newLoginLog = new LoginLog({
+                    user: user._id,
+                    status: 'Success',
+                    device: deviceInfo.device,
+                    platform: deviceInfo.platform,
+                    os: deviceInfo.os,
+                    remark: "First Login",
+                    created_at: storeCurrentDate(0, 'hours'),
+                });
+
+                newLoginLog.save();
+                return res.status(200).json({ data: user });
+            }
+
             updatedUserVerify.is_verified = verify ? verify : updatedUserVerify.is_verified;
             updatedUserVerify.verified_at = storeCurrentDate(0, "hours");
 
