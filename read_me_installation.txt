@@ -6,5 +6,7 @@ npm install -g nodemon
 npm install express-async-handler
 npm install moment-timezone
 npm install nodemailer 
+npm install exceljs
+npm install ua-parser-js
 
  

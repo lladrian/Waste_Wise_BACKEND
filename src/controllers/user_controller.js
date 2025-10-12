@@ -4,10 +4,27 @@ import moment from 'moment-timezone';
 // import dotenv from 'dotenv';
 import User from '../models/user.js';
 import OTP from '../models/otp.js';
+import LoginLog from '../models/login_log.js';
+
 
 import credential_mailer from '../mailer/credential_mailer.js'; // Import the mailer utility
 
+import { UAParser } from 'ua-parser-js';
 
+
+const getDeviceInfo = (req) => {
+    const userAgent = req.headers['user-agent'];
+    const parser = new UAParser(userAgent);
+    const result = parser.getResult();
+
+    return {
+        browser: `${result.browser.name} ${result.browser.version}`,
+        os: `${result.os.name} ${result.os.version}`,
+        device: result.device.type || 'Desktop',
+        platform: `${result.os.name} ${result.browser.name}`,
+        fullUserAgent: userAgent
+    };
+};
 
 function storeCurrentDate(expirationAmount, expirationUnit) {
     // Get the current date and time in Asia/Manila timezone
@@ -51,7 +68,7 @@ function create_user_validation(input_data, type) {
             !input_data.contact_number ||
             !input_data.email ||
             !input_data.password ||
-            !input_data.role_action||
+            !input_data.role_action ||
             !input_data.role) {
             return "Please provide all fields (email, password, first_name, middle_name, last_name, gender, contact_number, role, role_action).";
         }
@@ -76,13 +93,13 @@ async function update_specific_user(id, input_data) {
     updatedUser.role = input_data.role ? input_data.role : updatedUser.role;
     updatedUser.role_action = input_data.role_action ? input_data.role_action : updatedUser.role_action;
 
-    
+
 
     if (input_data.is_disabled === 'true' || input_data.is_disabled === true) {
-        updatedUser.is_disabled = input_data.is_disabled ? input_data.is_disabled  : updatedUser.is_disabled;
+        updatedUser.is_disabled = input_data.is_disabled ? input_data.is_disabled : updatedUser.is_disabled;
         updatedUser.disabled_at = storeCurrentDate(0, "hours");
     } else {
-        updatedUser.is_disabled = null;
+        updatedUser.is_disabled = false;
         updatedUser.disabled_at = null;
     }
 
@@ -213,10 +230,79 @@ export const login_user = asyncHandler(async (req, res) => {
         // Find the user by email
         let user = await User.findOne({ email: email }); // Don't use .lean() here
         const hash = hashConverterMD5(password);
+        const deviceInfo = getDeviceInfo(req);
+
 
         // Check if the admin exists and if the password is correct
         if (user && user.password == hash) {
+            const log = await LoginLog.find({ user: user._id, remark: "First Login" });
+
+            if (log.length === 0) {
+                const newLoginLog = new LoginLog({
+                    user: user._id,
+                    status: 'Success',
+                    device: deviceInfo.device,
+                    platform: deviceInfo.platform,
+                    remark: "First Login",
+                    created_at: storeCurrentDate(0, 'hours'),
+                });
+
+                newLoginLog.save();
+                return res.status(200).json({ data: user });
+            }
+
+            if (user.is_disabled === true) {
+                const newLoginLog = new LoginLog({
+                    user: user._id,
+                    status: 'Failed',
+                    device: deviceInfo.device,
+                    platform: deviceInfo.platform,
+                    remark: "Disabled Account",
+                    created_at: storeCurrentDate(0, 'hours'),
+                });
+
+                newLoginLog.save();
+                return res.status(200).json({ data: user });
+            }
+
+            if (user.is_verified === false) {
+                const newLoginLog = new LoginLog({
+                    user: user._id,
+                    status: 'Failed',
+                    device: deviceInfo.device,
+                    platform: deviceInfo.platform,
+                    remark: "Verifying Account",
+                    created_at: storeCurrentDate(0, 'hours'),
+                });
+
+                newLoginLog.save();
+                return res.status(200).json({ data: user });
+            }
+
+            const newLoginLog = new LoginLog({
+                user: user._id,
+                status: 'Success',
+                device: deviceInfo.device,
+                platform: deviceInfo.platform,
+                remark: "Normal Login",
+                created_at: storeCurrentDate(0, 'hours'),
+            });
+
+            newLoginLog.save();
             return res.status(200).json({ data: user });
+        }
+
+        if (user) {
+            const newLoginLog = new LoginLog({
+                user: user._id,
+                status: 'Failed',
+                device: deviceInfo.device,
+                platform: deviceInfo.platform,
+                remark: "Wrong Password",
+                created_at: storeCurrentDate(0, 'hours'),
+            });
+
+            newLoginLog.save();
         }
 
         return res.status(400).json({ message: 'Wrong email or password.' });
@@ -247,7 +333,7 @@ export const update_user_verified = asyncHandler(async (req, res) => {
 
             await updatedUserVerify.save();
         } else {
-            updatedUserVerify.is_verified = null;
+            updatedUserVerify.is_verified = false;
             updatedUserVerify.verified_at = null;
 
             await updatedUserVerify.save();
@@ -324,6 +410,45 @@ export const update_user_password_recovery = asyncHandler(async (req, res) => {
 });
 
 
+export const update_user_password_admin = asyncHandler(async (req, res) => {
+    const { id } = req.params; // Get the meal ID from the request parameters
+    const { password } = req.body;
+
+    try {
+        if (!password) {
+            return res.status(400).json({ message: "All fields are required: password." });
+        }
+
+        const hash = hashConverterMD5(password);
+        const updatedUser = await User.findById(id);
+
+        if (!updatedUser) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        updatedUser.password = password ? hash : updatedUser.password;
+
+
+        const formatted_input_data = {
+            first_name: updatedUser.first_name,
+            middle_name: updatedUser.middle_name,
+            last_name: updatedUser.last_name,
+            gender: updatedUser.gender[0].toUpperCase() + updatedUser.gender.substring(1).toLowerCase(),
+            contact_number: updatedUser.contact_number,
+            password: password,
+            email: updatedUser.email,
+            role: format_role(updatedUser.role),
+        };
+
+        await credential_mailer(updatedUser.email, formatted_input_data);
+        await updatedUser.save();
+
+        return res.status(200).json({ data: 'User password successfully updated.' });
+    } catch (error) {
+        return res.status(500).json({ error: 'Failed to update user password.' });
+    }
+});
+
 
 export const update_user_password = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters
@@ -358,9 +483,10 @@ export const delete_user = asyncHandler(async (req, res) => {
     try {
         const deletedUser = await User.findByIdAndDelete(id);
         const deletedOTP = await OTP.deleteMany({ user: id });
+        const deletedLoginLog = await LoginLog.deleteMany({ user: id });
 
 
-        if (!deletedUser || !deletedOTP) return res.status(404).json({ message: 'User not found' });
+        if (!deletedUser || !deletedOTP || !deletedLoginLog) return res.status(404).json({ message: 'User not found' });
 
         return res.status(200).json({ data: 'User account successfully deleted.' });
     } catch (error) {

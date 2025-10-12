@@ -7,6 +7,10 @@ import connectDB from './config/db.js';
 import userRoutes from "./routes/user_route.js";
 import otpRoutes from "./routes/otp_route.js";
 import roleActionRoutes from "./routes/action_route.js";
+import notificationRoutes from "./routes/notification_route.js";
+import logRoutes from "./routes/log_route.js";
+
+
 
 
 
@@ -33,6 +37,8 @@ app.get('/', (req, res) => {
 app.use("/users", userRoutes);
 app.use("/otp", otpRoutes);
 app.use("/actions", roleActionRoutes);
+app.use("/notifications", notificationRoutes);
+app.use("/logs", logRoutes);
 
 
 // Optionally use separate DB connect file
