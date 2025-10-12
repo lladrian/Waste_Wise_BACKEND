@@ -507,17 +507,17 @@ export const generate_report_login_test2 = asyncHandler(async (req, res) => {
         worksheet.getColumn(1).width = 30; // Set column A width manually
 
         // Create reports directory if not exists
-        const reportsDir = path.join(__dirname, '../reports');
-        try {
-            await fs.access(reportsDir);
-        } catch {
-            await fs.mkdir(reportsDir, { recursive: true });
-        }
+        // const reportsDir = path.join(__dirname, '../reports');
+        // try {
+        //     await fs.access(reportsDir);
+        // } catch {
+        //     await fs.mkdir(reportsDir, { recursive: true });
+        // }
 
         // Save file to server
-        const timestamp = Date.now();
-        const fileName = `login-logs-report-${timestamp}.xlsx`;
-        const filePath = path.join(reportsDir, fileName);
+        // const timestamp = Date.now();
+        // const fileName = `login-logs-report-${timestamp}.xlsx`;
+        // const filePath = path.join(reportsDir, fileName);
         // await workbook.xlsx.writeFile(filePath);
 
         res.setHeader(
