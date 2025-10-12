@@ -12,18 +12,6 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-function storeCurrentDate(expirationAmount, expirationUnit) {
-    // Get the current date and time in Asia/Manila timezone
-    const currentDateTime = moment.tz("Asia/Manila");
-    // Calculate the expiration date and time
-    const expirationDateTime = currentDateTime.clone().add(expirationAmount, expirationUnit);
-
-    // Format the current date and expiration date
-    const formattedExpirationDateTime = expirationDateTime.format('YYYY-MM-DD HH:mm:ss');
-
-    // Return both current and expiration date-time
-    return formattedExpirationDateTime;
-}
 
 function format_role(role) {
     const roleMap = {

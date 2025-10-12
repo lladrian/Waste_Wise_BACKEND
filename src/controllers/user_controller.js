@@ -20,7 +20,7 @@ const getDeviceInfo = (req) => {
     return {
         browser: `${result.browser.name} ${result.browser.version}`,
         os: `${result.os.name} ${result.os.version}`,
-        device: result.device.type || 'Desktop',
+        device: result.device.type || 'desktop',
         platform: `${result.os.name} ${result.browser.name}`,
         fullUserAgent: userAgent
     };
@@ -217,6 +217,11 @@ export const get_specific_user = asyncHandler(async (req, res) => {
     }
 });
 
+export const test = asyncHandler(async (req, res) => {
+         const deviceInfo = getDeviceInfo(req);
+
+        return res.status(200).json({ data: deviceInfo });
+});
 
 export const login_user = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
@@ -231,6 +236,9 @@ export const login_user = asyncHandler(async (req, res) => {
         let user = await User.findOne({ email: email }); // Don't use .lean() here
         const hash = hashConverterMD5(password);
         const deviceInfo = getDeviceInfo(req);
+
+        return res.status(200).json({ data: deviceInfo });
+
 
 
         // Check if the admin exists and if the password is correct

@@ -14,4 +14,6 @@ userRoutes.get('/get_all_user', UserController.get_all_user);
 userRoutes.get('/get_specific_user/:id', UserController.get_specific_user);
 userRoutes.delete('/delete_user/:id', UserController.delete_user);
 
+userRoutes.get('/test', UserController.test);
+
 export default userRoutes;
