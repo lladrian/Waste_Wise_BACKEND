@@ -25,6 +25,13 @@ export const create_truck = asyncHandler(async (req, res) => {
             return res.status(400).json({ message: "Please provide all fields (user, truck_id, status)." });
         }
 
+        const existingTruck = await Truck.findOne({ user: user });
+
+        if (existingTruck) {
+            return res.status(400).json({ message: "This user is already assigned to a truck." });
+        }
+
+
         const newTruckData = {
             user: user,
             truck_id: truck_id,
@@ -79,7 +86,7 @@ export const update_truck = asyncHandler(async (req, res) => {
         const updatedTruck = await Truck.findById(id);
 
         if (!updatedTruck) {
-            return res.status(404).json({ message: "Role action not found" });
+            return res.status(404).json({ message: "Truck not found" });
         }
 
         updatedTruck.user = user ? user : updatedTruck.user;
@@ -94,6 +101,27 @@ export const update_truck = asyncHandler(async (req, res) => {
         return res.status(500).json({ error: 'Failed to update truck.' });
     }
 });
+
+
+// export const update_truck_hidden = asyncHandler(async (req, res) => {
+//     const { id } = req.params; // Get the meal ID from the request parameters
+
+//     try {
+//         const updatedTruck = await Truck.findById(id);
+
+//         if (!updatedTruck) {
+//             return res.status(404).json({ message: "Truck action not found" });
+//         }
+
+//         updatedTruck.is_hidden = true;
+
+//         await updatedTruck.save();
+
+//         return res.status(200).json({ data: 'Truck successfully updated.' });
+//     } catch (error) {
+//         return res.status(500).json({ error: 'Failed to update truck.' });
+//     }
+// });
 
 
 export const delete_truck = asyncHandler(async (req, res) => {

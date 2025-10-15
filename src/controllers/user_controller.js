@@ -5,6 +5,7 @@ import moment from 'moment-timezone';
 import User from '../models/user.js';
 import OTP from '../models/otp.js';
 import LoginLog from '../models/login_log.js';
+import Truck from '../models/truck.js';
 
 
 import credential_mailer from '../mailer/credential_mailer.js'; // Import the mailer utility
@@ -301,6 +302,32 @@ export const get_all_user = asyncHandler(async (req, res) => {
         return res.status(200).json({ data: users });
     } catch (error) {
         return res.status(500).json({ error: 'Failed to get all users.' });
+    }
+});
+
+
+export const get_all_user_truck_driver = asyncHandler(async (req, res) => {
+    try {
+        // First, get all trucks to see which users are already assigned
+        const trucks = await Truck.find().populate('user');
+        
+        // Extract the user IDs that are already assigned to trucks
+        const assignedUserIds = trucks
+            .filter(truck => truck.user) // Filter out trucks without users
+            .map(truck => truck.user._id.toString()); // Get user IDs as strings
+
+        // Find users that are NOT in the assignedUserIds array
+        const users = await User.find({
+            _id: { $nin: assignedUserIds },
+            role: 'garbage_collector'
+        })
+        .populate('role_action')
+        .populate('route');
+
+        return res.status(200).json({ data: users });
+    } catch (error) {
+        console.error('Error getting unassigned users:', error);
+        return res.status(500).json({ error: 'Failed to get unassigned users.' });
     }
 });
 

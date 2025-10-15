@@ -9,15 +9,19 @@ const ScheduleSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Truck',
     },
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    },
     status: {
         type: String,
         required: false,
-        default: "Not Yet"
+        default: "Scheduled"
     },
     remark: {
         type: String,
         required: false,
-        default: "Not Yet"
+        default: "None"
     },
     scheduled_collection: {
         type: String,

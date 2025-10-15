@@ -18,17 +18,18 @@ function storeCurrentDate(expirationAmount, expirationUnit) {
 
 
 export const create_schedule = asyncHandler(async (req, res) => {
-    const { route, truck, scheduled_collection } = req.body;
+    const { route, truck, user, scheduled_collection } = req.body;
 
     try {
-        if (!route || !truck || !scheduled_collection) {
-            return res.status(400).json({ message: "Please provide all fields (route, truck, scheduled_collection)." });
+        if (!route || !truck || !scheduled_collection || !user) {
+            return res.status(400).json({ message: "Please provide all fields (route, truck, scheduled_collection, user)." });
         }
 
 
         const newScheduleData = {
             route: route,
             truck: truck,
+            user: user,
             scheduled_collection: scheduled_collection,
             created_at: storeCurrentDate(0, "hours")
         };
@@ -47,6 +48,7 @@ export const get_all_schedule = asyncHandler(async (req, res) => {
     try {
         const schedules = await Schedule.find()
             .populate('route')
+            .populate('user')
             .populate({
                 path: 'truck',
                 populate: {

@@ -13,9 +13,11 @@ userRoutes.put('/update_user_resident/:id', UserController.update_user_resident)
 userRoutes.put('/update_user_password/:id', UserController.update_user_password);
 userRoutes.put('/update_user_password_admin/:id', UserController.update_user_password_admin);
 userRoutes.put('/update_user_password_recovery', UserController.update_user_password_recovery);
+userRoutes.get('/get_all_user_truck_driver', UserController.get_all_user_truck_driver);
 userRoutes.get('/get_all_user', UserController.get_all_user);
 userRoutes.get('/get_specific_user/:id', UserController.get_specific_user);
 userRoutes.delete('/delete_user/:id', UserController.delete_user);
+
 
 export default userRoutes;
 
