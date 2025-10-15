@@ -2,10 +2,9 @@ import crypto from 'crypto';
 import asyncHandler from 'express-async-handler';
 import moment from 'moment-timezone';
 // import dotenv from 'dotenv';
-import User from '../models/user.js';
+import User from '../models/resident_user.js';
 import OTP from '../models/otp.js';
 import LoginLog from '../models/login_log.js';
-
 
 import credential_mailer from '../mailer/credential_mailer.js'; // Import the mailer utility
 
@@ -46,20 +45,6 @@ function hashConverterMD5(password) {
 
 
 function create_user_validation(input_data, type) {
-
-
-    if (type === 'update_user_profile') {
-        if (!input_data.first_name ||
-            !input_data.middle_name ||
-            !input_data.last_name ||
-            !input_data.gender ||
-            !input_data.contact_number ||
-            !input_data.email) {
-            return "Please provide all fields (email, first_name, middle_name, last_name, gender, contact_number, role, is_disabled, role_action).";
-        }
-    }
-
-
     if (type === 'update_user') {
         if (!input_data.first_name ||
             !input_data.middle_name ||
@@ -67,24 +52,9 @@ function create_user_validation(input_data, type) {
             !input_data.gender ||
             !input_data.contact_number ||
             !input_data.email ||
-            !input_data.role_action ||
             !input_data.is_disabled ||
             !input_data.role) {
             return "Please provide all fields (email, first_name, middle_name, last_name, gender, contact_number, role, is_disabled, role_action).";
-        }
-    }
-
-    if (type === 'update_user_resident') {
-        if (!input_data.first_name ||
-            !input_data.middle_name ||
-            !input_data.last_name ||
-            !input_data.gender ||
-            !input_data.contact_number ||
-            !input_data.email ||
-            !input_data.is_disabled ||
-            !input_data.route ||
-            !input_data.role) {
-            return "Please provide all fields (email, first_name, middle_name, last_name, gender, contact_number, role, is_disabled).";
         }
     }
 
@@ -96,76 +66,36 @@ function create_user_validation(input_data, type) {
             !input_data.contact_number ||
             !input_data.email ||
             !input_data.password ||
-            !input_data.role_action ||
             !input_data.role) {
             return "Please provide all fields (email, password, first_name, middle_name, last_name, gender, contact_number, role, role_action).";
-        }
-    }
-
-    if (type === 'create_user_resident') {
-        if (!input_data.first_name ||
-            !input_data.middle_name ||
-            !input_data.last_name ||
-            !input_data.gender ||
-            !input_data.contact_number ||
-            !input_data.email ||
-            !input_data.password ||
-            !input_data.route ||
-            !input_data.role) {
-            return "Please provide all fields (email, password, first_name, middle_name, last_name, gender, contact_number, role, route).";
         }
     }
 
     return null;
 }
 
-async function update_specific_user(id, input_data, type) {
+async function update_specific_user(id, input_data) {
     const updatedUser = await User.findById(id);
 
     if (!updatedUser) {
         return "User not found";
     }
 
-    if (type === 'user_profile') {
-        updatedUser.first_name = input_data.first_name ? input_data.first_name : updatedUser.first_name;
-        updatedUser.middle_name = input_data.middle_name ? input_data.middle_name : updatedUser.middle_name;
-        updatedUser.last_name = input_data.last_name ? input_data.last_name : updatedUser.last_name;
-        updatedUser.gender = input_data.gender ? input_data.gender : updatedUser.gender;
-        updatedUser.contact_number = input_data.contact_number ? input_data.contact_number : updatedUser.contact_number;
-        updatedUser.email = input_data.email ? input_data.email : updatedUser.email;
-    }
-
-    if (type === 'user') {
-        updatedUser.first_name = input_data.first_name ? input_data.first_name : updatedUser.first_name;
-        updatedUser.middle_name = input_data.middle_name ? input_data.middle_name : updatedUser.middle_name;
-        updatedUser.last_name = input_data.last_name ? input_data.last_name : updatedUser.last_name;
-        updatedUser.gender = input_data.gender ? input_data.gender : updatedUser.gender;
-        updatedUser.contact_number = input_data.contact_number ? input_data.contact_number : updatedUser.contact_number;
-        updatedUser.email = input_data.email ? input_data.email : updatedUser.email;
-        updatedUser.role = input_data.role ? input_data.role : updatedUser.role;
-        updatedUser.role_action = input_data.role_action ? input_data.role_action : updatedUser.role_action;
-    }
-
-    if (type === 'resident') {
-        updatedUser.first_name = input_data.first_name ? input_data.first_name : updatedUser.first_name;
-        updatedUser.middle_name = input_data.middle_name ? input_data.middle_name : updatedUser.middle_name;
-        updatedUser.last_name = input_data.last_name ? input_data.last_name : updatedUser.last_name;
-        updatedUser.gender = input_data.gender ? input_data.gender : updatedUser.gender;
-        updatedUser.contact_number = input_data.contact_number ? input_data.contact_number : updatedUser.contact_number;
-        updatedUser.email = input_data.email ? input_data.email : updatedUser.email;
-        updatedUser.role = input_data.role ? input_data.role : updatedUser.role;
-        updatedUser.route = input_data.route ? input_data.route : updatedUser.route;
-    }
+    updatedUser.first_name = input_data.first_name ? input_data.first_name : updatedUser.first_name;
+    updatedUser.middle_name = input_data.middle_name ? input_data.middle_name : updatedUser.middle_name;
+    updatedUser.last_name = input_data.last_name ? input_data.last_name : updatedUser.last_name;
+    updatedUser.gender = input_data.gender ? input_data.gender : updatedUser.gender;
+    updatedUser.contact_number = input_data.contact_number ? input_data.contact_number : updatedUser.contact_number;
+    updatedUser.email = input_data.email ? input_data.email : updatedUser.email;
+    updatedUser.role = input_data.role ? input_data.role : updatedUser.role;
 
 
-    if (type !== 'user_profile') {
-        if (input_data.is_disabled === 'true' || input_data.is_disabled === true) {
-            updatedUser.is_disabled = input_data.is_disabled ? input_data.is_disabled : updatedUser.is_disabled;
-            updatedUser.disabled_at = storeCurrentDate(0, "hours");
-        } else {
-            updatedUser.is_disabled = false;
-            updatedUser.disabled_at = null;
-        }
+    if (input_data.is_disabled === 'true' || input_data.is_disabled === true) {
+        updatedUser.is_disabled = input_data.is_disabled ? input_data.is_disabled : updatedUser.is_disabled;
+        updatedUser.disabled_at = storeCurrentDate(0, "hours");
+    } else {
+        updatedUser.is_disabled = false;
+        updatedUser.disabled_at = null;
     }
 
     updatedUser.save();
@@ -188,6 +118,7 @@ function format_role(role) {
 
 
 async function save_new_user(hash_password, input_data) {
+
     const newUserData = {
         first_name: input_data.first_name,
         middle_name: input_data.middle_name,
@@ -195,10 +126,8 @@ async function save_new_user(hash_password, input_data) {
         gender: input_data.gender,
         contact_number: input_data.contact_number,
         role: input_data.role,
-        route: input_data.route,
         password: hash_password,
         email: input_data.email,
-        role_action: input_data.role_action,
         created_at: storeCurrentDate(0, 'hours'),
     };
 
@@ -206,62 +135,15 @@ async function save_new_user(hash_password, input_data) {
     newUser.save();
 
     const newOTP = new OTP({
-        user: newUser._id
+        resident_user: newUser._id
     });
 
     newOTP.save();
-
-    const formatted_input_data = {
-        first_name: input_data.first_name,
-        middle_name: input_data.middle_name,
-        last_name: input_data.last_name,
-        gender: input_data.gender[0].toUpperCase() + input_data.gender.substring(1).toLowerCase(),
-        contact_number: input_data.contact_number,
-        password: input_data.password,
-        email: input_data.email,
-        role: format_role(input_data.role),
-    };
-
-    if (input_data.role !== 'resident') {
-        await credential_mailer(input_data.email, formatted_input_data);
-    }
 }
-
-export const create_user_resident = asyncHandler(async (req, res) => {
-    const { first_name, middle_name, last_name, gender, contact_number, password, email, role, route } = req.body;
-
-    try {
-        const input_data = {
-            first_name,
-            middle_name,
-            last_name,
-            gender,
-            contact_number,
-            password,
-            email,
-            role,
-            route
-        };
-
-        const validationError = create_user_validation(input_data, 'create_user_resident');
-
-        if (validationError) {
-            return res.status(400).json({ message: validationError });
-        }
-
-        if (await User.findOne({ email })) return res.status(400).json({ message: 'Email already exists' });
-
-        await save_new_user(hashConverterMD5(password), input_data);
-
-        return res.status(200).json({ data: 'New user account successfully created.' });
-    } catch (error) {
-        return res.status(500).json({ error: 'Failed to create user account.' });
-    }
-});
 
 
 export const create_user = asyncHandler(async (req, res) => {
-    const { first_name, middle_name, last_name, gender, contact_number, password, email, role, role_action } = req.body;
+    const { first_name, middle_name, last_name, gender, contact_number, password, email, role } = req.body;
 
     try {
         const input_data = {
@@ -272,8 +154,7 @@ export const create_user = asyncHandler(async (req, res) => {
             contact_number,
             password,
             email,
-            role,
-            role_action
+            role
         };
 
         const validationError = create_user_validation(input_data, 'create_user');
@@ -294,9 +175,7 @@ export const create_user = asyncHandler(async (req, res) => {
 
 export const get_all_user = asyncHandler(async (req, res) => {
     try {
-        const users = await User.find()
-            .populate('role_action')
-            .populate('route');
+        const users = await User.find();
 
         return res.status(200).json({ data: users });
     } catch (error) {
@@ -316,6 +195,7 @@ export const get_specific_user = asyncHandler(async (req, res) => {
     }
 });
 
+
 export const login_user = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
 
@@ -333,11 +213,9 @@ export const login_user = asyncHandler(async (req, res) => {
 
         // Check if the admin exists and if the password is correct
         if (user && user.password == hash) {
-
-
             if (user.is_verified === false) {
                 const newLoginLog = new LoginLog({
-                    user: user._id,
+                    resident_user: user._id,
                     status: 'Failed',
                     device: deviceInfo.device,
                     platform: deviceInfo.platform,
@@ -347,13 +225,13 @@ export const login_user = asyncHandler(async (req, res) => {
                 });
 
                 newLoginLog.save();
-                return res.status(200).json({ data: { user: user, logged_in_at: storeCurrentDate(0, 'hours') } });
+                return res.status(200).json({ data: user });
             }
 
 
             if (user.is_disabled === true) {
                 const newLoginLog = new LoginLog({
-                    user: user._id,
+                    resident_user: user._id,
                     status: 'Failed',
                     device: deviceInfo.device,
                     platform: deviceInfo.platform,
@@ -363,11 +241,11 @@ export const login_user = asyncHandler(async (req, res) => {
                 });
 
                 newLoginLog.save();
-                return res.status(200).json({ data: { user: user, logged_in_at: storeCurrentDate(0, 'hours') } });
+                return res.status(200).json({ data: user });
             }
 
             const newLoginLog = new LoginLog({
-                user: user._id,
+                resident_user: user._id,
                 status: 'Success',
                 device: deviceInfo.device,
                 platform: deviceInfo.platform,
@@ -377,12 +255,12 @@ export const login_user = asyncHandler(async (req, res) => {
             });
 
             newLoginLog.save();
-            return res.status(200).json({ data: { user: user, logged_in_at: storeCurrentDate(0, 'hours') } });
+            return res.status(200).json({ data: user });
         }
 
         if (user) {
             const newLoginLog = new LoginLog({
-                user: user._id,
+                resident_user: user._id,
                 status: 'Failed',
                 device: deviceInfo.device,
                 platform: deviceInfo.platform,
@@ -423,7 +301,7 @@ export const update_user_verified = asyncHandler(async (req, res) => {
 
             if (log.length === 0) {
                 const newLoginLog = new LoginLog({
-                    user: id,
+                    resident_user: id,
                     status: 'Success',
                     device: deviceInfo.device,
                     platform: deviceInfo.platform,
@@ -454,45 +332,9 @@ export const update_user_verified = asyncHandler(async (req, res) => {
 
 
 
-export const update_user_resident = asyncHandler(async (req, res) => {
-    const { id } = req.params; // Get the meal ID from the request parameters
-    const { first_name, middle_name, last_name, gender, contact_number, email, role, is_disabled, route } = req.body;
-
-    try {
-        const input_data = {
-            first_name,
-            middle_name,
-            last_name,
-            gender,
-            contact_number,
-            email,
-            role,
-            route,
-            is_disabled
-        };
-
-        const validationError = create_user_validation(input_data, 'update_user_resident');
-
-        if (validationError) {
-            return res.status(400).json({ message: validationError });
-        }
-
-        const updateSpecificUser = await update_specific_user(id, input_data, 'resident');
-
-        if (updateSpecificUser) {
-            return res.status(400).json({ message: updateSpecificUser });
-        }
-
-        return res.status(200).json({ data: 'User account successfully updated.' });
-    } catch (error) {
-        return res.status(500).json({ error: 'Failed to update user account.' });
-    }
-});
-
-
 export const update_user = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters
-    const { first_name, middle_name, last_name, gender, contact_number, email, role, is_disabled, role_action } = req.body;
+    const { first_name, middle_name, last_name, gender, contact_number, email, role, is_disabled } = req.body;
 
     try {
         const input_data = {
@@ -503,7 +345,6 @@ export const update_user = asyncHandler(async (req, res) => {
             contact_number,
             email,
             role,
-            role_action,
             is_disabled
         };
 
@@ -513,45 +354,7 @@ export const update_user = asyncHandler(async (req, res) => {
             return res.status(400).json({ message: validationError });
         }
 
-        const updateSpecificUser = await update_specific_user(id, input_data, 'user');
-
-        if (updateSpecificUser) {
-            return res.status(400).json({ message: updateSpecificUser });
-        }
-
-        return res.status(200).json({ data: 'User account successfully updated.' });
-    } catch (error) {
-        return res.status(500).json({ error: 'Failed to update user account.' });
-    }
-});
-
-
-
-export const update_user_profile = asyncHandler(async (req, res) => {
-    const { id } = req.params; // Get the meal ID from the request parameters
-    const { first_name, middle_name, last_name, gender, contact_number, email } = req.body;
-
-    try {
-        const input_data = {
-            first_name,
-            middle_name,
-            last_name,
-            gender,
-            contact_number,
-            email
-        };
-
-        const validationError = create_user_validation(input_data, 'update_user_profile');
-
-        if (validationError) {
-            return res.status(400).json({ message: validationError });
-        }
-
-        if (await User.findOne({ email: email, _id: { $ne: id } })) {
-            return res.status(400).json({ message: 'Email already exists' });
-        }
-
-        const updateSpecificUser = await update_specific_user(id, input_data, 'user_profile');
+        const updateSpecificUser = await update_specific_user(id, input_data);
 
         if (updateSpecificUser) {
             return res.status(400).json({ message: updateSpecificUser });
@@ -663,8 +466,8 @@ export const delete_user = asyncHandler(async (req, res) => {
 
     try {
         const deletedUser = await User.findByIdAndDelete(id);
-        const deletedOTP = await OTP.deleteMany({ user: id });
-        const deletedLoginLog = await LoginLog.deleteMany({ user: id });
+        const deletedOTP = await OTP.deleteMany({ resident_user: id });
+        const deletedLoginLog = await LoginLog.deleteMany({ resident_user: id });
 
 
         if (!deletedUser || !deletedOTP || !deletedLoginLog) return res.status(404).json({ message: 'User not found' });

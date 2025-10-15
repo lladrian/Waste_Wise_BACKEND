@@ -1,0 +1,15 @@
+import { Router } from "express";
+import * as ScheduleController from '../controllers/schedule_controller.js'; // Import the controller
+
+const scheduleRoutes = Router();
+
+scheduleRoutes.post('/add_schedule', ScheduleController.create_schedule);
+scheduleRoutes.get('/get_all_schedule', ScheduleController.get_all_schedule);
+scheduleRoutes.get('/get_specific_schedule/:id', ScheduleController.get_specific_schedule);
+scheduleRoutes.delete('/delete_schedule/:id', ScheduleController.delete_schedule);
+scheduleRoutes.put('/update_schedule/:id', ScheduleController.update_schedule);
+scheduleRoutes.put('/update_schedule_garbage_collector/:id', ScheduleController.update_schedule_garbage_collector);
+
+
+export default scheduleRoutes;
+

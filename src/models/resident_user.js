@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const UserSchema = new mongoose.Schema({
+const ResidentUserSchema = new mongoose.Schema({
     first_name: {
         type: String,
         required: true
@@ -34,15 +34,8 @@ const UserSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['admin', 'resident', 'enro_staff',
-            'barangay_official', 'garbage_collector',
-        ],
+        // enum: ['resident'],
         default: 'resident',
-    },
-    role_action: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Action',
-        required: false,
     },
     route: {
         type: mongoose.Schema.Types.ObjectId,
@@ -72,4 +65,4 @@ const UserSchema = new mongoose.Schema({
 });
 
 
-export default mongoose.model('User', UserSchema);
+export default mongoose.model('ResidentUser', ResidentUserSchema);
