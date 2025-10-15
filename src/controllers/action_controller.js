@@ -22,7 +22,7 @@ export const create_role_action = asyncHandler(async (req, res) => {
 
     try {
         if (!action_name) {
-            return res.status(400).json({ message: "Please provide action_name." });
+            return res.status(400).json({ message: "Please provide all fields (action_name)." });
         }
 
         // Handle different permission input types
@@ -84,6 +84,7 @@ export const update_role_action = asyncHandler(async (req, res) => {
 
     try {
         if (!action_name || !permission) {
+            
             return res.status(400).json({ message: "Please provide all fields (action_name, permission)." });
         }
 

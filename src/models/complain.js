@@ -1,31 +1,26 @@
 import mongoose from "mongoose";
 
-const ScheduleSchema = new mongoose.Schema({
+const ComplainSchema = new mongoose.Schema({
     route: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Route',
-    },
-    truck: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Truck',
     },
     user: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
     },
-    status: {
+    complain_content: {
+        type: String,
+        required: true,
+    },
+    complain_type: {
+        type: String,
+        required: true,
+    },
+    resolution_status: {
         type: String,
         required: false,
         default: "Pending"
-    },
-    remark: {
-        type: String,
-        required: false,
-        default: "None"
-    },
-    scheduled_collection: {
-        type: String,
-        default: null
     },
     created_at: {
         type: String,
@@ -34,4 +29,4 @@ const ScheduleSchema = new mongoose.Schema({
 });
 
 
-export default mongoose.model('Schedule', ScheduleSchema);
+export default mongoose.model('Complain', ComplainSchema);

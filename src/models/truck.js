@@ -12,6 +12,7 @@ const TruckSchema = new mongoose.Schema({
     status: {
         type: String,
         required: true,
+        default: "Active"
     },
     // is_hidden: {
     //     type: Boolean,

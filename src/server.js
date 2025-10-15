@@ -16,6 +16,8 @@ import truckActivityRoutes from "./routes/truck_activity_route.js";
 import scheduleRoutes from "./routes/schedule_route.js";
 import generateReportRoutes from "./routes/generate_report_route.js";
 import truckRoutes from "./routes/truck_route.js";
+import complainRoutes from "./routes/complain_route.js";
+
 
 
 
@@ -52,7 +54,7 @@ app.use("/truck_activities", truckActivityRoutes);
 app.use("/schedules", scheduleRoutes);
 app.use("/generate_reports", generateReportRoutes);
 app.use("/trucks", truckRoutes);
-
+app.use("/complains", complainRoutes);
 
 
 
