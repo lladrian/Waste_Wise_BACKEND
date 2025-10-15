@@ -18,17 +18,17 @@ function storeCurrentDate(expirationAmount, expirationUnit) {
 
 
 export const create_schedule = asyncHandler(async (req, res) => {
-    const { route, user, scheduled_collection } = req.body;
+    const { route, truck, scheduled_collection } = req.body;
 
     try {
-        if (!route || !user || !scheduled_collection) {
-            return res.status(400).json({ message: "Please provide all fields (route, user, scheduled_collection)." });
+        if (!route || !truck || !scheduled_collection) {
+            return res.status(400).json({ message: "Please provide all fields (route, truck, scheduled_collection)." });
         }
 
 
         const newScheduleData = {
             route: route,
-            user: user,
+            truck: truck,
             scheduled_collection: scheduled_collection,
             created_at: storeCurrentDate(0, "hours")
         };
@@ -46,8 +46,14 @@ export const create_schedule = asyncHandler(async (req, res) => {
 export const get_all_schedule = asyncHandler(async (req, res) => {
     try {
         const schedules = await Schedule.find()
-        .populate('route')
-        .populate('user');
+            .populate('route')
+            .populate({
+                path: 'truck',
+                populate: {
+                    path: 'user',
+                    model: 'User'
+                }
+            });
 
         return res.status(200).json({ data: schedules });
     } catch (error) {
@@ -70,11 +76,11 @@ export const get_specific_schedule = asyncHandler(async (req, res) => {
 
 export const update_schedule = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters
-    const { route, user, scheduled_collection, remark, status } = req.body;
+    const { route, truck, scheduled_collection, remark, status } = req.body;
 
     try {
-        if (!route || !user || !scheduled_collection || !remark || !status) {
-            return res.status(400).json({ message: "Please provide all fields (route, user, scheduled_collection, remark, status)." });
+        if (!route || !truck || !scheduled_collection || !remark || !status) {
+            return res.status(400).json({ message: "Please provide all fields (route, truck, scheduled_collection, remark, status)." });
         }
 
         const updatedSchedule = await Schedule.findById(id);
@@ -86,7 +92,7 @@ export const update_schedule = asyncHandler(async (req, res) => {
         updatedSchedule.route = route ? route : updatedSchedule.route;
         updatedSchedule.remark = remark ? remark : updatedSchedule.remark;
         updatedSchedule.status = status ? status : updatedSchedule.status;
-        updatedSchedule.user = user ? user : updatedSchedule.user;
+        updatedSchedule.truck = truck ? truck : updatedSchedule.truck;
         updatedSchedule.scheduled_collection = scheduled_collection ? scheduled_collection : updatedSchedule.scheduled_collection;
 
         await updatedSchedule.save();
@@ -113,10 +119,10 @@ export const update_schedule_garbage_collector = asyncHandler(async (req, res) =
             return res.status(404).json({ message: "Schedule not found" });
         }
 
-     
+
         updatedSchedule.remark = remark ? remark : updatedSchedule.remark;
         updatedSchedule.status = status ? status : updatedSchedule.status;
-    
+
         await updatedSchedule.save();
 
         return res.status(200).json({ data: 'Schedule successfully updated.' });

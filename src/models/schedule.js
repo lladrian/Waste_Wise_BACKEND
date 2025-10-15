@@ -5,17 +5,19 @@ const ScheduleSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Route',
     },
-    user: {
+    truck: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
+        ref: 'Truck',
     },
     status: {
         type: String,
         required: false,
+        default: "Not Yet"
     },
     remark: {
         type: String,
         required: false,
+        default: "Not Yet"
     },
     scheduled_collection: {
         type: String,
