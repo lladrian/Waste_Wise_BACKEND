@@ -22,6 +22,10 @@ const ComplainSchema = new mongoose.Schema({
         required: false,
         default: "Pending"
     },
+    archived: {
+        type: Boolean,
+        default: false
+    },
     created_at: {
         type: String,
         default: null

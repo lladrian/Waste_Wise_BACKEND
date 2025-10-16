@@ -18,15 +18,16 @@ function storeCurrentDate(expirationAmount, expirationUnit) {
 
 
 export const create_schedule = asyncHandler(async (req, res) => {
-    const { route, truck, user, scheduled_collection } = req.body;
+    const { route, truck, user, scheduled_collection, garbage_type } = req.body;
 
     try {
-        if (!route || !truck || !scheduled_collection || !user) {
-            return res.status(400).json({ message: "Please provide all fields (route, truck, scheduled_collection, user)." });
+        if (!route || !truck || !scheduled_collection || !user || !garbage_type) {
+            return res.status(400).json({ message: "Please provide all fields (route, truck, scheduled_collection, user, garbage_type)." });
         }
 
 
         const newScheduleData = {
+            garbage_type: garbage_type,
             route: route,
             truck: truck,
             user: user,
@@ -76,13 +77,14 @@ export const get_specific_schedule = asyncHandler(async (req, res) => {
 });
 
 
-export const update_schedule = asyncHandler(async (req, res) => {
+
+export const update_schedule_approval = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters
-    const { route, truck, scheduled_collection, remark, status } = req.body;
+    const { remark, status, is_editable } = req.body;
 
     try {
-        if (!route || !truck || !scheduled_collection || !remark || !status) {
-            return res.status(400).json({ message: "Please provide all fields (route, truck, scheduled_collection, remark, status)." });
+        if (!remark || !status || !is_editable) {
+            return res.status(400).json({ message: "Please provide all fields (remark, status, is_editable)." });
         }
 
         const updatedSchedule = await Schedule.findById(id);
@@ -91,6 +93,36 @@ export const update_schedule = asyncHandler(async (req, res) => {
             return res.status(404).json({ message: "Schedule not found" });
         }
 
+        updatedSchedule.is_editable = is_editable ? is_editable : updatedSchedule.is_editable;
+        updatedSchedule.remark = remark ? remark : updatedSchedule.remark;
+        updatedSchedule.status = status ? status : updatedSchedule.status;
+
+
+        await updatedSchedule.save();
+
+        return res.status(200).json({ data: 'Schedule successfully updated.' });
+    } catch (error) {
+        return res.status(500).json({ error: 'Failed to update schedule.' });
+    }
+});
+
+
+export const update_schedule = asyncHandler(async (req, res) => {
+    const { id } = req.params; // Get the meal ID from the request parameters
+    const { route, truck, scheduled_collection, remark, status, garbage_type } = req.body;
+
+    try {
+        if (!route || !truck || !scheduled_collection || !remark || !status || !garbage_type) {
+            return res.status(400).json({ message: "Please provide all fields (route, truck, scheduled_collection, remark, status, garbage_type)." });
+        }
+
+        const updatedSchedule = await Schedule.findById(id);
+
+        if (!updatedSchedule) {
+            return res.status(404).json({ message: "Schedule not found" });
+        }
+
+        updatedSchedule.garbage_type = garbage_type ? garbage_type : updatedSchedule.garbage_type;
         updatedSchedule.route = route ? route : updatedSchedule.route;
         updatedSchedule.remark = remark ? remark : updatedSchedule.remark;
         updatedSchedule.status = status ? status : updatedSchedule.status;

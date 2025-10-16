@@ -8,6 +8,7 @@ scheduleRoutes.get('/get_all_schedule', ScheduleController.get_all_schedule);
 scheduleRoutes.get('/get_specific_schedule/:id', ScheduleController.get_specific_schedule);
 scheduleRoutes.delete('/delete_schedule/:id', ScheduleController.delete_schedule);
 scheduleRoutes.put('/update_schedule/:id', ScheduleController.update_schedule);
+scheduleRoutes.put('/update_schedule_approval/:id', ScheduleController.update_schedule_approval);
 scheduleRoutes.put('/update_schedule_garbage_collector/:id', ScheduleController.update_schedule_garbage_collector);
 
 

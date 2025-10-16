@@ -23,9 +23,18 @@ const ScheduleSchema = new mongoose.Schema({
         required: false,
         default: "None"
     },
+    garbage_type: {
+        type: String,
+        required: true,
+        default: null
+    },
     scheduled_collection: {
         type: String,
         default: null
+    },
+    is_editable: {
+        type: Boolean,
+        default: true
     },
     created_at: {
         type: String,

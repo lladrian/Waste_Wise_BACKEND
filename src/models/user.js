@@ -34,7 +34,7 @@ const UserSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['admin', 'resident', 'enro_staff',
+        enum: ['admin', 'resident', 'enro_staff', 'enro_staff_head',
             'barangay_official', 'garbage_collector',
         ],
         default: 'resident',

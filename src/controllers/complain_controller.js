@@ -73,11 +73,11 @@ export const get_specific_complain = asyncHandler(async (req, res) => {
 
 export const update_complain = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters
-     const { route, user, complain_content, complain_type, resolution_status } = req.body;
+     const { route, user, complain_content, complain_type, resolution_status, archived } = req.body;
 
     try {
-        if (!route || !user || !complain_content || !complain_type || !resolution_status) {
-            return res.status(400).json({ message: "Please provide all fields (route, user, complain_content, complain_type, resolution_status)." });
+        if (!route || !user || !complain_content || !complain_type || !resolution_status || !archived) {
+            return res.status(400).json({ message: "Please provide all fields (route, user, complain_content, complain_type, resolution_status, archived)." });
         }
 
         const updatedComplain = await Complain.findById(id);
@@ -87,6 +87,7 @@ export const update_complain = asyncHandler(async (req, res) => {
         }
 
         updatedComplain.route = route ? route : updatedComplain.route;
+        updatedComplain.archived = archived ? archived : updatedComplain.archived;
         updatedComplain.user = user ? user : updatedComplain.user;
         updatedComplain.complain_content = complain_content ? complain_content : updatedComplain.complain_content;
         updatedComplain.complain_type = complain_type ? complain_type : updatedComplain.complain_type;
