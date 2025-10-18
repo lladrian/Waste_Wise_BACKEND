@@ -81,17 +81,39 @@ export const get_specific_schedule = asyncHandler(async (req, res) => {
 
 export const update_schedule_approval = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters
-    const { remark, status, is_editable } = req.body;
+    const { remark, status, is_editable, user } = req.body;
 
     try {
-        if (!remark || !status || !is_editable) {
-            return res.status(400).json({ message: "Please provide all fields (remark, status, is_editable)." });
+        if (!remark || !status || !is_editable || !user) {
+            return res.status(400).json({ message: "Please provide all fields (remark, status, is_editable, user)." });
         }
 
         const updatedSchedule = await Schedule.findById(id);
 
         if (!updatedSchedule) {
             return res.status(404).json({ message: "Schedule not found" });
+        }
+
+        if (status === "Pending") {
+            updatedSchedule.approved_by = null;
+            updatedSchedule.approved_at = null;
+            updatedSchedule.cancelled_by = null;
+            updatedSchedule.cancelled_at = null;
+        }
+
+
+        if (status === "Scheduled") {
+            updatedSchedule.approved_by = user ? user : updatedSchedule.approved_by;
+            updatedSchedule.approved_at = storeCurrentDate(0, "hours");
+            updatedSchedule.cancelled_by = null;
+            updatedSchedule.cancelled_at = null;
+        }
+
+        if (status === "Cancelled") {
+            updatedSchedule.cancelled_by = user ? user : updatedSchedule.cancelled_by;
+            updatedSchedule.cancelled_at = storeCurrentDate(0, "hours");
+            updatedSchedule.approved_by = null;
+            updatedSchedule.approved_at = null;
         }
 
         updatedSchedule.is_editable = is_editable ? is_editable : updatedSchedule.is_editable;

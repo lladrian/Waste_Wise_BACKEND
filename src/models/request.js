@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const UserSchema = new mongoose.Schema({
+const RequestUserSchema = new mongoose.Schema({
     first_name: {
         type: String,
         required: true
@@ -34,36 +34,29 @@ const UserSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['admin', 'resident', 
-            'enro_staff_monitoring', 'enro_staff_head',
-            'enro_staff_scheduler', 'enro_staff_eswm_section_head',
+        enum: ['admin', 'resident', 'enro_staff', 'enro_staff_head',
             'barangay_official', 'garbage_collector',
         ],
         default: 'resident',
     },
-    role_action: {
+    barangay: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Action',
+        ref: 'Barangay',
         required: false,
     },
-    route: {
+    approved_by: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Route',
-        required: false,
+        ref: 'User',
     },
-    is_disabled: {
-        type: Boolean,
-        default: false
+    cancelled_by: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
     },
-    is_verified: {
-        type: Boolean,
-        default: false
-    },
-    verified_at: {
+    approved_at: {
         type: String,
         default: null
     },
-    disabled_at: {
+    cancelled_at: {
         type: String,
         default: null
     },
@@ -74,4 +67,4 @@ const UserSchema = new mongoose.Schema({
 });
 
 
-export default mongoose.model('User', UserSchema);
+export default mongoose.model('RequestUser', RequestUserSchema);

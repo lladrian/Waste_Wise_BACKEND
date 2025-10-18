@@ -180,11 +180,13 @@ function format_role(role) {
         'admin': 'Admin',
         'resident': 'Resident',
         'enro_staff': 'ENRO Staff',
+        'enro_staff_monitoring': 'ENRO Staff Monitoring',
+        'enro_staff_scheduler': 'ENRO Staff Scheduler',
         'enro_staff_head': 'ENRO Staff Head',
+        'enro_staff_eswm_section_head': 'ENRO Staff ESWM Section Head',
         'barangay_official': 'Barangay Official',
         'garbage_collector': 'Garbage Collector'
     };
-
     return roleMap[role] || role; // Return formatted role or original if not found
 }
 
@@ -311,7 +313,7 @@ export const get_all_user_truck_driver = asyncHandler(async (req, res) => {
     try {
         // First, get all trucks to see which users are already assigned
         const trucks = await Truck.find().populate('user');
-        
+
         // Extract the user IDs that are already assigned to trucks
         const assignedUserIds = trucks
             .filter(truck => truck.user) // Filter out trucks without users
@@ -322,8 +324,8 @@ export const get_all_user_truck_driver = asyncHandler(async (req, res) => {
             _id: { $nin: assignedUserIds },
             role: 'garbage_collector'
         })
-        .populate('role_action')
-        .populate('route');
+            .populate('role_action')
+            .populate('route');
 
         return res.status(200).json({ data: users });
     } catch (error) {

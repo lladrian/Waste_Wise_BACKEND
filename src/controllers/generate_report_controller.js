@@ -10,7 +10,10 @@ function format_role(role) {
         'admin': 'Admin',
         'resident': 'Resident',
         'enro_staff': 'ENRO Staff',
+        'enro_staff_monitoring': 'ENRO Staff Monitoring',
+        'enro_staff_scheduler': 'ENRO Staff Scheduler',
         'enro_staff_head': 'ENRO Staff Head',
+        'enro_staff_eswm_section_head': 'ENRO Staff ESWM Section Head',
         'barangay_official': 'Barangay Official',
         'garbage_collector': 'Garbage Collector'
     };
@@ -96,7 +99,7 @@ export const generate_report_login_log = asyncHandler(async (req, res) => {
 
         const tableHeaderRow = worksheet.addRow([
             'Log ID', 'Complete Name', 'Account Type', 'Role Action',
-            'Date Logged In', 'Time Logged In', 'Device', 'Platform', 'Operating System', 
+            'Date Logged In', 'Time Logged In', 'Device', 'Platform', 'Operating System',
             'Status', 'Remark'
         ]);
         tableHeaderRow.font = { bold: true };
@@ -188,7 +191,7 @@ export const generate_report_login_log = asyncHandler(async (req, res) => {
         // return res.status(200).json({ data: "success" });
     } catch (error) {
         console.error('Error generating login logs report:', error);
-        return res.status(500).json({message: 'Failed to generate login logs report.', error});
+        return res.status(500).json({ message: 'Failed to generate login logs report.', error });
     }
 });
 
@@ -254,7 +257,7 @@ export const generate_report_login_log_specific_user = asyncHandler(async (req, 
 
         const tableHeaderRow = worksheet.addRow([
             'Log ID', 'Complete Name', 'Account Type', 'Role Action',
-            'Date Logged In', 'Time Logged In', 'Device', 'Platform', 'Operating System', 
+            'Date Logged In', 'Time Logged In', 'Device', 'Platform', 'Operating System',
             'Status', 'Remark'
         ]);
         tableHeaderRow.font = { bold: true };
@@ -346,7 +349,7 @@ export const generate_report_login_log_specific_user = asyncHandler(async (req, 
         // return res.status(200).json({ data: "success" });
     } catch (error) {
         console.error('Error generating login logs report:', error);
-        return res.status(500).json({message: 'Failed to generate login logs report.', error});
+        return res.status(500).json({ message: 'Failed to generate login logs report.', error });
     }
 });
 

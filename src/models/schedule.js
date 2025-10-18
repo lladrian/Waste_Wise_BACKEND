@@ -13,6 +13,22 @@ const ScheduleSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
     },
+    approved_by: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    },
+    cancelled_by: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    },
+    approved_at: {
+        type: String,
+        default: null
+    },
+    cancelled_at: {
+        type: String,
+        default: null
+    },
     status: {
         type: String,
         required: false,
