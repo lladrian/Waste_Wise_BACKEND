@@ -5,6 +5,10 @@ const ActionSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    role: {
+        type: String, // Array of strings
+        required: true,
+    },
     permission: {
         type: [String], // Array of strings
         default: ['none'], // Default as array with one element

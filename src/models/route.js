@@ -5,11 +5,6 @@ const RouteSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    // merge_barangay: [{
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: 'Barangay',
-    //     required: false,
-    // }],
     merge_barangay: [{
         barangay_id: {
             type: mongoose.Schema.Types.ObjectId,

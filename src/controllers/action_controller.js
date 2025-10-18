@@ -18,11 +18,11 @@ function storeCurrentDate(expirationAmount, expirationUnit) {
 
 
 export const create_role_action = asyncHandler(async (req, res) => {
-    const { action_name, permission } = req.body;
+    const { action_name, permission, role } = req.body;
 
     try {
-        if (!action_name) {
-            return res.status(400).json({ message: "Please provide all fields (action_name)." });
+        if (!action_name || !role) {
+            return res.status(400).json({ message: "Please provide all fields (action_name, role)." });
         }
 
         // Handle different permission input types
@@ -38,6 +38,7 @@ export const create_role_action = asyncHandler(async (req, res) => {
         }
 
         const newRoleActionData = {
+            role: role,
             action_name: action_name,
             permission: permissionArray,
             created_at: storeCurrentDate(0, "hours")
@@ -55,7 +56,7 @@ export const create_role_action = asyncHandler(async (req, res) => {
 
 export const get_all_role_action = asyncHandler(async (req, res) => {
     try {
-        const roleActions = await Action.find();
+        const roleActions = await Action.find().populate('role');
 
         return res.status(200).json({ data: roleActions });
     } catch (error) {
@@ -80,12 +81,12 @@ export const get_specific_role_action = asyncHandler(async (req, res) => {
 
 export const update_role_action = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters
-    const { action_name, permission } = req.body;
+    const { action_name, permission, role } = req.body;
 
     try {
-        if (!action_name || !permission) {
+        if (!action_name || !permission || !role) {
             
-            return res.status(400).json({ message: "Please provide all fields (action_name, permission)." });
+            return res.status(400).json({ message: "Please provide all fields (action_name, permission, role)." });
         }
 
         const updatedRoleAction = await Action.findById(id);
@@ -94,6 +95,7 @@ export const update_role_action = asyncHandler(async (req, res) => {
             return res.status(404).json({ message: "Role action not found" });
         }
 
+        updatedRoleAction.role = role ? role : updatedRoleAction.role;
         updatedRoleAction.action_name = action_name ? action_name : updatedRoleAction.action_name;
         updatedRoleAction.permission = permission ? permission : updatedRoleAction.permission;
 

@@ -25,6 +25,7 @@ export const create_schedule = asyncHandler(async (req, res) => {
             return res.status(400).json({ message: "Please provide all fields (route, truck, scheduled_collection, user, garbage_type)." });
         }
 
+        if (await Schedule.findOne({ user: user, truck: truck, scheduled_collection: scheduled_collection, route: route })) return res.status(400).json({ message: 'Schedule already exists' });
 
         const newScheduleData = {
             garbage_type: garbage_type,
@@ -115,6 +116,8 @@ export const update_schedule = asyncHandler(async (req, res) => {
         if (!route || !truck || !scheduled_collection || !remark || !status || !garbage_type) {
             return res.status(400).json({ message: "Please provide all fields (route, truck, scheduled_collection, remark, status, garbage_type)." });
         }
+
+        if (await Schedule.findOne({ _id: { $ne: id }, truck: truck, scheduled_collection: scheduled_collection, route: route })) return res.status(400).json({ message: 'Schedule already exists' });
 
         const updatedSchedule = await Schedule.findById(id);
 
