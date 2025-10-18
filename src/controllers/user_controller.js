@@ -338,7 +338,7 @@ export const get_specific_user = asyncHandler(async (req, res) => {
     try {
         const user = await User.findById(id);
 
-        res.status(200).json({ data: user });
+        res.status(200).json({ data: { user: user, fetched_at: storeCurrentDate(0, 'hours') } });
     } catch (error) {
         return res.status(500).json({ error: 'Failed to get specific user.' });
     }

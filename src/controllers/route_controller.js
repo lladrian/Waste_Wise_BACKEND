@@ -18,15 +18,16 @@ function storeCurrentDate(expirationAmount, expirationUnit) {
 
 
 export const create_route = asyncHandler(async (req, res) => {
-    const { route_name } = req.body;
+    const { route_name, merge_barangay } = req.body;
 
     try {
-        if (!route_name) {
-            return res.status(400).json({ message: "Please provide route_name." });
+        if (!route_name || !merge_barangay) {
+            return res.status(400).json({ message: "Please provide all fields (route_name, merge_barangay)." });
         }
 
         const routeData = {
             route_name: route_name,
+            merge_barangay: merge_barangay,
             created_at: storeCurrentDate(0, "hours")
         };
 
@@ -66,11 +67,11 @@ export const get_specific_route = asyncHandler(async (req, res) => {
 
 export const update_route = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters
-    const { route_name } = req.body;
+    const { route_name, merge_barangay } = req.body;
 
     try {
-        if (!route_name) {
-            return res.status(400).json({ message: "Please provide all fields (route_name)." });
+        if (!route_name || !merge_barangay) {
+            return res.status(400).json({ message: "Please provide all fields (route_name, merge_barangay)." });
         }
 
         const updatedRoute = await Route.findById(id);
@@ -80,6 +81,7 @@ export const update_route = asyncHandler(async (req, res) => {
         }
 
         updatedRoute.route_name = route_name ? route_name : updatedRoute.route_name;
+        updatedRoute.merge_barangay = merge_barangay ? merge_barangay : updatedRoute.merge_barangay;
 
         await updatedRoute.save();
 

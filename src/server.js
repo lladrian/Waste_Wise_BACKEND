@@ -18,6 +18,8 @@ import generateReportRoutes from "./routes/generate_report_route.js";
 import truckRoutes from "./routes/truck_route.js";
 import complainRoutes from "./routes/complain_route.js";
 import collectorAttendanceRoutes from "./routes/collector_attendance_route.js";
+import barangayRoutes from "./routes/barangay_route.js";
+
 
 
 
@@ -52,6 +54,7 @@ app.use("/actions", roleActionRoutes);
 app.use("/notifications", notificationRoutes);
 app.use("/logs", logRoutes);
 app.use("/routes", routeRoutes);
+app.use("/barangays", barangayRoutes);
 app.use("/truck_activities", truckActivityRoutes);
 app.use("/schedules", scheduleRoutes);
 app.use("/generate_reports", generateReportRoutes);
