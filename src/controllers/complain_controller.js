@@ -2,6 +2,7 @@ import asyncHandler from 'express-async-handler';
 import moment from 'moment-timezone';
 // import dotenv from 'dotenv';
 import Complain from '../models/complain.js';
+import mongoose from "mongoose";
 
 function storeCurrentDate(expirationAmount, expirationUnit) {
     // Get the current date and time in Asia/Manila timezone
@@ -18,16 +19,16 @@ function storeCurrentDate(expirationAmount, expirationUnit) {
 
 
 export const create_complain = asyncHandler(async (req, res) => {
-    const { route, user, complain_content, complain_type } = req.body;
+    const { barangay, user, complain_content, complain_type } = req.body;
 
     try {
-        if (!route || !user || !complain_content || !complain_type) {
-            return res.status(400).json({ message: "Please provide all fields (route, user, complain_content, complain_type, resolution_status)." });
+        if (!barangay || !user || !complain_content || !complain_type) {
+            return res.status(400).json({ message: "Please provide all fields (barangay, user, complain_content, complain_type, resolution_status)." });
         }
 
 
         const newComplainData = {
-            route: route,
+            barangay: barangay,
             user: user,
             complain_content: complain_content,
             complain_type: complain_type,
@@ -48,9 +49,32 @@ export const get_all_complain = asyncHandler(async (req, res) => {
     try {
         const complains = await Complain.find()
         .populate('user')
-        .populate('route');
+        .populate('verified_by')
+        .populate('barangay');
 
         return res.status(200).json({ data: complains });
+    } catch (error) {
+        return res.status(500).json({ error: 'Failed to get all complain.' });
+    }
+});
+
+
+export const get_all_complain_specific_barangay = asyncHandler(async (req, res) => {
+    const { barangay_id } = req.params; // Get the meal ID from the request parameters
+
+    try {
+         if (!mongoose.Types.ObjectId.isValid(barangay_id)) {
+            return res.status(400).json({ error: 'Invalid barangay ID format.' });
+        }
+
+        const complains = await Complain.find({ 
+            barangay: new mongoose.Types.ObjectId(barangay_id) 
+        })
+        .populate('user')
+        .populate('verified_by')
+        .populate('barangay');
+
+        res.status(200).json({ data: complains });
     } catch (error) {
         return res.status(500).json({ error: 'Failed to get all complain.' });
     }
@@ -69,15 +93,13 @@ export const get_specific_complain = asyncHandler(async (req, res) => {
 });
 
 
-
-
-export const update_complain = asyncHandler(async (req, res) => {
+export const update_complain_verification = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters
-     const { route, user, complain_content, complain_type, resolution_status, archived } = req.body;
+    const { user, status } = req.body;
 
     try {
-        if (!route || !user || !complain_content || !complain_type || !resolution_status || !archived) {
-            return res.status(400).json({ message: "Please provide all fields (route, user, complain_content, complain_type, resolution_status, archived)." });
+        if (!user || !status) {
+            return res.status(400).json({ message: "Please provide all fields (user, status)." });
         }
 
         const updatedComplain = await Complain.findById(id);
@@ -86,7 +108,42 @@ export const update_complain = asyncHandler(async (req, res) => {
             return res.status(404).json({ message: "Complain not found" });
         }
 
-        updatedComplain.route = route ? route : updatedComplain.route;
+        if(status === 'Verified') {
+            updatedComplain.verified_by = user ? user : updatedComplain.verified_by;
+            updatedComplain.verified_at = storeCurrentDate(0, "hours");
+        }
+
+        if(status === 'Unverified') {
+            updatedComplain.verified_by = null;
+            updatedComplain.verified_at = null;
+
+        }
+
+        await updatedComplain.save();
+
+        return res.status(200).json({ data: 'Complain successfully updated.' });
+    } catch (error) {
+        return res.status(500).json({ error: 'Failed to update complain.' });
+    }
+});
+
+
+export const update_complain = asyncHandler(async (req, res) => {
+    const { id } = req.params; // Get the meal ID from the request parameters
+     const { barangay, user, complain_content, complain_type, resolution_status, archived } = req.body;
+
+    try {
+        if (!barangay || !user || !complain_content || !complain_type || !resolution_status || !archived) {
+            return res.status(400).json({ message: "Please provide all fields (barangay, user, complain_content, complain_type, resolution_status, archived)." });
+        }
+
+        const updatedComplain = await Complain.findById(id);
+
+        if (!updatedComplain) {
+            return res.status(404).json({ message: "Complain not found" });
+        }
+
+        updatedComplain.barangay = barangay ? barangay : updatedComplain.barangay;
         updatedComplain.archived = archived ? archived : updatedComplain.archived;
         updatedComplain.user = user ? user : updatedComplain.user;
         updatedComplain.complain_content = complain_content ? complain_content : updatedComplain.complain_content;

@@ -46,9 +46,9 @@ const UserSchema = new mongoose.Schema({
         ref: 'Action',
         required: false,
     },
-    route: {
+    barangay: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Route',
+        ref: 'Barangay',
         required: false,
     },
     is_disabled: {

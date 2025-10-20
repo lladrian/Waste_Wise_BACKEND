@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
 
 const ComplainSchema = new mongoose.Schema({
-    route: {
+    barangay: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Route',
+        ref: 'Barangay',
     },
     user: {
         type: mongoose.Schema.Types.ObjectId,
@@ -25,6 +25,15 @@ const ComplainSchema = new mongoose.Schema({
     archived: {
         type: Boolean,
         default: false
+    },
+    verified_by: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+        default: null
+    },
+    verified_at: {
+        type: String,
+        default: null
     },
     created_at: {
         type: String,

@@ -52,6 +52,10 @@ const ScheduleSchema = new mongoose.Schema({
         type: Boolean,
         default: true
     },
+    archived: {
+        type: Boolean,
+        default: false
+    },
     created_at: {
         type: String,
         default: null

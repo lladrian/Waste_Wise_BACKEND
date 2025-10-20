@@ -46,6 +46,41 @@ export const create_schedule = asyncHandler(async (req, res) => {
     }
 });
 
+export const get_all_schedule_specific_barangay = asyncHandler(async (req, res) => {
+    const { barangay_id } = req.params;
+
+    try {
+        const schedules = await Schedule.find()
+            .populate('route')
+            .populate('user')
+            .populate({
+                path: 'truck',
+                populate: {
+                    path: 'user',
+                    model: 'User'
+                }
+            });
+
+        // Filter schedules where the route's merge_barangay contains the specified barangay_id
+        const filteredSchedules = schedules.filter(schedule => {
+            // Check if route exists and has merge_barangay array
+            if (!schedule.route || !schedule.route.merge_barangay) {
+                return false;
+            }
+            
+            // Check if any barangay in merge_barangay matches the requested barangay_id
+            return schedule.route.merge_barangay.some(barangay => 
+                barangay.barangay_id.toString() === barangay_id
+            );
+        });
+
+        return res.status(200).json({ data: filteredSchedules });
+    } catch (error) {
+        console.error('Error fetching schedules:', error);
+        return res.status(500).json({ error: 'Failed to get schedules for barangay.' });
+    }
+});
+
 export const get_all_schedule = asyncHandler(async (req, res) => {
     try {
         const schedules = await Schedule.find()

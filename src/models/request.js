@@ -34,7 +34,9 @@ const RequestUserSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['admin', 'resident', 'enro_staff', 'enro_staff_head',
+        enum: ['admin', 'resident', 
+            'enro_staff_monitoring', 'enro_staff_head',
+            'enro_staff_scheduler', 'enro_staff_eswm_section_head',
             'barangay_official', 'garbage_collector',
         ],
         default: 'resident',
@@ -44,13 +46,20 @@ const RequestUserSchema = new mongoose.Schema({
         ref: 'Barangay',
         required: false,
     },
+    status: {
+        type: String,
+        required: false,
+        default: "Pending"
+    },
     approved_by: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
+        default: null
     },
     cancelled_by: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
+        default: null
     },
     approved_at: {
         type: String,
