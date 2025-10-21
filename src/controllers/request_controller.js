@@ -29,14 +29,13 @@ export const create_request = asyncHandler(async (req, res) => {
     const { first_name, middle_name, last_name, gender, contact_number, password, email, role, barangay } = req.body;
 
     try {
-        if (!first_name || !middle_name || !last_name || !gender || !contact_number || !password || !email || !role  || !barangay) {
-            return res.status(400).json({ message: "Please provide all fields (first_name, middle_name, last_name, gender, contact_number, password, email, role, barangay)." });
+        if (!first_name || !middle_name || !last_name || !gender || !contact_number || !password || !email || !role) {
+            return res.status(400).json({ message: "Please provide all fields (first_name, middle_name, last_name, gender, contact_number, password, email, role)." });
         }
 
         if (await Request.findOne({ email })) return res.status(400).json({ message: 'Email already exists' });
         if (await User.findOne({ email })) return res.status(400).json({ message: 'Email already exists' });
 
-    
         const newRequestData = {
             first_name: first_name,
             middle_name: middle_name,
@@ -46,7 +45,7 @@ export const create_request = asyncHandler(async (req, res) => {
             password: hashConverterMD5(password),
             email: email,
             role: role,
-            barangay: barangay,
+            barangay: role == 'barangay_official' ? barangay : null,
             created_at: storeCurrentDate(0, "hours")
         };
 

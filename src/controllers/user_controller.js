@@ -70,9 +70,8 @@ function create_user_validation(input_data, type) {
             !input_data.email ||
             !input_data.role_action ||
             !input_data.is_disabled ||
-            !input_data.barangay ||
             !input_data.role) {
-            return "Please provide all fields (email, first_name, middle_name, last_name, gender, contact_number, role, is_disabled, role_action, barangay).";
+            return "Please provide all fields (email, first_name, middle_name, last_name, gender, contact_number, role, is_disabled, role_action).";
         }
     }
 
@@ -99,9 +98,8 @@ function create_user_validation(input_data, type) {
             !input_data.email ||
             !input_data.password ||
             !input_data.role_action ||
-            !input_data.barangay ||
             !input_data.role) {
-            return "Please provide all fields (email, password, first_name, middle_name, last_name, gender, contact_number, role, role_action, barangay).";
+            return "Please provide all fields (email, password, first_name, middle_name, last_name, gender, contact_number, role, role_action).";
         }
     }
 
@@ -147,7 +145,7 @@ async function update_specific_user(id, input_data, type) {
         updatedUser.email = input_data.email ? input_data.email : updatedUser.email;
         updatedUser.role = input_data.role ? input_data.role : updatedUser.role;
         updatedUser.role_action = input_data.role_action ? input_data.role_action : updatedUser.role_action;
-        updatedUser.barangay = input_data.barangay ? input_data.barangay : updatedUser.barangay;
+        updatedUser.barangay = input_data.role == 'barangay_official' || input_data.role == 'resident'  ? input_data.barangay : null;
     }
 
     if (type === 'resident') {
@@ -202,7 +200,7 @@ async function save_new_user(hash_password, input_data) {
         gender: input_data.gender,
         contact_number: input_data.contact_number,
         role: input_data.role,
-        barangay: input_data.barangay,
+        barangay: input_data.role == 'barangay_official' || input_data.role == 'resident'  ? input_data.barangay : null,
         route: input_data.route,
         password: hash_password,
         email: input_data.email,
@@ -281,8 +279,8 @@ export const create_user = asyncHandler(async (req, res) => {
             password,
             email,
             role,
-            role_action,
-            barangay
+            barangay,
+            role_action
         };
 
         const validationError = create_user_validation(input_data, 'create_user');
