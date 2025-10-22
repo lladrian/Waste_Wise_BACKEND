@@ -62,12 +62,12 @@ app.get('/current-location', async (req, res) => {
         const ipApiResponse = await axios.get(`http://ip-api.com/json/${clientIP}`);
         const locationData = ipApiResponse.data;
 
-        // if (locationData.status === 'fail') {
-        //     return res.status(400).json({
-        //         success: false,
-        //         message: 'Unable to fetch location data'
-        //     });
-        // }
+        if (locationData.status === 'fail') {
+            return res.status(400).json({
+                success: false,
+                message: 'Unable to fetch location data'
+            });
+        }
 
 
         res.json({
