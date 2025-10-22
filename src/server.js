@@ -1,4 +1,4 @@
-import { app, server, wss, corsMiddleware, expressMiddleware, connectDB, PORT } from './config/db.js';
+import { app, server, wss, corsMiddleware, expressMiddleware, connectDB, PORT } from './config/connect.js';
 
 
 // import residentUserRoutes from "./routes/resident_user_route.js";
