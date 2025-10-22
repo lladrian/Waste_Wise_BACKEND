@@ -115,9 +115,9 @@ function create_user_validation(input_data, type) {
             !input_data.contact_number ||
             !input_data.email ||
             !input_data.password ||
-            !input_data.route ||
+            !input_data.barangay ||
             !input_data.role) {
-            return "Please provide all fields (email, password, first_name, middle_name, last_name, gender, contact_number, role, route).";
+            return "Please provide all fields (email, password, first_name, middle_name, last_name, gender, contact_number, role, barangay).";
         }
     }
 
@@ -238,7 +238,7 @@ async function save_new_user(hash_password, input_data) {
 }
 
 export const create_user_resident = asyncHandler(async (req, res) => {
-    const { first_name, middle_name, last_name, gender, contact_number, password, email, role, route } = req.body;
+    const { first_name, middle_name, last_name, gender, contact_number, password, email, role, barangay } = req.body;
 
     try {
         const input_data = {
@@ -250,7 +250,7 @@ export const create_user_resident = asyncHandler(async (req, res) => {
             password,
             email,
             role,
-            route
+            barangay
         };
 
         const validationError = create_user_validation(input_data, 'create_user_resident');
