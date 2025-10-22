@@ -49,15 +49,42 @@ app.get('/', (req, res) => {
   res.send('Hello from backend!');
 });
 
+app.get('/api/location', async (req, res) => {
+  // Fallback coordinates
+  const latitude = 11.0027;
+  const longitude = 124.6083;
+
+  try {
+    const response = await axios.get(`https://nominatim.openstreetmap.org/reverse`, {
+      params: {
+        lat: latitude,
+        lon: longitude,
+        format: 'json',
+      },
+    });
+
+    const locationInfo = response.data;
+
+    res.json({
+      latitude,
+      longitude,
+      address: locationInfo.display_name,
+      details: locationInfo,
+    });
+  } catch (error) {
+    console.error('Reverse geocoding failed:', error.message);
+    res.status(500).json({ error: 'Failed to get location details.' });
+  }
+});
+
 app.post('/api/location', async (req, res) => {
   const { latitude, longitude } = req.body;
 
   if (!latitude || !longitude) {
     return res.status(400).json({ error: 'Latitude and longitude are required.' });
   }
-
+  
   try {
-    // Use OpenStreetMap's Nominatim or another API for reverse geocoding
     const response = await axios.get(`https://nominatim.openstreetmap.org/reverse`, {
       params: {
         lat: latitude,
