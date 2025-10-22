@@ -87,9 +87,9 @@ function create_user_validation(input_data, type) {
             !input_data.contact_number ||
             !input_data.email ||
             !input_data.is_disabled ||
-            !input_data.route ||
+            !input_data.barangay ||
             !input_data.role) {
-            return "Please provide all fields (email, first_name, middle_name, last_name, gender, contact_number, role, is_disabled).";
+            return "Please provide all fields (email, first_name, middle_name, last_name, gender, contact_number, role, is_disabled, barangay).";
         }
     }
 
@@ -160,7 +160,7 @@ async function update_specific_user(id, input_data, type) {
         updatedUser.contact_number = input_data.contact_number ? input_data.contact_number : updatedUser.contact_number;
         updatedUser.email = input_data.email ? input_data.email : updatedUser.email;
         updatedUser.role = input_data.role ? input_data.role : updatedUser.role;
-        updatedUser.route = input_data.route ? input_data.route : updatedUser.route;
+        updatedUser.barangay = input_data.barangay ? input_data.barangay : updatedUser.barangay;
     }
 
 
@@ -196,6 +196,32 @@ function format_role(role) {
 }
 
 
+
+async function save_new_user_resident(hash_password, input_data) {
+    const newUserData = {
+        first_name: input_data.first_name,
+        middle_name: input_data.middle_name,
+        last_name: input_data.last_name,
+        gender: input_data.gender,
+        contact_number: input_data.contact_number,
+        role: input_data.role,
+        barangay: input_data.barangay,
+        password: hash_password,
+        email: input_data.email,
+        created_at: storeCurrentDate(0, 'hours'),
+    };
+
+    const newUser = new User(newUserData);
+    newUser.save();
+
+    const newOTP = new OTP({
+        user: newUser._id
+    });
+
+    newOTP.save();
+}
+
+
 async function save_new_user(hash_password, input_data) {
     const newUserData = {
         first_name: input_data.first_name,
@@ -205,7 +231,6 @@ async function save_new_user(hash_password, input_data) {
         contact_number: input_data.contact_number,
         role: input_data.role,
         barangay: input_data.role == 'barangay_official' || input_data.role == 'resident' ? input_data.barangay : null,
-        route: input_data.route,
         password: hash_password,
         email: input_data.email,
         role_action: input_data.role_action,
@@ -261,7 +286,7 @@ export const create_user_resident = asyncHandler(async (req, res) => {
 
         if (await User.findOne({ email })) return res.status(400).json({ message: 'Email already exists' });
 
-        await save_new_user(hashConverterMD5(password), input_data);
+        await save_new_user_resident(hashConverterMD5(password), input_data);
 
         return res.status(200).json({ data: 'New user account successfully created.' });
     } catch (error) {
@@ -339,7 +364,7 @@ export const get_all_user_truck_driver = asyncHandler(async (req, res) => {
             _id: { $nin: assignedUserIds },
             role: 'garbage_collector'
         }).populate('role_action')
-        .populate('route');
+        .populate('barangay');
 
         return res.status(200).json({ data: users });
     } catch (error) {
@@ -500,7 +525,7 @@ export const update_user_verified = asyncHandler(async (req, res) => {
 
 export const update_user_resident = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters
-    const { first_name, middle_name, last_name, gender, contact_number, email, role, is_disabled, route } = req.body;
+    const { first_name, middle_name, last_name, gender, contact_number, email, role, is_disabled, barangay } = req.body;
 
     try {
         const input_data = {
@@ -511,7 +536,7 @@ export const update_user_resident = asyncHandler(async (req, res) => {
             contact_number,
             email,
             role,
-            route,
+            barangay,
             is_disabled
         };
 
