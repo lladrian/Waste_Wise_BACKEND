@@ -227,6 +227,7 @@ export const update_schedule_garbage_collector = asyncHandler(async (req, res) =
 
 
 export const delete_schedule = asyncHandler(async (req, res) => {
+    
     const { id } = req.params; // Get the meal ID from the request parameters
 
     try {

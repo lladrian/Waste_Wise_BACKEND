@@ -51,6 +51,18 @@ const UserSchema = new mongoose.Schema({
         ref: 'Barangay',
         required: false,
     },
+    position: {
+        lat: {
+            type: Number,
+            required: false,
+            default:  null
+        },
+        lng: {
+            type: Number,
+            required: false,
+            default:  null
+        }
+    },
     is_disabled: {
         type: Boolean,
         default: false

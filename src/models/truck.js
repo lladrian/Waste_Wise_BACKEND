@@ -26,7 +26,6 @@ const TruckSchema = new mongoose.Schema({
             default:  124.6075
         }
     },
-
     created_at: {
         type: String,
         default: null

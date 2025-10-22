@@ -1,6 +1,5 @@
 import asyncHandler from 'express-async-handler';
 import moment from 'moment-timezone';
-// import dotenv from 'dotenv';
 import Notification from '../models/notification.js';
 import User from '../models/user.js';
 

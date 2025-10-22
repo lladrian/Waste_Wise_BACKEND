@@ -1,9 +1,5 @@
 import asyncHandler from 'express-async-handler';
-// import dotenv from 'dotenv';
 import LoginLog from '../models/login_log.js';
-import { fileURLToPath } from 'url';
-
-
 
 export const get_all_login_log = asyncHandler(async (req, res) => {
 

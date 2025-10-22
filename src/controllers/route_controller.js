@@ -65,6 +65,8 @@ export const get_specific_route = asyncHandler(async (req, res) => {
 
 
 
+
+
 export const update_route = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters
     const { route_name, merge_barangay } = req.body;

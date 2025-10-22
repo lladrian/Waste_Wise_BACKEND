@@ -7,6 +7,7 @@ userRoutes.post('/add_user_resident', UserController.create_user_resident);
 userRoutes.post('/add_user', UserController.create_user);
 userRoutes.post('/login_user', UserController.login_user);
 userRoutes.put('/update_user_verified/:id', UserController.update_user_verified);
+userRoutes.put('/update_user_resident_position/:id', UserController.update_user_resident_position);
 userRoutes.put('/update_user/:id', UserController.update_user);
 userRoutes.put('/update_user_profile/:id', UserController.update_user_profile);
 userRoutes.put('/update_user_resident/:id', UserController.update_user_resident);

@@ -323,12 +323,12 @@ export const create_user = asyncHandler(async (req, res) => {
         }
 
         if (await User.findOne({ email })) return res.status(400).json({ message: 'Email already exists' });
-  
-        if (staff_monitoring.length >=1 && role === 'enro_staff_monitoring') return res.status(400).json({ message: 'Monitoring already exists. Please contact administrator for support.' });
-        if (staff_head.length >=1 && role === 'enro_staff_head') return res.status(400).json({ message: 'Staff Head already exists. Please contact administrator for support.' });
-        if (staff_scheduler.length >=1 && role === 'enro_staff_scheduler') return res.status(400).json({ message: 'Scheduler already exists. Please contact administrator for support.' });
-        if (staff_eswm_section_head.length >=1 && role === 'enro_staff_eswm_section_head') return res.status(400).json({ message: 'ESWM Section Head already exists. Please contact administrator for support.' });
-        
+
+        if (staff_monitoring.length >= 1 && role === 'enro_staff_monitoring') return res.status(400).json({ message: 'Monitoring already exists. Please contact administrator for support.' });
+        if (staff_head.length >= 1 && role === 'enro_staff_head') return res.status(400).json({ message: 'Staff Head already exists. Please contact administrator for support.' });
+        if (staff_scheduler.length >= 1 && role === 'enro_staff_scheduler') return res.status(400).json({ message: 'Scheduler already exists. Please contact administrator for support.' });
+        if (staff_eswm_section_head.length >= 1 && role === 'enro_staff_eswm_section_head') return res.status(400).json({ message: 'ESWM Section Head already exists. Please contact administrator for support.' });
+
 
         await save_new_user(hashConverterMD5(password), input_data);
 
@@ -364,7 +364,7 @@ export const get_all_user_truck_driver = asyncHandler(async (req, res) => {
             _id: { $nin: assignedUserIds },
             role: 'garbage_collector'
         }).populate('role_action')
-        .populate('barangay');
+            .populate('barangay');
 
         return res.status(200).json({ data: users });
     } catch (error) {
@@ -588,16 +588,16 @@ export const update_user = asyncHandler(async (req, res) => {
         const staff_scheduler = await User.find({ role: 'enro_staff_scheduler', _id: { $ne: id }, is_disabled: false });
         const staff_eswm_section_head = await User.find({ role: 'enro_staff_eswm_section_head', _id: { $ne: id }, is_disabled: false });
 
-        if (staff_monitoring.length >=1 && role === 'enro_staff_monitoring') {
+        if (staff_monitoring.length >= 1 && role === 'enro_staff_monitoring') {
             return res.status(400).json({ message: 'Monitoring already exists. Try contacting admin to resolve.' });
         }
-        if (staff_head.length >=1 && role === 'enro_staff_head') {
+        if (staff_head.length >= 1 && role === 'enro_staff_head') {
             return res.status(400).json({ message: 'Staff Head already exists. Try contacting admin to resolve.' });
         }
-        if (staff_scheduler.length >=1 && role === 'enro_staff_scheduler') {
+        if (staff_scheduler.length >= 1 && role === 'enro_staff_scheduler') {
             return res.status(400).json({ message: 'Scheduler already exists. Try contacting admin to resolve.' });
         }
-        if (staff_eswm_section_head.length >=1 && role === 'enro_staff_eswm_section_head') {
+        if (staff_eswm_section_head.length >= 1 && role === 'enro_staff_eswm_section_head') {
             return res.status(400).json({ message: 'ESWM Section Head already exists. Try contacting admin to resolve.' });
         }
 
@@ -718,6 +718,34 @@ export const update_user_password_admin = asyncHandler(async (req, res) => {
     }
 });
 
+
+
+export const update_user_resident_position = asyncHandler(async (req, res) => {
+  const { id } = req.params; // Get the user ID from request parameters
+  const { latitude, longitude } = req.body;
+
+  try {
+    if (latitude == null || longitude == null) {
+      return res.status(400).json({ message: "Please provide both latitude and longitude." });
+    }
+
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    // Update the user's position
+    user.position.lat = latitude;
+    user.position.lng = longitude;
+
+    await user.save();
+
+    return res.status(200).json({ data: "User position successfully updated." });
+  } catch (error) {
+    return res.status(500).json({ error: 'Failed to update position.' });
+  }
+});
 
 export const update_user_password = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters

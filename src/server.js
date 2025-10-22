@@ -1,15 +1,7 @@
-import express from 'express';
-import http from 'http';
-import { WebSocketServer } from 'ws';
-import cors from 'cors';
-import dotenv from 'dotenv';
-import axios from 'axios';
+import { app, server, wss, corsMiddleware, expressMiddleware, connectDB, PORT } from './config/db.js';
 
 
-import connectDB from './config/db.js';
-
-
-import residentUserRoutes from "./routes/resident_user_route.js";
+// import residentUserRoutes from "./routes/resident_user_route.js";
 import userRoutes from "./routes/user_route.js";
 import otpRoutes from "./routes/otp_route.js";
 import roleActionRoutes from "./routes/action_route.js";
@@ -25,20 +17,8 @@ import collectorAttendanceRoutes from "./routes/collector_attendance_route.js";
 import barangayRoutes from "./routes/barangay_route.js";
 import requestRoutes from "./routes/request_route.js";
 
-
-
-
-
-
-
-dotenv.config();
-
-const app = express();
-const server = http.createServer(app);
-const wss = new WebSocketServer({ server });
-
 // CORS middleware - allow anyone to connect
-app.use(cors({
+app.use(corsMiddleware({
   origin: (origin, callback) => callback(null, true),
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -46,38 +26,44 @@ app.use(cors({
 }));
 
 
-app.use(express.json());
+app.use(expressMiddleware.json());
 
 // Simple route
 app.get('/', (req, res) => {
   res.send('Hello from backend!');
 });
 
-
-// wss.on('connection', (ws) => {
-//   console.log('Client connected');
-//   ws.on('message', (message) => {
-//     console.log('Received:', message);
-//     ws.send(`Server echo: ${message}`);
-//   });
-// });
-
 wss.on('connection', (ws) => {
   console.log('Client connected');
 
-  ws.send('Welcome to WebSocket server!');
-
   ws.on('message', (message) => {
-    // console.log('1Received:', message);
-    console.log(`2Received: ${message}`);
-    // Echo the message back to the client
-    ws.send(`Server says: ${message}`);
+    console.log('Received:', message);
+    ws.send(`You said: ${message}`); // Echo back message
   });
 
   ws.on('close', () => {
     console.log('Client disconnected');
   });
+
+  ws.send('Welcome to WebSocket server!');
 });
+
+// wss.on('connection', (ws) => {
+//   console.log('Client connected');
+
+//   ws.send('Welcome to WebSocket server!');
+
+//   ws.on('message', (message) => {
+//     // console.log('1Received:', message);
+//     console.log(`2Received: ${message}`);
+//     // Echo the message back to the client
+//     ws.send(`Server says: ${message}`);
+//   });
+
+//   ws.on('close', () => {
+//     console.log('Client disconnected');
+//   });
+// });
 
 
 //app.use("/residents", residentUserRoutes);
@@ -100,8 +86,6 @@ app.use("/requests", requestRoutes);
 
 // Optionally use separate DB connect file
 connectDB();
-
-const PORT = process.env.PORT || 5000;
 
 server.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
