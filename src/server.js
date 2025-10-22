@@ -1,5 +1,4 @@
-import { app, server, wss, corsMiddleware, expressMiddleware, connectDB, PORT } from './config/connect.js';
-
+import { app, corsMiddleware, expressMiddleware, connectDB } from './config/connect.js';
 
 // import residentUserRoutes from "./routes/resident_user_route.js";
 import userRoutes from "./routes/user_route.js";
@@ -25,45 +24,13 @@ app.use(corsMiddleware({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
-
 app.use(expressMiddleware.json());
 
 // Simple route
 app.get('/', (req, res) => {
   res.send('Hello from backend!');
 });
-
-wss.on('connection', (ws) => {
-  console.log('Client connected');
-
-  ws.on('message', (message) => {
-    console.log('Received:', message);
-    ws.send(`You said: ${message}`); // Echo back message
-  });
-
-  ws.on('close', () => {
-    console.log('Client disconnected');
-  });
-
-  ws.send('Welcome to WebSocket server!');
-});
-
-// wss.on('connection', (ws) => {
-//   console.log('Client connected');
-
-//   ws.send('Welcome to WebSocket server!');
-
-//   ws.on('message', (message) => {
-//     // console.log('1Received:', message);
-//     console.log(`2Received: ${message}`);
-//     // Echo the message back to the client
-//     ws.send(`Server says: ${message}`);
-//   });
-
-//   ws.on('close', () => {
-//     console.log('Client disconnected');
-//   });
-// });
+connectDB();
 
 
 //app.use("/residents", residentUserRoutes);
@@ -83,13 +50,11 @@ app.use("/collector_attendances", collectorAttendanceRoutes);
 app.use("/requests", requestRoutes);
 
 
-
 // Optionally use separate DB connect file
-connectDB();
 
-server.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});
+// server.listen(PORT, () => {
+//   console.log(`Server is running on http://localhost:${PORT}`);
+// });
 
 // app.listen(PORT, () => {
 //   console.log(`Server is running on http://localhost:${PORT}`);

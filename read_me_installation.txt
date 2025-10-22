@@ -10,3 +10,4 @@ npm install exceljs
 npm install ua-parser-js
 npm install axios
 npm install ws 
+npm install socket.io
