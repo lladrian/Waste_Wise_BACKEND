@@ -1,6 +1,8 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import axios from 'axios';
+
 
 import connectDB from './config/db.js';
 
@@ -46,6 +48,58 @@ app.use(express.json());
 app.get('/', (req, res) => {
   res.send('Hello from backend!');
 });
+
+
+app.get('/current-location', async (req, res) => {
+    try {
+        // Get client IP address
+        const clientIP = req.headers['x-forwarded-for'] || 
+                        req.connection.remoteAddress || 
+                        req.socket.remoteAddress ||
+                        (req.connection.socket ? req.connection.socket.remoteAddress : null);
+
+        // Use IP API to get location details
+        const ipApiResponse = await axios.get(`http://ip-api.com/json/${clientIP}`);
+        const locationData = ipApiResponse.data;
+
+        // if (locationData.status === 'fail') {
+        //     return res.status(400).json({
+        //         success: false,
+        //         message: 'Unable to fetch location data'
+        //     });
+        // }
+
+
+        res.json({
+            success: true,
+            message: 'Location data fetched successfully',
+            data: {
+                ip: clientIP,
+                country: locationData.country,
+                countryCode: locationData.countryCode,
+                region: locationData.regionName,
+                city: locationData.city,
+                zipCode: locationData.zip,
+                coordinates: {
+                    latitude: locationData.lat,
+                    longitude: locationData.lon
+                },
+                timezone: locationData.timezone,
+                isp: locationData.isp,
+                organization: locationData.org
+            }
+        });
+
+    } catch (error) {
+        console.error('Error fetching location:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: error.message
+        });
+    }
+});
+
 
 
 //app.use("/residents", residentUserRoutes);

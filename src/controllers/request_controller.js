@@ -5,6 +5,10 @@ import Request from '../models/request.js';
 import User from '../models/user.js';
 import crypto from 'crypto';
 
+import request_approval_mailer from '../mailer/request_approval_mailer.js'; // Import the mailer utility
+import request_reject_mailer from '../mailer/request_reject_mailer.js'; // Import the mailer utility
+
+
 
 function storeCurrentDate(expirationAmount, expirationUnit) {
     // Get the current date and time in Asia/Manila timezone
@@ -23,6 +27,22 @@ function storeCurrentDate(expirationAmount, expirationUnit) {
 function hashConverterMD5(password) {
     return crypto.createHash('md5').update(String(password)).digest('hex');
 }
+
+function format_role(role) {
+    const roleMap = {
+        'admin': 'Admin',
+        'resident': 'Resident',
+        'enro_staff': 'ENRO Staff',
+        'enro_staff_monitoring': 'ENRO Staff Monitoring',
+        'enro_staff_scheduler': 'ENRO Staff Scheduler',
+        'enro_staff_head': 'ENRO Staff Head',
+        'enro_staff_eswm_section_head': 'ENRO Staff ESWM Section Head',
+        'barangay_official': 'Barangay Official',
+        'garbage_collector': 'Garbage Collector'
+    };
+    return roleMap[role] || role; // Return formatted role or original if not found
+}
+
 
 
 export const create_request = asyncHandler(async (req, res) => {
@@ -90,13 +110,24 @@ export const update_request_approval = asyncHandler(async (req, res) => {
             return res.status(400).json({ message: "Please provide all fields (status)." });
         }
 
-        const updatedRequest = await Request.findById(id);
+        const updatedRequest = await Request.findById(id)
+
 
         if (!updatedRequest) {
             return res.status(404).json({ message: "Request not found" });
         }
 
-         if (status === "Pending") {
+        const formatted_input_data = {
+            first_name: updatedRequest.first_name,
+            middle_name: updatedRequest.middle_name,
+            last_name: updatedRequest.last_name,
+            gender: updatedRequest.gender[0].toUpperCase() + updatedRequest.gender.substring(1).toLowerCase(),
+            contact_number: updatedRequest.contact_number,
+            email: updatedRequest.email,
+            role: format_role(updatedRequest.role),
+        };
+
+        if (status === "Pending") {
             updatedRequest.approved_by = null;
             updatedRequest.approved_at = null;
             updatedRequest.cancelled_by = null;
@@ -108,6 +139,7 @@ export const update_request_approval = asyncHandler(async (req, res) => {
             updatedRequest.approved_at = storeCurrentDate(0, "hours");
             updatedRequest.cancelled_by = null;
             updatedRequest.cancelled_at = null;
+            await request_approval_mailer(updatedRequest.email, formatted_input_data);
         }
 
         if (status === "Cancelled") {
@@ -115,6 +147,7 @@ export const update_request_approval = asyncHandler(async (req, res) => {
             updatedRequest.cancelled_at = storeCurrentDate(0, "hours");
             updatedRequest.approved_by = null;
             updatedRequest.approved_at = null;
+            await request_reject_mailer(updatedRequest.email, formatted_input_data);
         }
 
         updatedRequest.status = status ? status : updatedRequest.status;
@@ -132,7 +165,7 @@ export const update_request = asyncHandler(async (req, res) => {
     const { first_name, middle_name, last_name, gender, contact_number, password, email, role, barangay, user, status } = req.body;
 
     try {
-        if (!first_name || !middle_name || !last_name || !gender || !contact_number || !password || !email || !role  || !barangay || !user || !status) {
+        if (!first_name || !middle_name || !last_name || !gender || !contact_number || !password || !email || !role || !barangay || !user || !status) {
             return res.status(400).json({ message: "Please provide all fields (first_name, middle_name, last_name, gender, contact_number, password, email, role, barangay, user, status)." });
         }
 
@@ -142,7 +175,7 @@ export const update_request = asyncHandler(async (req, res) => {
             return res.status(404).json({ message: "Request not found" });
         }
 
-         if (status === "Pending") {
+        if (status === "Pending") {
             updatedRequest.approved_by = null;
             updatedRequest.approved_at = null;
             updatedRequest.cancelled_by = null;

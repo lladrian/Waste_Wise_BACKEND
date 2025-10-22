@@ -63,7 +63,7 @@ export const get_all_complain_specific_barangay = asyncHandler(async (req, res) 
     const { barangay_id } = req.params; // Get the meal ID from the request parameters
 
     try {
-         if (!mongoose.Types.ObjectId.isValid(barangay_id)) {
+        if (!mongoose.Types.ObjectId.isValid(barangay_id)) {
             return res.status(400).json({ error: 'Invalid barangay ID format.' });
         }
 

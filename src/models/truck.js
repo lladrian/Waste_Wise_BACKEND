@@ -14,10 +14,16 @@ const TruckSchema = new mongoose.Schema({
         required: true,
         default: "Active"
     },
-    // is_hidden: {
-    //     type: Boolean,
-    //     default: false
-    // },
+    position: {
+        lat: {
+            type: Number,
+            required: false
+        },
+        lng: {
+            type: Number,
+            required: false
+        }
+    },
     created_at: {
         type: String,
         default: null

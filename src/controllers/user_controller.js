@@ -9,6 +9,10 @@ import Truck from '../models/truck.js';
 
 
 import credential_mailer from '../mailer/credential_mailer.js'; // Import the mailer utility
+import credential_mailer_new_user from '../mailer/credential_mailer_new_user.js'; // Import the mailer utility
+
+
+
 
 import { UAParser } from 'ua-parser-js';
 
@@ -145,7 +149,7 @@ async function update_specific_user(id, input_data, type) {
         updatedUser.email = input_data.email ? input_data.email : updatedUser.email;
         updatedUser.role = input_data.role ? input_data.role : updatedUser.role;
         updatedUser.role_action = input_data.role_action ? input_data.role_action : updatedUser.role_action;
-        updatedUser.barangay = input_data.role == 'barangay_official' || input_data.role == 'resident'  ? input_data.barangay : null;
+        updatedUser.barangay = input_data.role == 'barangay_official' || input_data.role == 'resident' ? input_data.barangay : null;
     }
 
     if (type === 'resident') {
@@ -200,7 +204,7 @@ async function save_new_user(hash_password, input_data) {
         gender: input_data.gender,
         contact_number: input_data.contact_number,
         role: input_data.role,
-        barangay: input_data.role == 'barangay_official' || input_data.role == 'resident'  ? input_data.barangay : null,
+        barangay: input_data.role == 'barangay_official' || input_data.role == 'resident' ? input_data.barangay : null,
         route: input_data.route,
         password: hash_password,
         email: input_data.email,
@@ -229,7 +233,7 @@ async function save_new_user(hash_password, input_data) {
     };
 
     if (input_data.role !== 'resident') {
-        await credential_mailer(input_data.email, formatted_input_data);
+        await credential_mailer_new_user(input_data.email, formatted_input_data);
     }
 }
 
@@ -284,12 +288,22 @@ export const create_user = asyncHandler(async (req, res) => {
         };
 
         const validationError = create_user_validation(input_data, 'create_user');
+        const staff_monitoring = await User.find({ role: 'enro_staff_monitoring', is_disabled: false });
+        const staff_head = await User.find({ role: 'enro_staff_head', is_disabled: false });
+        const staff_scheduler = await User.find({ role: 'enro_staff_scheduler', is_disabled: false });
+        const staff_eswm_section_head = await User.find({ role: 'enro_staff_eswm_section_head', is_disabled: false });
 
         if (validationError) {
             return res.status(400).json({ message: validationError });
         }
 
         if (await User.findOne({ email })) return res.status(400).json({ message: 'Email already exists' });
+  
+        if (staff_monitoring.length >=1 && role === 'enro_staff_monitoring') return res.status(400).json({ message: 'Monitoring already exists. Please contact administrator for support.' });
+        if (staff_head.length >=1 && role === 'enro_staff_head') return res.status(400).json({ message: 'Staff Head already exists. Please contact administrator for support.' });
+        if (staff_scheduler.length >=1 && role === 'enro_staff_scheduler') return res.status(400).json({ message: 'Scheduler already exists. Please contact administrator for support.' });
+        if (staff_eswm_section_head.length >=1 && role === 'enro_staff_eswm_section_head') return res.status(400).json({ message: 'ESWM Section Head already exists. Please contact administrator for support.' });
+        
 
         await save_new_user(hashConverterMD5(password), input_data);
 
@@ -318,17 +332,14 @@ export const get_all_user_truck_driver = asyncHandler(async (req, res) => {
         const trucks = await Truck.find().populate('user');
 
         // Extract the user IDs that are already assigned to trucks
-        const assignedUserIds = trucks
-            .filter(truck => truck.user) // Filter out trucks without users
-            .map(truck => truck.user._id.toString()); // Get user IDs as strings
+        const assignedUserIds = trucks.filter(truck => truck.user).map(truck => truck.user._id.toString()); // Get user IDs as strings
 
         // Find users that are NOT in the assignedUserIds array
         const users = await User.find({
             _id: { $nin: assignedUserIds },
             role: 'garbage_collector'
-        })
-            .populate('role_action')
-            .populate('route');
+        }).populate('role_action')
+        .populate('route');
 
         return res.status(200).json({ data: users });
     } catch (error) {
@@ -545,6 +556,24 @@ export const update_user = asyncHandler(async (req, res) => {
 
         if (validationError) {
             return res.status(400).json({ message: validationError });
+        }
+
+        const staff_monitoring = await User.find({ role: 'enro_staff_monitoring', _id: { $ne: id }, is_disabled: false });
+        const staff_head = await User.find({ role: 'enro_staff_head', _id: { $ne: id }, is_disabled: false });
+        const staff_scheduler = await User.find({ role: 'enro_staff_scheduler', _id: { $ne: id }, is_disabled: false });
+        const staff_eswm_section_head = await User.find({ role: 'enro_staff_eswm_section_head', _id: { $ne: id }, is_disabled: false });
+
+        if (staff_monitoring.length >=1 && role === 'enro_staff_monitoring') {
+            return res.status(400).json({ message: 'Monitoring already exists. Try contacting admin to resolve.' });
+        }
+        if (staff_head.length >=1 && role === 'enro_staff_head') {
+            return res.status(400).json({ message: 'Staff Head already exists. Try contacting admin to resolve.' });
+        }
+        if (staff_scheduler.length >=1 && role === 'enro_staff_scheduler') {
+            return res.status(400).json({ message: 'Scheduler already exists. Try contacting admin to resolve.' });
+        }
+        if (staff_eswm_section_head.length >=1 && role === 'enro_staff_eswm_section_head') {
+            return res.status(400).json({ message: 'ESWM Section Head already exists. Try contacting admin to resolve.' });
         }
 
         const updateSpecificUser = await update_specific_user(id, input_data, 'user');
