@@ -9,4 +9,4 @@ npm install nodemailer
 npm install exceljs
 npm install ua-parser-js
 npm install axios
- 
+npm install ws 

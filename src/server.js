@@ -1,4 +1,6 @@
 import express from 'express';
+import http from 'http';
+import { WebSocketServer } from 'ws';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import axios from 'axios';
@@ -32,6 +34,8 @@ import requestRoutes from "./routes/request_route.js";
 dotenv.config();
 
 const app = express();
+const server = http.createServer(app);
+const wss = new WebSocketServer({ server });
 
 // CORS middleware - allow anyone to connect
 app.use(cors({
@@ -49,115 +53,31 @@ app.get('/', (req, res) => {
   res.send('Hello from backend!');
 });
 
-// app.get('/api/location', async (req, res) => {
-//   // Fallback coordinates
-//   const latitude = 11.0027;
-//   const longitude = 124.6083;
 
-//   try {
-//     const response = await axios.get(`https://nominatim.openstreetmap.org/reverse`, {
-//       params: {
-//         lat: latitude,
-//         lon: longitude,
-//         format: 'json',
-//       },
-//     });
-
-//     const locationInfo = response.data;
-
-//     res.json({
-//       latitude,
-//       longitude,
-//       address: locationInfo.display_name,
-//       details: locationInfo,
-//     });
-//   } catch (error) {
-//     console.error('Reverse geocoding failed:', error.message);
-//     res.status(500).json({ error: 'Failed to get location details.' });
-//   }
+// wss.on('connection', (ws) => {
+//   console.log('Client connected');
+//   ws.on('message', (message) => {
+//     console.log('Received:', message);
+//     ws.send(`Server echo: ${message}`);
+//   });
 // });
 
-app.get('/api/location', async (req, res) => {
-  const latitude = req.query.lat;
-  const longitude = req.query.lon;
+wss.on('connection', (ws) => {
+  console.log('Client connected');
 
-  if (!latitude || !longitude) {
-    return res.status(400).json({ error: 'Coordinates (lat & lon) are required' });
-  }
+  ws.send('Welcome to WebSocket server!');
 
-  try {
-    const response = await axios.get('https://nominatim.openstreetmap.org/reverse', {
-      params: {
-        lat: latitude,
-        lon: longitude,
-        format: 'json',
-      },
-    });
+  ws.on('message', (message) => {
+    // console.log('1Received:', message);
+    console.log(`2Received: ${message}`);
+    // Echo the message back to the client
+    ws.send(`Server says: ${message}`);
+  });
 
-    const data = response.data;
-
-    res.json({
-      latitude,
-      longitude,
-      address: data.display_name,
-      details: data,
-    });
-  } catch (error) {
-    console.error('Reverse geocoding failed:', error.message);
-    res.status(500).json({ error: 'Failed to reverse geocode' });
-  }
+  ws.on('close', () => {
+    console.log('Client disconnected');
+  });
 });
-
-app.get('/current-location', async (req, res) => {
-    try {
-        // Get client IP address
-        const clientIP = req.headers['x-forwarded-for'] || 
-                        req.connection.remoteAddress || 
-                        req.socket.remoteAddress ||
-                        (req.connection.socket ? req.connection.socket.remoteAddress : null);
-
-        // Use IP API to get location details
-        const ipApiResponse = await axios.get(`http://ip-api.com/json/${clientIP}`);
-        const locationData = ipApiResponse.data;
-
-        if (locationData.status === 'fail') {
-            return res.status(400).json({
-                success: false,
-                message: 'Unable to fetch location data'
-            });
-        }
-
-
-        res.json({
-            success: true,
-            message: 'Location data fetched successfully',
-            data: {
-                ip: clientIP,
-                country: locationData.country,
-                countryCode: locationData.countryCode,
-                region: locationData.regionName,
-                city: locationData.city,
-                zipCode: locationData.zip,
-                coordinates: {
-                    latitude: locationData.lat,
-                    longitude: locationData.lon
-                },
-                timezone: locationData.timezone,
-                isp: locationData.isp,
-                organization: locationData.org
-            }
-        });
-
-    } catch (error) {
-        console.error('Error fetching location:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Internal server error',
-            error: error.message
-        });
-    }
-});
-
 
 
 //app.use("/residents", residentUserRoutes);
@@ -183,8 +103,12 @@ connectDB();
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
 });
+
+// app.listen(PORT, () => {
+//   console.log(`Server is running on http://localhost:${PORT}`);
+// });
 
 
