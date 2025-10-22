@@ -52,7 +52,7 @@ export const get_all_schedule_specific_barangay = asyncHandler(async (req, res) 
     try {
         const schedules = await Schedule.find()
             .populate('route')
-            .populate('user')
+            // .populate('user')
             .populate({
                 path: 'truck',
                 populate: {
@@ -85,7 +85,7 @@ export const get_all_schedule = asyncHandler(async (req, res) => {
     try {
         const schedules = await Schedule.find()
             .populate('route')
-            .populate('user')
+            // .populate('user')
             .populate({
                 path: 'truck',
                 populate: {

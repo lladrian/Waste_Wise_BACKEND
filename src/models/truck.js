@@ -18,14 +18,15 @@ const TruckSchema = new mongoose.Schema({
         lat: {
             type: Number,
             required: false,
-            default: 11.0993166
+            default:  11.0064
         },
         lng: {
             type: Number,
             required: false,
-            default: 124.5545784
+            default:  124.6075
         }
     },
+
     created_at: {
         type: String,
         default: null
