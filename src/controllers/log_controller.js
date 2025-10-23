@@ -6,7 +6,6 @@ export const get_all_login_log = asyncHandler(async (req, res) => {
     try {
         const logs = await LoginLog.find()
             .populate('user')
-            .populate('resident_user')
             .populate({
                 path: 'user',
                 populate: {
