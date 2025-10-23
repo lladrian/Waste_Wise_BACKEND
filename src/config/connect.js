@@ -36,9 +36,7 @@ io.on('connection', (ws) => {
   console.log('🔌 User connected');
 
   ws.on('message', (message) => {
-    console.log('Message received:', message);
-
-      console.log(`Message received:${message}`);
+    console.log(`Message received:${message}`);
 
     // Broadcast the message to all connected clients
     io.clients.forEach((client) => {

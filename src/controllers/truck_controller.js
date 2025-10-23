@@ -2,6 +2,9 @@ import asyncHandler from 'express-async-handler';
 import moment from 'moment-timezone';
 // import dotenv from 'dotenv';
 import Truck from '../models/truck.js';
+import Schedule from '../models/schedule.js';
+import { io } from '../config/connect.js';
+
 
 function storeCurrentDate(expirationAmount, expirationUnit) {
     // Get the current date and time in Asia/Manila timezone
@@ -16,6 +19,26 @@ function storeCurrentDate(expirationAmount, expirationUnit) {
     return formattedExpirationDateTime;
 }
 
+
+async function broadcastList(name, data) {
+    const message = JSON.stringify({ name, data });
+
+    io.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(message);
+        }
+    });
+}
+
+const getPhilippineDate = () => {
+    const now = new Date();
+
+    // Convert to milliseconds, add 8 hours (Philippine Time is UTC+8)
+    const philippineTime = new Date(now.getTime() + (8 * 60 * 60 * 1000));
+
+    // Get YYYY-MM-DD format from the adjusted date
+    return philippineTime.toISOString().split('T')[0];
+};
 
 export const create_truck = asyncHandler(async (req, res) => {
     const { user, truck_id, status } = req.body;
@@ -72,11 +95,50 @@ export const get_specific_truck = asyncHandler(async (req, res) => {
 });
 
 
+export const update_truck_position = asyncHandler(async (req, res) => {
+    const { id } = req.params; // Get the user ID from request parameters
+    const { latitude, longitude } = req.body;
+
+    try {
+        if (latitude == null || longitude == null) {
+            return res.status(400).json({ message: "Please provide both latitude and longitude." });
+        }
+
+        const truck = await Truck.findById(id);
+
+        if (!truck) {
+            return res.status(404).json({ message: "Truck not found." });
+        }
+
+        // Update the truck's position
+        truck.position.lat = latitude;
+        truck.position.lng = longitude;
+
+        if(await truck.save()) {
+            const schedules = await Schedule.find({ scheduled_collection: getPhilippineDate() })
+            .populate('route')
+            // .populate('user')
+            .populate({
+                path: 'truck',
+                populate: {
+                    path: 'user',
+                    model: 'User'
+                }
+            });
+            
+            await broadcastList('trucks', schedules);
+        }
+
+        return res.status(200).json({ data: "Truck position successfully updated." });
+    } catch (error) {
+        return res.status(500).json({ error: 'Failed to update position.' });
+    }
+});
 
 
 export const update_truck = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters
-     const { user, truck_id, status } = req.body;
+    const { user, truck_id, status } = req.body;
 
     try {
         if (!user || !truck_id || !status) {

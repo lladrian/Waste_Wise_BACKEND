@@ -2,6 +2,7 @@ import asyncHandler from 'express-async-handler';
 import moment from 'moment-timezone';
 // import dotenv from 'dotenv';
 import Schedule from '../models/schedule.js';
+import { io } from '../config/connect.js';
 
 function storeCurrentDate(expirationAmount, expirationUnit) {
     // Get the current date and time in Asia/Manila timezone
@@ -16,6 +17,26 @@ function storeCurrentDate(expirationAmount, expirationUnit) {
     return formattedExpirationDateTime;
 }
 
+
+function broadcastList(name, data) {
+  const message = JSON.stringify({ name, data });
+
+  io.clients.forEach(client => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(message);
+    }
+  });
+}
+
+const getPhilippineDate = () => {
+  const now = new Date();
+
+  // Convert to milliseconds, add 8 hours (Philippine Time is UTC+8)
+  const philippineTime = new Date(now.getTime() + (8 * 60 * 60 * 1000));
+
+  // Get YYYY-MM-DD format from the adjusted date
+  return philippineTime.toISOString().split('T')[0];
+};
 
 export const create_schedule = asyncHandler(async (req, res) => {
     const { route, truck, user, scheduled_collection, garbage_type } = req.body;
@@ -78,6 +99,26 @@ export const get_all_schedule_specific_barangay = asyncHandler(async (req, res) 
     } catch (error) {
         console.error('Error fetching schedules:', error);
         return res.status(500).json({ error: 'Failed to get schedules for barangay.' });
+    }
+});
+
+
+export const get_all_schedule_current_day = asyncHandler(async (req, res) => {
+    try {
+        const schedules = await Schedule.find({ scheduled_collection: getPhilippineDate() })
+            .populate('route')
+            // .populate('user')
+            .populate({
+                path: 'truck',
+                populate: {
+                    path: 'user',
+                    model: 'User'
+                }
+            });
+
+        return res.status(200).json({ data: schedules, today : getPhilippineDate() });
+    } catch (error) {
+        return res.status(500).json({ error: 'Failed to get all schedules.' });
     }
 });
 
@@ -227,7 +268,7 @@ export const update_schedule_garbage_collector = asyncHandler(async (req, res) =
 
 
 export const delete_schedule = asyncHandler(async (req, res) => {
-    
+
     const { id } = req.params; // Get the meal ID from the request parameters
 
     try {

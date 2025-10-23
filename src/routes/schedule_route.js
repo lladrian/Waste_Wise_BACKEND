@@ -5,6 +5,7 @@ const scheduleRoutes = Router();
 
 scheduleRoutes.post('/add_schedule', ScheduleController.create_schedule);
 scheduleRoutes.get('/get_all_schedule', ScheduleController.get_all_schedule);
+scheduleRoutes.get('/get_all_schedule_current_day', ScheduleController.get_all_schedule_current_day);
 scheduleRoutes.get('/get_specific_schedule/:id', ScheduleController.get_specific_schedule);
 scheduleRoutes.get('/get_all_schedule_specific_barangay/:barangay_id', ScheduleController.get_all_schedule_specific_barangay);
 scheduleRoutes.delete('/delete_schedule/:id', ScheduleController.delete_schedule);
