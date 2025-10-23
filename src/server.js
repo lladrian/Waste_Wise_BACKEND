@@ -1,3 +1,5 @@
+import cors from 'cors';
+import express from 'express';
 import { app, corsMiddleware, expressMiddleware, connectDB } from './config/connect.js';
 
 // import residentUserRoutes from "./routes/resident_user_route.js";
@@ -17,15 +19,15 @@ import barangayRoutes from "./routes/barangay_route.js";
 import requestRoutes from "./routes/request_route.js";
 
 // CORS middleware - allow anyone to connect
-app.use(corsMiddleware({
-  //origin: (origin, callback) => callback(null, true),
-  origin: '*',  // for open access, but can't use credentials:true with '*'
-  // credentials: true,
+app.use(cors({
+  origin: (origin, callback) => callback(null, true),
+  // origin: '*',  // for open access, but can't use credentials:true with '*'
+  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
-app.use(expressMiddleware.json());
+app.use(express.json());
 
 // Simple route
 app.get('/', (req, res) => {

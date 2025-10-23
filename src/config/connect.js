@@ -16,8 +16,8 @@ export const io = new WebSocketServer({ server });
 //   cors: { origin: "*" }, // configure as needed
 //   methods: ["GET", "POST"]
 // });
-export const corsMiddleware = cors; 
-export const expressMiddleware = express; 
+export const corsMiddleware = cors(); 
+export const expressMiddleware = express(); 
 
 
 
