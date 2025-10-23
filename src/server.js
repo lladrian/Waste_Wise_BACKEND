@@ -18,7 +18,8 @@ import requestRoutes from "./routes/request_route.js";
 
 // CORS middleware - allow anyone to connect
 app.use(corsMiddleware({
-  origin: (origin, callback) => callback(null, true),
+  //origin: (origin, callback) => callback(null, true),
+  origin: '*',  // for open access, but can't use credentials:true with '*'
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
