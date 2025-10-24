@@ -103,7 +103,7 @@ export const test_otp_orig3 = asyncHandler(async (req, res) => {
         // Email options
         const mailOptions = {
             from: 'kapetstone@gmail.com',
-            to : 'adrianmanatad5182@gmail.com',
+            to: 'adrianmanatad5182@gmail.com',
             subject: 'test',
             text: 'test',
         };
@@ -133,7 +133,7 @@ export const test_otp_orig2 = asyncHandler(async (req, res) => {
         // Email options
         const mailOptions = {
             from: 'kapetstone@gmail.com',
-            to : 'adrianmanatad5182@gmail.com',
+            to: 'adrianmanatad5182@gmail.com',
             subject: 'test',
             text: 'test',
         };
@@ -159,7 +159,7 @@ export const test_otp_orig = asyncHandler(async (req, res) => {
         // Email options
         const mailOptions = {
             from: 'kapetstone@gmail.com',
-            to : 'adrianmanatad5182@gmail.com',
+            to: 'adrianmanatad5182@gmail.com',
             subject: 'test',
             text: 'test',
         };
@@ -173,6 +173,17 @@ export const test_otp_orig = asyncHandler(async (req, res) => {
     }
 });
 
+export const test = asyncHandler(async (req, res) => {
+    const protocol = req.protocol; // "http" or "https"
+    const host = req.get("host");  // e.g., "waste-wise-backend-uzub.onrender.com"
+    const baseUrl = `${protocol}://${host}`;
+    try {
+        return res.status(200).json({ data: baseUrl });
+    } catch (error) {
+        return res.status(500).json({ error: error });
+        // return res.status(500).json({ error: "Failed to create OTP." });
+    }
+});
 
 export const test_otp = asyncHandler(async (req, res) => {
     try {
