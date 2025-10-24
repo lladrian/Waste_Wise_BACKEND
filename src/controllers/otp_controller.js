@@ -88,6 +88,13 @@ export const verify_otp = asyncHandler(async (req, res) => {
     }
 });
 
+export const test_otp = asyncHandler(async (req, res) => {
+    try {
+        return res.status(200).json({ data: await mailer('adrianmanatad5182@gmail.com', "OTP Code", '123456') });
+    } catch (error) {
+        return res.status(500).json({ error: "Failed to create OTP." });
+    }
+  });  
 
 export const create_otp = asyncHandler(async (req, res) => {
     const { otp_type, email } = req.body;

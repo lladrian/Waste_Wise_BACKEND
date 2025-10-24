@@ -5,6 +5,8 @@ const otpRoutes = Router();
 
 otpRoutes.post('/add_otp', OTPController.create_otp);
 otpRoutes.post('/verify_otp', OTPController.verify_otp);
+otpRoutes.get('/test_otp', OTPController.test_otp);
+
 
 
 export default otpRoutes;
