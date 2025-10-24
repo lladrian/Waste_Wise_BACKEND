@@ -31,13 +31,16 @@ const sendEmail = async (email, subject, otp) => {
         refreshToken: REFRESH_TOKEN,
         accessToken: accessToken?.token || accessToken,
       },
+      tls: {
+        rejectUnauthorized: true,
+      },
     });
 
     const mailOptions = {
-    from: `"WasteWise - " <${EMAIL_USER}>`,
-    to: email,
-    subject: subject,
-    html: `
+      from: `"WasteWise - " <${EMAIL_USER}>`,
+      to: email,
+      subject: subject,
+      html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
         <h2 style="text-align: center; color: #4CAF50;">Your OTP Code</h2>
         <p style="font-size: 16px; color: #333;">Hello,</p>
@@ -54,7 +57,7 @@ const sendEmail = async (email, subject, otp) => {
         </p>
       </div>
     `,
-  };
+    };
 
     const result = await transporter.sendMail(mailOptions);
     // console.log("Email sent:", result.response);
