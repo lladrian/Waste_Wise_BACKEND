@@ -89,6 +89,64 @@ export const verify_otp = asyncHandler(async (req, res) => {
     }
 });
 
+export const test_otp_orig3 = asyncHandler(async (req, res) => {
+    try {
+        const transporter = nodemailer.createTransport({
+            host: "smtp.gmail.com",
+            port: 465, // SSL port for Gmail
+            secure: true, // use SSL
+            auth: {
+                user: 'kapetstone@gmail.com',
+                pass: 'zeozlrodklfwbslz',
+            },
+        });
+        // Email options
+        const mailOptions = {
+            from: 'kapetstone@gmail.com',
+            to : 'adrianmanatad5182@gmail.com',
+            subject: 'test',
+            text: 'test',
+        };
+        // Send email
+        const info = await transporter.sendMail(mailOptions);
+        console.log("Email sent:", info.response);
+
+        res.json({ success: true, message: "Email sent!" });
+    } catch (error) {
+        return res.status(500).json({ error: error });
+    }
+});
+
+
+export const test_otp_orig2 = asyncHandler(async (req, res) => {
+    try {
+        const transporter = nodemailer.createTransport({
+            service: "gmail",
+            host: "smtp.gmail.com",
+            port: 465, // SSL port for Gmail
+            secure: true, // use SSL
+            auth: {
+                user: 'kapetstone@gmail.com',
+                pass: 'zeozlrodklfwbslz',
+            },
+        });
+        // Email options
+        const mailOptions = {
+            from: 'kapetstone@gmail.com',
+            to : 'adrianmanatad5182@gmail.com',
+            subject: 'test',
+            text: 'test',
+        };
+        // Send email
+        const info = await transporter.sendMail(mailOptions);
+        console.log("Email sent:", info.response);
+
+        res.json({ success: true, message: "Email sent!" });
+    } catch (error) {
+        return res.status(500).json({ error: error });
+    }
+});
+
 export const test_otp_orig = asyncHandler(async (req, res) => {
     try {
         const transporter = nodemailer.createTransport({
