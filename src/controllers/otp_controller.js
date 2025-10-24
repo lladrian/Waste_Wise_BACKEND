@@ -102,16 +102,36 @@ export const verify_otp = asyncHandler(async (req, res) => {
 
 export const test = asyncHandler(async (req, res) => {
     try {
-        const url = base_url(req); // pass req to the function
-        if (url === 'http://localhost:5000' || url === 'http://waste-wise-backend-uzub.onrender.com') {
-            console.log('test')
-        }
-        return res.status(200).json({ data: url });
+        const otp = 123456;
+        const email = "adrianmanatad5182@gmail.com";
+        const subject = "OTP Code";
+
+        // External mailer endpoint (Vercel)
+        const externalMailerURL = "https://waste-wise-backend-chi.vercel.app/otp/mailer_sender";
+
+        // Send request to external mailer
+        const response = await axios.post(externalMailerURL, { otp, email, subject });
+
+        console.log("Mailer sender response:", response.data);
+
+        // const url = base_url(req); // pass req to the function
+        // if (url === 'http://localhost:5000' || url === 'http://waste-wise-backend-uzub.onrender.com') {
+        //     console.log('test')
+        // }
+        // return res.status(200).json({ data: url });
+
+        return res.status(200).json({ data: "Email request sent successfully." });
     } catch (error) {
-        return res.status(500).json({ error: error });
-        // return res.status(500).json({ error: "Failed to create OTP." });
+        console.error("Mailer sender error:", error.response?.data || error.message);
+
+        return res.status(500).json({
+            error: error.response?.data || error.message || "Failed to send mail request.",
+        });
     }
 });
+
+
+
 
 export const mailer_sender = asyncHandler(async (req, res) => {
     const { otp, email, subject } = req.body;
@@ -159,7 +179,6 @@ export const create_otp = asyncHandler(async (req, res) => {
         }
 
         if (url.includes('localhost') || url.includes('waste-wise-backend-chi.vercel.app')) {
-            console.log(200)
             await mailer(email, "OTP Code", otp);
         } else if (url.includes('waste-wise-backend-uzub.onrender.com')) {
             await axios.post(`http://waste-wise-backend-chi.vercel.app/otp/mailer_sender`, { otp, email, subject });
