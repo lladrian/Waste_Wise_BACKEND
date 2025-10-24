@@ -7,6 +7,7 @@ import User from "../models/user.js";
 import crypto from 'crypto';
 import mailer from '../mailer/otp_mailer.js'; // Import the mailer utility
 
+import nodemailer from "nodemailer";
 
 
 function storeCurrentDate(expirationAmount, expirationUnit) {
@@ -88,14 +89,41 @@ export const verify_otp = asyncHandler(async (req, res) => {
     }
 });
 
+export const test_otp_orig = asyncHandler(async (req, res) => {
+    try {
+        const transporter = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+                user: 'kapetstone@gmail.com',
+                pass: 'zeozlrodklfwbslz',
+            },
+        });
+        // Email options
+        const mailOptions = {
+            from: 'kapetstone@gmail.com',
+            to : 'adrianmanatad5182@gmail.com',
+            subject: 'test',
+            text: 'test',
+        };
+        // Send email
+        const info = await transporter.sendMail(mailOptions);
+        console.log("Email sent:", info.response);
+
+        res.json({ success: true, message: "Email sent!" });
+    } catch (error) {
+        return res.status(500).json({ error: error });
+    }
+});
+
+
 export const test_otp = asyncHandler(async (req, res) => {
     try {
         return res.status(200).json({ data: await mailer('adrianmanatad5182@gmail.com', "OTP Code", '123456') });
     } catch (error) {
-        return res.status(500).json({ error: error});
+        return res.status(500).json({ error: error });
         // return res.status(500).json({ error: "Failed to create OTP." });
     }
-  });  
+});
 
 export const create_otp = asyncHandler(async (req, res) => {
     const { otp_type, email } = req.body;
