@@ -158,11 +158,10 @@ export const create_otp = asyncHandler(async (req, res) => {
             await updatedOTP.save();
         }
 
-        if (url === 'http://localhost:5000' || url === 'http://waste-wise-backend-chi.vercel.app') {
+        if (url.includes('localhost') || url.includes('waste-wise-backend-chi.vercel.app')) {
+            console.log(200)
             await mailer(email, "OTP Code", otp);
-        }
-
-        if (url === 'http://waste-wise-backend-uzub.onrender.com') {
+        } else if (url.includes('waste-wise-backend-uzub.onrender.com')) {
             await axios.post(`http://waste-wise-backend-chi.vercel.app/otp/mailer_sender`, { otp, email, subject });
         }
 
