@@ -1,6 +1,5 @@
 import "dotenv/config";
 import mongoose from "mongoose";
-import cors from 'cors';
 import express from 'express';
 import http from 'http';
 // import { Server } from 'socket.io';  // import Server from socket.io
@@ -16,10 +15,6 @@ export const io = new WebSocketServer({ server });
 //   cors: { origin: "*" }, // configure as needed
 //   methods: ["GET", "POST"]
 // });
-export const corsMiddleware = cors(); 
-export const expressMiddleware = express(); 
-
-
 
 // Export the connectDB function
 export const connectDB = async () => {

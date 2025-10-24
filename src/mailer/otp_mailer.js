@@ -1,23 +1,40 @@
 import nodemailer from "nodemailer";
-import dotenv from 'dotenv';
+import { google } from "googleapis";
+import dotenv from "dotenv";
 dotenv.config();
 
-
-
 const sendEmail = async (email, subject, otp) => {
-  const transporter = nodemailer.createTransport({
-    // service: "Gmail",
-    host: "smtp.gmail.com",
-    port: 465, // SSL port for Gmail
-    secure: true, // use SSL
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-  });
+  try {
+    const CLIENT_ID = process.env.GMAIL_CLIENT_ID;
+    const CLIENT_SECRET = process.env.GMAIL_CLIENT_SECRET;
+    const REDIRECT_URI = "https://developers.google.com/oauthplayground";
+    const REFRESH_TOKEN = process.env.GMAIL_REFRESH_TOKEN;
+    const EMAIL_USER = process.env.EMAIL_USER;
 
-  const mailOptions = {
-    from: `"WasteWise - " <${process.env.EMAIL_USER}>`,
+
+    const oAuth2Client = new google.auth.OAuth2(
+      CLIENT_ID,
+      CLIENT_SECRET,
+      REDIRECT_URI
+    );
+
+    oAuth2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
+    const accessToken = await oAuth2Client.getAccessToken();
+
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        type: "OAuth2",
+        user: EMAIL_USER,
+        clientId: CLIENT_ID,
+        clientSecret: CLIENT_SECRET,
+        refreshToken: REFRESH_TOKEN,
+        accessToken: accessToken?.token || accessToken,
+      },
+    });
+
+    const mailOptions = {
+    from: `"WasteWise - " <${EMAIL_USER}>`,
     to: email,
     subject: subject,
     html: `
@@ -39,7 +56,13 @@ const sendEmail = async (email, subject, otp) => {
     `,
   };
 
-  await transporter.sendMail(mailOptions);
-};
+    const result = await transporter.sendMail(mailOptions);
+    // console.log("Email sent:", result.response);
+    return result;
+  } catch (error) {
+    console.error("Error sending email:", error);
+    throw error;
+  }
+}
 
 export default sendEmail;

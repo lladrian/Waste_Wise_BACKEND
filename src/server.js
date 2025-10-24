@@ -1,6 +1,6 @@
 import cors from 'cors';
 import express from 'express';
-import { app, corsMiddleware, expressMiddleware, connectDB } from './config/connect.js';
+import { app, connectDB } from './config/connect.js';
 
 // import residentUserRoutes from "./routes/resident_user_route.js";
 import userRoutes from "./routes/user_route.js";
