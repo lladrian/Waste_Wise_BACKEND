@@ -7,7 +7,16 @@ import User from "../models/user.js";
 import crypto from 'crypto';
 import mailer from '../mailer/otp_mailer.js'; // Import the mailer utility
 
-import nodemailer from "nodemailer";
+import axios from "axios";
+
+
+
+function base_url(req) {
+    const protocol = req.protocol; // "http" or "https"
+    const host = req.get("host");  // e.g., "waste-wise-backend-uzub.onrender.com"
+    const baseUrl = `${protocol}://${host}`;
+    return baseUrl;
+}
 
 
 function storeCurrentDate(expirationAmount, expirationUnit) {
@@ -89,108 +98,30 @@ export const verify_otp = asyncHandler(async (req, res) => {
     }
 });
 
-export const test_otp_orig3 = asyncHandler(async (req, res) => {
-    try {
-        const transporter = nodemailer.createTransport({
-            host: "smtp.gmail.com",
-            port: 465, // SSL port for Gmail
-            secure: true, // use SSL
-            auth: {
-                user: 'kapetstone@gmail.com',
-                pass: 'zeozlrodklfwbslz',
-            },
-        });
-        // Email options
-        const mailOptions = {
-            from: 'kapetstone@gmail.com',
-            to: 'adrianmanatad5182@gmail.com',
-            subject: 'test',
-            text: 'test',
-        };
-        // Send email
-        const info = await transporter.sendMail(mailOptions);
-        console.log("Email sent:", info.response);
 
-        res.json({ success: true, message: "Email sent!" });
-    } catch (error) {
-        return res.status(500).json({ error: error });
-    }
-});
-
-
-export const test_otp_orig2 = asyncHandler(async (req, res) => {
-    try {
-        const transporter = nodemailer.createTransport({
-            service: "gmail",
-            host: "smtp.gmail.com",
-            port: 465, // SSL port for Gmail
-            secure: true, // use SSL
-            auth: {
-                user: 'kapetstone@gmail.com',
-                pass: 'zeozlrodklfwbslz',
-            },
-        });
-        // Email options
-        const mailOptions = {
-            from: 'kapetstone@gmail.com',
-            to: 'adrianmanatad5182@gmail.com',
-            subject: 'test',
-            text: 'test',
-        };
-        // Send email
-        const info = await transporter.sendMail(mailOptions);
-        console.log("Email sent:", info.response);
-
-        res.json({ success: true, message: "Email sent!" });
-    } catch (error) {
-        return res.status(500).json({ error: error });
-    }
-});
-
-export const test_otp_orig = asyncHandler(async (req, res) => {
-    try {
-        const transporter = nodemailer.createTransport({
-            service: "gmail",
-            auth: {
-                user: 'kapetstone@gmail.com',
-                pass: 'zeozlrodklfwbslz',
-            },
-        });
-        // Email options
-        const mailOptions = {
-            from: 'kapetstone@gmail.com',
-            to: 'adrianmanatad5182@gmail.com',
-            subject: 'test',
-            text: 'test',
-        };
-        // Send email
-        const info = await transporter.sendMail(mailOptions);
-        console.log("Email sent:", info.response);
-
-        res.json({ success: true, message: "Email sent!" });
-    } catch (error) {
-        return res.status(500).json({ error: error });
-    }
-});
 
 export const test = asyncHandler(async (req, res) => {
-    const protocol = req.protocol; // "http" or "https"
-    const host = req.get("host");  // e.g., "waste-wise-backend-uzub.onrender.com"
-    const baseUrl = `${protocol}://${host}`;
     try {
-        return res.status(200).json({ data: baseUrl });
+        const url = base_url(req); // pass req to the function
+        if (url === 'http://localhost:5000' || url === 'http://waste-wise-backend-uzub.onrender.com') {
+            console.log('test')
+        }
+        return res.status(200).json({ data: url });
     } catch (error) {
         return res.status(500).json({ error: error });
         // return res.status(500).json({ error: "Failed to create OTP." });
     }
 });
 
-export const test_otp = asyncHandler(async (req, res) => {
+export const mailer_sender = asyncHandler(async (req, res) => {
+    const { otp, email, subject } = req.body;
+
     try {
-        return res.status(200).json({ data: await mailer('adrianmanatad5182@gmail.com', "OTP Code", '123456') });
+        await mailer(email, subject, otp);
+
+        return res.status(200).json({ data: "OTP successfully created." });
     } catch (error) {
-        return res.status(500).json({ error: error });
-        // return res.status(500).json({ error: "Failed to create OTP." });
+        return res.status(500).json({ error: "Failed to create OTP." });
     }
 });
 
@@ -201,8 +132,9 @@ export const create_otp = asyncHandler(async (req, res) => {
         if (!otp_type || !email) {
             return res.status(400).json({ message: "Please provide all fields (otp_type, email)." });
         }
-
+        const url = base_url(req); // pass req to the function
         const user = await User.findOne({ email })
+        const subject = "OTP Code";
 
         if (!user) {
             return res.status(404).json({ message: "User not found." });
@@ -226,8 +158,13 @@ export const create_otp = asyncHandler(async (req, res) => {
             await updatedOTP.save();
         }
 
+        if (url === 'http://localhost:5000' || url === 'http://waste-wise-backend-chi.vercel.app') {
+            await mailer(email, "OTP Code", otp);
+        }
 
-        await mailer(email, "OTP Code", otp);
+        if (url === 'http://waste-wise-backend-uzub.onrender.com') {
+            await axios.post(`http://waste-wise-backend-chi.vercel.app/otp/mailer_sender`, { otp, email, subject });
+        }
 
         return res.status(200).json({ data: "OTP successfully created." });
     } catch (error) {
