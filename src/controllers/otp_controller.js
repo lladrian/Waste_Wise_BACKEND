@@ -9,7 +9,11 @@ import mailer from '../mailer/otp_mailer.js'; // Import the mailer utility
 
 import axios from "axios";
 
+import credential_mailer_new_user_1 from '../mailer/credential_mailer_new_user.js'; // Import the mailer utility
+import credential_mailer_1 from '../mailer/credential_mailer.js'; // Import the mailer utility
 
+import request_approval_mailer_1 from '../mailer/request_approval_mailer.js'; // Import the mailer utility
+import request_reject_mailer_1 from '../mailer/request_reject_mailer.js'; // Import the mailer utility
 
 function base_url(req) {
     const protocol = req.protocol; // "http" or "https"
@@ -99,41 +103,57 @@ export const verify_otp = asyncHandler(async (req, res) => {
 });
 
 
+export const request_approval_mailer = asyncHandler(async (req, res) => {
+    const { email, formatted_input_data } = req.body;
 
-export const test = asyncHandler(async (req, res) => {
     try {
-        const otp = 123456;
-        const email = "adrianmanatad5182@gmail.com";
-        const subject = "OTP Code";
+        await request_approval_mailer_1(email, formatted_input_data);
 
-        // External mailer endpoint (Vercel)
-        const externalMailerURL = "https://waste-wise-backend-chi.vercel.app/otp/mailer_sender";
-
-        // Send request to external mailer
-        const response = await axios.post(externalMailerURL, { otp, email, subject });
-
-        console.log("Mailer sender response:", response.data);
-
-        // const url = base_url(req); // pass req to the function
-        // if (url === 'http://localhost:5000' || url === 'http://waste-wise-backend-uzub.onrender.com') {
-        //     console.log('test')
-        // }
-        // return res.status(200).json({ data: url });
-
-        return res.status(200).json({ data: "Email request sent successfully." });
+        return res.status(200).json({ data: "Message successfully sent." });
     } catch (error) {
-        console.error("Mailer sender error:", error.response?.data || error.message);
+        return res.status(500).json({ error: "Failed to send message." });
+    }
+});
 
-        return res.status(500).json({
-            error: error.response?.data || error.message || "Failed to send mail request.",
-        });
+export const request_reject_mailer = asyncHandler(async (req, res) => {
+    const { email, formatted_input_data } = req.body;
+
+    try {
+        await request_reject_mailer_1(email, formatted_input_data);
+
+        return res.status(200).json({ data: "Message successfully sent." });
+    } catch (error) {
+        return res.status(500).json({ error: "Failed to send message." });
     }
 });
 
 
+export const credential_mailer = asyncHandler(async (req, res) => {
+    const { email, formatted_input_data } = req.body;
+
+    try {
+        await credential_mailer_1(email, formatted_input_data);
+
+        return res.status(200).json({ data: "Message successfully sent." });
+    } catch (error) {
+        return res.status(500).json({ error: "Failed to send message." });
+    }
+});
+
+export const credential_mailer_new_user = asyncHandler(async (req, res) => {
+    const { email, formatted_input_data } = req.body;
+
+    try {
+        await credential_mailer_new_user_1(email, formatted_input_data);
+
+        return res.status(200).json({ data: "Message successfully sent." });
+    } catch (error) {
+        return res.status(500).json({ error: "Failed to send message." });
+    }
+});
 
 
-export const mailer_sender = asyncHandler(async (req, res) => {
+export const otp_mailer = asyncHandler(async (req, res) => {
     const { otp, email, subject } = req.body;
 
     try {
@@ -181,7 +201,7 @@ export const create_otp = asyncHandler(async (req, res) => {
         if (url.includes('localhost') || url.includes('waste-wise-backend-chi.vercel.app')) {
             await mailer(email, "OTP Code", otp);
         } else if (url.includes('waste-wise-backend-uzub.onrender.com')) {
-            await axios.post(`http://waste-wise-backend-chi.vercel.app/otp/mailer_sender`, { otp, email, subject });
+            await axios.post(`http://waste-wise-backend-chi.vercel.app/otp/otp_mailer`, { otp, email, subject });
         }
 
         return res.status(200).json({ data: "OTP successfully created." });

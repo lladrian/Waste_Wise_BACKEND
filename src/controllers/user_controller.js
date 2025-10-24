@@ -11,11 +11,16 @@ import Truck from '../models/truck.js';
 import credential_mailer from '../mailer/credential_mailer.js'; // Import the mailer utility
 import credential_mailer_new_user from '../mailer/credential_mailer_new_user.js'; // Import the mailer utility
 
-
-
-
 import { UAParser } from 'ua-parser-js';
 
+import axios from "axios";
+
+function base_url(req) {
+    const protocol = req.protocol; // "http" or "https"
+    const host = req.get("host");  // e.g., "waste-wise-backend-uzub.onrender.com"
+    const baseUrl = `${protocol}://${host}`;
+    return baseUrl;
+}
 
 const getDeviceInfo = (req) => {
     const userAgent = req.headers['user-agent'];
@@ -236,7 +241,7 @@ async function save_new_user(hash_password, input_data) {
         role_action: input_data.role_action,
         created_at: storeCurrentDate(0, 'hours'),
     };
-
+    const url = base_url(req); // pass req to the function
     const newUser = new User(newUserData);
     newUser.save();
 
@@ -258,7 +263,11 @@ async function save_new_user(hash_password, input_data) {
     };
 
     if (input_data.role !== 'resident') {
-        await credential_mailer_new_user(input_data.email, formatted_input_data);
+         if (url.includes('localhost') || url.includes('waste-wise-backend-chi.vercel.app')) {
+            await credential_mailer_new_user(input_data.email, formatted_input_data);
+        } else if (url.includes('waste-wise-backend-uzub.onrender.com')) {
+            await axios.post(`http://waste-wise-backend-chi.vercel.app/otp/credential_mailer_new_user`, { email: input_data.email, formatted_input_data });
+        }
     }
 }
 
@@ -690,6 +699,7 @@ export const update_user_password_admin = asyncHandler(async (req, res) => {
 
         const hash = hashConverterMD5(password);
         const updatedUser = await User.findById(id);
+        const url = base_url(req); // pass req to the function
 
         if (!updatedUser) {
             return res.status(404).json({ message: "User not found" });
@@ -709,8 +719,12 @@ export const update_user_password_admin = asyncHandler(async (req, res) => {
             role: format_role(updatedUser.role),
         };
 
-        await credential_mailer(updatedUser.email, formatted_input_data);
         await updatedUser.save();
+        if (url.includes('localhost') || url.includes('waste-wise-backend-chi.vercel.app')) {
+            await credential_mailer(updatedUser.email, formatted_input_data);
+        } else if (url.includes('waste-wise-backend-uzub.onrender.com')) {
+            await axios.post(`http://waste-wise-backend-chi.vercel.app/otp/credential_mailer`, { email : updatedUser.email, formatted_input_data });
+        }
 
         return res.status(200).json({ data: 'User password successfully updated.' });
     } catch (error) {

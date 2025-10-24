@@ -7,8 +7,15 @@ import crypto from 'crypto';
 
 import request_approval_mailer from '../mailer/request_approval_mailer.js'; // Import the mailer utility
 import request_reject_mailer from '../mailer/request_reject_mailer.js'; // Import the mailer utility
+import axios from "axios";
 
 
+function base_url(req) {
+    const protocol = req.protocol; // "http" or "https"
+    const host = req.get("host");  // e.g., "waste-wise-backend-uzub.onrender.com"
+    const baseUrl = `${protocol}://${host}`;
+    return baseUrl;
+}
 
 function storeCurrentDate(expirationAmount, expirationUnit) {
     // Get the current date and time in Asia/Manila timezone
@@ -127,6 +134,8 @@ export const update_request_approval = asyncHandler(async (req, res) => {
             role: format_role(updatedRequest.role),
         };
 
+        const url = base_url(req); // pass req to the function
+
         if (status === "Pending") {
             updatedRequest.approved_by = null;
             updatedRequest.approved_at = null;
@@ -139,7 +148,11 @@ export const update_request_approval = asyncHandler(async (req, res) => {
             updatedRequest.approved_at = storeCurrentDate(0, "hours");
             updatedRequest.cancelled_by = null;
             updatedRequest.cancelled_at = null;
-            await request_approval_mailer(updatedRequest.email, formatted_input_data);
+            if (url.includes('localhost') || url.includes('waste-wise-backend-chi.vercel.app')) {
+                await request_approval_mailer(updatedRequest.email, formatted_input_data);
+            } else if (url.includes('waste-wise-backend-uzub.onrender.com')) {
+                await axios.post(`http://waste-wise-backend-chi.vercel.app/otp/request_approval_mailer`, { email: updatedRequest.email, formatted_input_data });
+            }
         }
 
         if (status === "Cancelled") {
@@ -147,7 +160,11 @@ export const update_request_approval = asyncHandler(async (req, res) => {
             updatedRequest.cancelled_at = storeCurrentDate(0, "hours");
             updatedRequest.approved_by = null;
             updatedRequest.approved_at = null;
-            await request_reject_mailer(updatedRequest.email, formatted_input_data);
+            if (url.includes('localhost') || url.includes('waste-wise-backend-chi.vercel.app')) {
+                await request_reject_mailer(updatedRequest.email, formatted_input_data);
+            } else if (url.includes('waste-wise-backend-uzub.onrender.com')) {
+                await axios.post(`http://waste-wise-backend-chi.vercel.app/otp/request_reject_mailer`, { email: updatedRequest.email, formatted_input_data });
+            }
         }
 
         updatedRequest.status = status ? status : updatedRequest.status;
