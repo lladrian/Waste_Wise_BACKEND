@@ -54,7 +54,7 @@ app.use("/trucks", truckRoutes);
 app.use("/complains", complainRoutes);
 app.use("/collector_attendances", collectorAttendanceRoutes);
 app.use("/requests", requestRoutes);
-app.use("/report_garbage", reportGarbageRoutes);
+app.use("/report_garbages", reportGarbageRoutes);
 
 
 // Optionally use separate DB connect file
