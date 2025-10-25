@@ -2,7 +2,10 @@ import asyncHandler from 'express-async-handler';
 import moment from 'moment-timezone';
 // import dotenv from 'dotenv';
 import Schedule from '../models/schedule.js';
-import { io } from '../config/connect.js';
+import Notification from '../models/notification.js';
+import User from '../models/user.js';
+import Route from '../models/route.js';
+
 
 function storeCurrentDate(expirationAmount, expirationUnit) {
     // Get the current date and time in Asia/Manila timezone
@@ -18,16 +21,6 @@ function storeCurrentDate(expirationAmount, expirationUnit) {
 }
 
 
-function broadcastList(name, data) {
-  const message = JSON.stringify({ name, data });
-
-  io.clients.forEach(client => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(message);
-    }
-  });
-}
-
 const getPhilippineDate = () => {
   const now = new Date();
 
@@ -38,6 +31,206 @@ const getPhilippineDate = () => {
   return philippineTime.toISOString().split('T')[0];
 };
 
+
+async function create_notification_many_garbage_collector(id, user_role, notif_content, category, title, link) {
+    try {
+        if (!user_role || !notif_content || !category || !title || !link) {
+            return { message: "All fields are required: (user_role, notif_content, category, title, link)." };
+        }
+
+        // Find all users with the specified role
+        const users = await User.find({ role: user_role, is_disabled: false, _id: id });
+
+        if (!users || users.length === 0) {
+            return { message: "No users found with the specified role." };
+        }
+
+        // Prepare notifications array for bulk insert
+        const notifications = users.map(user => ({
+            user: user._id,
+            notif_content: notif_content,
+            title: title,
+            category: category,
+            link: link,
+            created_at: storeCurrentDate(0, "hours")
+        }));
+
+        // Bulk insert all notifications at once
+        const result = await Notification.insertMany(notifications);
+
+        return { data: `Notification successfully sent to ${result.length} users.` };
+    } catch (error) {
+        console.error('Error creating notifications:', error);
+        return error;
+    }
+}
+
+async function create_notification_many_admin(user_role, notif_content, category, title, link) {
+    try {
+        if (!user_role || !notif_content || !category || !title || !link) {
+            return { message: "All fields are required: (user_role, notif_content, category, title, link)." };
+        }
+
+        // Find all users with the specified role
+        const users = await User.find({ role: user_role, is_disabled: false });
+
+        if (!users || users.length === 0) {
+            return { message: "No users found with the specified role." };
+        }
+
+        // Prepare notifications array for bulk insert
+        const notifications = users.map(user => ({
+            user: user._id,
+            notif_content: notif_content,
+            title: title,
+            category: category,
+            link: link,
+            created_at: storeCurrentDate(0, "hours")
+        }));
+
+        // Bulk insert all notifications at once
+        const result = await Notification.insertMany(notifications);
+
+        return { data: `Notification successfully sent to ${result.length} users.` };
+    } catch (error) {
+        console.error('Error creating notifications:', error);
+        return error;
+    }
+}
+
+
+async function create_notification_many_enro_head(user_role, notif_content, category, title, link) {
+    try {
+        if (!user_role || !notif_content || !category || !title || !link) {
+            return { message: "All fields are required: (user_role, notif_content, category, title, link)." };
+        }
+
+        // Find all users with the specified role
+        const users = await User.find({ role: user_role, is_disabled: false });
+
+        if (!users || users.length === 0) {
+            return { message: "No users found with the specified role." };
+        }
+
+        // Prepare notifications array for bulk insert
+        const notifications = users.map(user => ({
+            user: user._id,
+            notif_content: notif_content,
+            title: title,
+            category: category,
+            link: link,
+            created_at: storeCurrentDate(0, "hours")
+        }));
+
+        // Bulk insert all notifications at once
+        const result = await Notification.insertMany(notifications);
+
+        return { data: `Notification successfully sent to ${result.length} users.` };
+    } catch (error) {
+        console.error('Error creating notifications:', error);
+        return error;
+    }
+}
+
+async function create_notification_many_enro_scheduler(user_role, notif_content, category, title, link) {
+    try {
+        if (!user_role || !notif_content || !category || !title || !link) {
+            return { message: "All fields are required: (user_role, notif_content, category, title, link)." };
+        }
+
+        // Find all users with the specified role
+        const users = await User.find({ role: user_role, is_disabled: false });
+
+        if (!users || users.length === 0) {
+            return { message: "No users found with the specified role." };
+        }
+
+        // Prepare notifications array for bulk insert
+        const notifications = users.map(user => ({
+            user: user._id,
+            notif_content: notif_content,
+            title: title,
+            category: category,
+            link: link,
+            created_at: storeCurrentDate(0, "hours")
+        }));
+
+        // Bulk insert all notifications at once
+        const result = await Notification.insertMany(notifications);
+
+        return { data: `Notification successfully sent to ${result.length} users.` };
+    } catch (error) {
+        console.error('Error creating notifications:', error);
+        return error;
+    }
+}
+
+async function create_notification_many_resident(barangay_ids, user_role, notif_content, category, title, link) {
+    try {
+        if (!user_role || !notif_content || !category || !title || !link || !barangay_ids) {
+            return { message: "All fields are required: (user_role, notif_content, category, title, link, barangay_ids)." };
+        }
+
+        // Find all users with the specified role
+        const users = await User.find({ role: user_role, barangay: { $in: barangay_ids }});
+
+        if (!users || users.length === 0) {
+            return { message: "No users found with the specified role." };
+        }
+
+        // Prepare notifications array for bulk insert
+        const notifications = users.map(user => ({
+            user: user._id,
+            notif_content: notif_content,
+            title: title,
+            category: category,
+            link: link,
+            created_at: storeCurrentDate(0, "hours")
+        }));
+
+        // Bulk insert all notifications at once
+        const result = await Notification.insertMany(notifications);
+
+        return { data: `Notification successfully sent to ${result.length} users.` };
+    } catch (error) {
+        console.error('Error creating notifications:', error);
+        return error;
+    }
+}
+
+async function create_notification_many_barangay(barangay_ids, user_role, notif_content, category, title, link) {
+    try {
+        if (!user_role || !notif_content || !category || !title || !link || !barangay_ids) {
+            return { message: "All fields are required: (user_role, notif_content, category, title, link, barangay_ids)." };
+        }
+
+        // Find all users with the specified role
+        const users = await User.find({ role: user_role, barangay: { $in: barangay_ids }});
+
+        if (!users || users.length === 0) {
+            return { message: "No users found with the specified role." };
+        }
+
+        // Prepare notifications array for bulk insert
+        const notifications = users.map(user => ({
+            user: user._id,
+            notif_content: notif_content,
+            title: title,
+            category: category,
+            link: link,
+            created_at: storeCurrentDate(0, "hours")
+        }));
+
+        // Bulk insert all notifications at once
+        const result = await Notification.insertMany(notifications);
+
+        return { data: `Notification successfully sent to ${result.length} users.` };
+    } catch (error) {
+        console.error('Error creating notifications:', error);
+        return error;
+    }
+}
+
 export const create_schedule = asyncHandler(async (req, res) => {
     const { route, truck, user, scheduled_collection, garbage_type } = req.body;
 
@@ -47,6 +240,9 @@ export const create_schedule = asyncHandler(async (req, res) => {
         }
 
         if (await Schedule.findOne({ user: user, truck: truck, scheduled_collection: scheduled_collection, route: route })) return res.status(400).json({ message: 'Schedule already exists' });
+        
+        const routeData = await Route.findById(route);
+        const barangayIds = routeData.merge_barangay.map(b => b.barangay_id);
 
         const newScheduleData = {
             garbage_type: garbage_type,
@@ -59,7 +255,11 @@ export const create_schedule = asyncHandler(async (req, res) => {
 
         const newSchedule = new Schedule(newScheduleData);
         await newSchedule.save();
-
+        await create_notification_many_garbage_collector(user, 'garbage_collector', 'A new waste collection schedule has been created. Please review the schedule details.', 'schedule', 'New Schedule Created', '/collector/management/schedules');    
+        await create_notification_many_resident(barangayIds, 'resident', 'A new waste collection schedule has been created. Please review the schedule details.', 'schedule', 'New Schedule Created', '/official/management/schedules'); 
+        await create_notification_many_barangay(barangayIds, 'barangay_official', 'A new waste collection schedule has been created. Please review the schedule details.', 'schedule', 'New Schedule Created', '/official/management/schedules'); 
+        await create_notification_many_enro_head('enro_staff_head', 'A new waste collection schedule has been created. Please review the schedule details.', 'schedule', 'New Schedule Created', '/staff/management/schedules'); 
+        await create_notification_many_admin('admin', 'A new waste collection schedule has been created. Please review the schedule details.', 'schedule', 'New Schedule Created', '/admin/management/schedules');    
         return res.status(200).json({ data: 'New schedule successfully created.' });
     } catch (error) {
         console.error('Error creating role action:', error);
@@ -165,6 +365,8 @@ export const update_schedule_approval = asyncHandler(async (req, res) => {
         }
 
         const updatedSchedule = await Schedule.findById(id);
+        const routeData = await Route.findById(updatedSchedule.route);
+        const barangayIds = routeData.merge_barangay.map(b => b.barangay_id);
 
         if (!updatedSchedule) {
             return res.status(404).json({ message: "Schedule not found" });
@@ -183,6 +385,9 @@ export const update_schedule_approval = asyncHandler(async (req, res) => {
             updatedSchedule.approved_at = storeCurrentDate(0, "hours");
             updatedSchedule.cancelled_by = null;
             updatedSchedule.cancelled_at = null;
+            await create_notification_many_garbage_collector(updatedSchedule.user, 'garbage_collector', 'A new waste collection schedule has been created. Please review the schedule details.', 'schedule', 'New Schedule Created', '/collector/management/schedules');    
+            await create_notification_many_enro_scheduler('enro_staff_scheduler', 'The waste collection schedule has been approved. Please review the updated details.', 'schedule', 'Schedule Approved', '/staff/management/schedules'); 
+            await create_notification_many_barangay(barangayIds, 'barangay_official', 'The waste collection schedule has been approved. Please review the updated details.', 'schedule', 'Schedule Approved', '/official/management/schedules'); 
         }
 
         if (status === "Cancelled") {
@@ -190,6 +395,8 @@ export const update_schedule_approval = asyncHandler(async (req, res) => {
             updatedSchedule.cancelled_at = storeCurrentDate(0, "hours");
             updatedSchedule.approved_by = null;
             updatedSchedule.approved_at = null;
+            await create_notification_many_enro_scheduler('enro_staff_scheduler', 'The waste collection schedule has been cancelled. Please review the updated details.', 'schedule', 'Schedule Cancelled', '/staff/management/schedules'); 
+            await create_notification_many_barangay(barangayIds, 'barangay_official', 'The waste collection schedule has been cancelled. Please review the updated details.', 'schedule', 'Schedule Cancelled', '/official/management/schedules'); 
         }
 
         updatedSchedule.is_editable = is_editable ? is_editable : updatedSchedule.is_editable;
@@ -218,6 +425,8 @@ export const update_schedule = asyncHandler(async (req, res) => {
         if (await Schedule.findOne({ _id: { $ne: id }, truck: truck, scheduled_collection: scheduled_collection, route: route })) return res.status(400).json({ message: 'Schedule already exists' });
 
         const updatedSchedule = await Schedule.findById(id);
+        const routeData = await Route.findById(route);
+        const barangayIds = routeData.merge_barangay.map(b => b.barangay_id);
 
         if (!updatedSchedule) {
             return res.status(404).json({ message: "Schedule not found" });
@@ -231,6 +440,10 @@ export const update_schedule = asyncHandler(async (req, res) => {
         updatedSchedule.scheduled_collection = scheduled_collection ? scheduled_collection : updatedSchedule.scheduled_collection;
 
         await updatedSchedule.save();
+
+        await create_notification_many_enro_head('enro_staff_head', 'The waste collection schedule has been updated. Please check the new details.', 'schedule', 'Schedule Updated', '/staff/management/schedules'); 
+        await create_notification_many_admin('admin', 'The waste collection schedule has been updated. Please check the new details.', 'schedule', 'Schedule Updated', '/admin/management/schedules'); 
+        await create_notification_many_barangay(barangayIds, 'barangay_official', 'The waste collection schedule has been updated. Please check the new details.', 'schedule', 'Schedule Updated', '/official/management/schedules'); 
 
         return res.status(200).json({ data: 'Schedule successfully updated.' });
     } catch (error) {
@@ -249,6 +462,8 @@ export const update_schedule_garbage_collector = asyncHandler(async (req, res) =
         }
 
         const updatedSchedule = await Schedule.findById(id);
+        const routeData = await Route.findById(updatedSchedule.route);
+        const barangayIds = routeData.merge_barangay.map(b => b.barangay_id);
 
         if (!updatedSchedule) {
             return res.status(404).json({ message: "Schedule not found" });
@@ -259,6 +474,7 @@ export const update_schedule_garbage_collector = asyncHandler(async (req, res) =
         updatedSchedule.status = status ? status : updatedSchedule.status;
 
         await updatedSchedule.save();
+        await create_notification_many_barangay(barangayIds, 'barangay_official', 'The schedule has been marked. Please review the details.', 'schedule', 'The Schedule Marked', '/official/management/schedules'); 
 
         return res.status(200).json({ data: 'Schedule successfully updated.' });
     } catch (error) {

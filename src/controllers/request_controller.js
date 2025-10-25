@@ -4,6 +4,7 @@ import moment from 'moment-timezone';
 import Request from '../models/request.js';
 import User from '../models/user.js';
 import crypto from 'crypto';
+import Notification from '../models/notification.js';
 
 import request_approval_mailer from '../mailer/request_approval_mailer.js'; // Import the mailer utility
 import request_reject_mailer from '../mailer/request_reject_mailer.js'; // Import the mailer utility
@@ -51,6 +52,38 @@ function format_role(role) {
 }
 
 
+async function create_notification_many(user_role, notif_content, category, title, link) {
+    try {
+        if (!user_role || !notif_content || !category || !title || !link) {
+            return { message: "All fields are required: (user_role, notif_content, category, title, link)." };
+        }
+
+        // Find all users with the specified role
+        const users = await User.find({ role: user_role });
+
+        if (!users || users.length === 0) {
+            return { message: "No users found with the specified role." };
+        }
+
+        // Prepare notifications array for bulk insert
+        const notifications = users.map(user => ({
+            user: user._id,
+            notif_content: notif_content,
+            title: title,
+            category: category,
+            link: link,
+            created_at: storeCurrentDate(0, "hours")
+        }));
+
+        // Bulk insert all notifications at once
+        const result = await Notification.insertMany(notifications);
+
+        return { data: `Notification successfully sent to ${result.length} users.` };
+    } catch (error) {
+        console.error('Error creating notifications:', error);
+        return error;
+    }
+}
 
 export const create_request = asyncHandler(async (req, res) => {
     const { first_name, middle_name, last_name, gender, contact_number, password, email, role, barangay } = req.body;
@@ -78,6 +111,7 @@ export const create_request = asyncHandler(async (req, res) => {
 
         const newRequest = new Request(newRequestData);
         await newRequest.save();
+        await create_notification_many('admin', 'New user request for an account.', 'account_request', 'New Account Request', '/admin/approval/requests'); 
 
         return res.status(200).json({ data: 'New request successfully created.' });
     } catch (error) {

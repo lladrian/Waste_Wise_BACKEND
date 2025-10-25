@@ -17,6 +17,9 @@ import complainRoutes from "./routes/complain_route.js";
 import collectorAttendanceRoutes from "./routes/collector_attendance_route.js";
 import barangayRoutes from "./routes/barangay_route.js";
 import requestRoutes from "./routes/request_route.js";
+import reportGarbageRoutes from "./routes/report_garbage_route.js";
+
+
 
 // CORS middleware - allow anyone to connect
 app.use(cors({
@@ -51,6 +54,7 @@ app.use("/trucks", truckRoutes);
 app.use("/complains", complainRoutes);
 app.use("/collector_attendances", collectorAttendanceRoutes);
 app.use("/requests", requestRoutes);
+app.use("/report_garbage", reportGarbageRoutes);
 
 
 // Optionally use separate DB connect file

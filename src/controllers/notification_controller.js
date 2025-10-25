@@ -92,20 +92,15 @@ export const get_all_notification_specific_user = asyncHandler(async (req, res) 
 
 export const update_read_specific_notification = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters
-    const { is_read } = req.body;
 
     try {
-        if (!is_read) {
-            return res.status(400).json({ message: "Please provide all fields (is_read)." });
-        }
-
         const updatedNotification = await Notification.findById(id);
 
         if (!updatedNotification) {
             return res.status(404).json({ message: "Notification not found" });
         }
 
-        updatedNotification.is_read = is_read ? is_read : updatedNotification.is_read;
+        updatedNotification.is_read = true;
         updatedNotification.read_at = storeCurrentDate(0, "hours");
 
         await updatedNotification.save();
@@ -119,13 +114,8 @@ export const update_read_specific_notification = asyncHandler(async (req, res) =
 
 export const update_read_all_notification_specific_user = asyncHandler(async (req, res) => {
     const { user_id } = req.params; // Get the meal ID from the request parameters
-    const { is_read } = req.body;
 
     try {
-        if (!is_read) {
-            return res.status(400).json({ message: "Please provide all fields (is_read)." });
-        }
-
         const result = await Notification.updateMany(
             { 
                 user: user_id,

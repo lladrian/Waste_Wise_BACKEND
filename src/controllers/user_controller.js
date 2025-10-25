@@ -227,7 +227,7 @@ async function save_new_user_resident(hash_password, input_data) {
 }
 
 
-async function save_new_user(hash_password, input_data) {
+async function save_new_user(hash_password, input_data, req) {
     const newUserData = {
         first_name: input_data.first_name,
         middle_name: input_data.middle_name,
@@ -339,7 +339,7 @@ export const create_user = asyncHandler(async (req, res) => {
         if (staff_eswm_section_head.length >= 1 && role === 'enro_staff_eswm_section_head') return res.status(400).json({ message: 'ESWM Section Head already exists. Please contact administrator for support.' });
 
 
-        await save_new_user(hashConverterMD5(password), input_data);
+        await save_new_user(hashConverterMD5(password), input_data, req);
 
         return res.status(200).json({ data: 'New user account successfully created.' });
     } catch (error) {
