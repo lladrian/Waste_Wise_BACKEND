@@ -50,7 +50,7 @@ export const get_all_garbage_site = asyncHandler(async (req, res) => {
 
         return res.status(200).json({ data: garbage_sites });
     } catch (error) {
-        return res.status(500).json({ error: 'Failed to get all garbage site.' });
+        return res.status(500).json({ error: 'Failed to get all garbage site' });
     }
 });
 
