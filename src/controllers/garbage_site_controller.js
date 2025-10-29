@@ -38,7 +38,7 @@ export const create_garbage_site = asyncHandler(async (req, res) => {
         const newGarbageSiteDataData = new GarbageSite(garbageSiteData);
         await newGarbageSiteDataData.save();
 
-        return res.status(200).json({ data: 'New garbage site successfully created.' });
+        return res.status(200).json({ data: 'New garbage site successfully created' });
     } catch (error) {
         return res.status(500).json({ error: 'Failed to create garbage site.' });
     }
