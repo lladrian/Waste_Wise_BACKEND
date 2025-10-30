@@ -6,11 +6,6 @@ const OTPSchema = new mongoose.Schema({
     ref: 'User',
     required: false,
   },
-  resident_user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'ResidentUser',
-    required: false,
-  },
   otp_recovery: {
     type: String,
     required: false

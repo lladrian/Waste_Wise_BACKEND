@@ -220,7 +220,7 @@ async function save_new_user_resident(hash_password, input_data) {
     newUser.save();
 
     const newOTP = new OTP({
-        user: newUser._id
+        user: newUser._id 
     });
 
     newOTP.save();
