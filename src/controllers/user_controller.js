@@ -264,10 +264,13 @@ async function save_new_user(hash_password, input_data, req) {
         role: format_role(input_data.role),
     };
 
+
     if (input_data.role !== 'resident') {
          if (url.includes('localhost') || url.includes('waste-wise-backend-chi.vercel.app')) {
+            console.log('working')
             await credential_mailer_new_user(input_data.email, formatted_input_data);
         } else if (url.includes('waste-wise-backend-uzub.onrender.com')) {
+               console.log('not working')
             await axios.post(`http://waste-wise-backend-chi.vercel.app/otp/credential_mailer_new_user`, { email: input_data.email, formatted_input_data });
         }
     }
@@ -347,7 +350,7 @@ export const create_user = asyncHandler(async (req, res) => {
 
         return res.status(200).json({ data: 'New user account successfully created.' });
     } catch (error) {
-        return res.status(500).json({ error: 'Failed to create user account.' });
+        return res.status(500).json({ error: 'Failed to create user account.', data: error });
     }
 });
 
