@@ -79,11 +79,17 @@ export const verify_otp = asyncHandler(async (req, res) => {
             return res.status(400).json({ message: "Invalid otp_type." });
         }
 
-        const otpRecord = await OTP.findOne({ user: user._id });
+        const otpRecordVerification = await OTP.findOne({ otp_recovery: otp });
+        const otpRecordRecovery = await OTP.findOne({ otp_verification: otp });
 
-        if (!otpRecord) {
-            return res.status(400).json({ message: "Invalid OTP." });
+        if (!otpRecordVerification && otp_type == 'verification') {
+            return res.status(400).json({ message: "Incorrect OTP." });
         }
+
+        if (!otpRecordRecovery && otp_type == 'recovery') {
+            return res.status(400).json({ message: "Incorrect OTP." });
+        }
+
 
         // 5. Check if OTP has expired (1 minute)
         const createdTime = new Date(otpRecord[selected.createdField]);
