@@ -87,10 +87,10 @@ export const verify_otp = asyncHandler(async (req, res) => {
 
 
         // 5. Check if OTP has expired (1 minute)
-        const createdTime = new Date(otpRecord[selected.createdField].replace(" ", "T"));
-        const now = new Date();
-        const diffMinutes = (now - createdTime) / (1000 * 60);
-
+        const createdTime = new Date(otpRecord[selected.createdField].replace(" ", "T") + "+08:00");
+        const now = new Date(new Date().toLocaleString("en-US", {timeZone: "Asia/Manila"}));
+        const diffMinutes = (now.getTime() - createdTime.getTime()) / (1000 * 60);
+0
         if (diffMinutes > 1) {
             return res.status(400).json({ message: "OTP has expired." });
         }
