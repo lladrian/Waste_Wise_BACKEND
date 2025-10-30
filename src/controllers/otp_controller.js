@@ -85,26 +85,32 @@ export const verify_otp = asyncHandler(async (req, res) => {
             return res.status(400).json({ message: "Incorrect OTP." });
         }
 
-
+        // 5. Check if OTP has expired (1 minute)
         const createdTimeStr = otpRecord[selected.createdField]; // "2025-10-30 18:31:34"
         const createdTime = new Date(createdTimeStr.replace(" ", "T") + "+08:00");
         
-        // Get current time in Manila timezone
+        // Get current time in Manila timezone correctly
         const now = new Date();
-        const nowManila = new Date(now.toLocaleString("en-US", {timeZone: "Asia/Manila"}));
+        const manilaOffset = 8 * 60; // Manila is UTC+8 in minutes
+        const localOffset = now.getTimezoneOffset(); // in minutes
+        const nowManila = new Date(now.getTime() + (localOffset + manilaOffset) * 60000);
         
         // Calculate difference in minutes
         const diffMinutes = (nowManila.getTime() - createdTime.getTime()) / (1000 * 60);
-      
-        
+
         if (diffMinutes > 1) {
-            return res.status(400).json({ message: "OTP has expired." , data: diffMinutes});
+            return res.status(400).json({ 
+                message: "OTP has expired.", 
+                data: {
+                    diffMinutes: diffMinutes,
+                    createdTime: createdTime.toISOString(),
+                    nowManila: nowManila.toISOString()
+                }
+            });
         }
 
-
-        return res.status(200).json({ message: diffMinutes });
         // 6. OTP is valid
-        //return res.status(200).json({ message: "OTP verified successfully." });
+        return res.status(200).json({ message: "OTP verified successfully." });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: "Failed to verify OTP." });
