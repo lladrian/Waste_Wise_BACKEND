@@ -224,6 +224,8 @@ async function save_new_user_resident(hash_password, input_data) {
     });
 
     newOTP.save();
+
+    return newUser; // Return the user object
 }
 
 
@@ -295,9 +297,11 @@ export const create_user_resident = asyncHandler(async (req, res) => {
 
         if (await User.findOne({ email })) return res.status(400).json({ message: 'Email already exists' });
 
-        await save_new_user_resident(hashConverterMD5(password), input_data);
+        
+        const user = await save_new_user_resident(hashConverterMD5(password), input_data);
 
-        return res.status(200).json({ data: 'New user account successfully created.' });
+        return res.status(200).json({ data: { user: user, logged_in_at: storeCurrentDate(0, 'hours') } });
+
     } catch (error) {
         return res.status(500).json({ error: 'Failed to create user account.' });
     }
