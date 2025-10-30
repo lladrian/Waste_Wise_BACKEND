@@ -45,11 +45,13 @@ const UserSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Action',
         required: false,
+        default: null
     },
     barangay: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Barangay',
         required: false,
+        default: null
     },
     garbage_site: {
         type: mongoose.Schema.Types.ObjectId,

@@ -8,19 +8,24 @@ const OTPSchema = new mongoose.Schema({
   },
   otp_recovery: {
     type: String,
-    required: false
+    required: false,
+    default: null
   },
   otp_verification: {
     type: String,
-    required: false
+    required: false,
+    default: null
   },
   otp_recovery_created: {
     type: String,
-    required: false
+    required: false,
+    default: null
+    
   },
   otp_verification_created: {
     type: String,
-    required: false
+    required: false,
+    default: null
   },
 });
 

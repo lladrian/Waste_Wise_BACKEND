@@ -408,10 +408,14 @@ export const login_user = asyncHandler(async (req, res) => {
         }
 
         // Find the user by email
-        let user = await User.findOne({ email: email }); // Don't use .lean() here
+        let user = await User.findOne({ email: email })
+        .populate('role_action')
+        .populate('barangay')
+        .populate('garbage_site')
         const hash = hashConverterMD5(password);
         const deviceInfo = getDeviceInfo(req);
 
+     
 
         // Check if the admin exists and if the password is correct
         if (user && user.password == hash) {
