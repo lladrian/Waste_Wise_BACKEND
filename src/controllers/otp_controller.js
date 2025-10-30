@@ -87,7 +87,7 @@ export const verify_otp = asyncHandler(async (req, res) => {
 
 
         // 5. Check if OTP has expired (1 minute)
-        const createdTime = new Date(otpRecord[selected.createdField]);
+        const createdTime = new Date(otpRecord[selected.createdField].replace(" ", "T"));
         const now = new Date();
         const diffMinutes = (now - createdTime) / (1000 * 60);
 
