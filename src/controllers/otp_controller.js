@@ -99,14 +99,7 @@ export const verify_otp = asyncHandler(async (req, res) => {
         const diffMinutes = (nowManila.getTime() - createdTime.getTime()) / (1000 * 60);
 
         if (diffMinutes > 1) {
-            return res.status(400).json({ 
-                message: "OTP has expired.", 
-                data: {
-                    diffMinutes: diffMinutes,
-                    createdTime: createdTime.toISOString(),
-                    nowManila: nowManila.toISOString()
-                }
-            });
+            return res.status(400).json({ message: "OTP has expired." });
         }
 
         // 6. OTP is valid
