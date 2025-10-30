@@ -87,7 +87,7 @@ export const verify_otp = asyncHandler(async (req, res) => {
 
         // 5. Check if OTP has expired (1 minute)
         const createdTimeStr = otpRecord[selected.createdField]; // "2025-10-30 18:31:34"
-        const createdTime = new Date(createdTimeStr.replace(" ", "T") + "+08:00");
+        const createdTime = new Date(createdTimeStr.replace(" ", "T") + "+00:00");
         
         // Get current time in Manila timezone correctly
         const now = new Date();
