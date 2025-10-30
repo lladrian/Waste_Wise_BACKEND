@@ -96,8 +96,9 @@ export const verify_otp = asyncHandler(async (req, res) => {
         // Calculate difference in minutes
         const diffMinutes = (nowManila.getTime() - createdTime.getTime()) / (1000 * 60);
       
+        
         if (diffMinutes > 1) {
-            return res.status(400).json({ message: "OTP has expired." });
+            return res.status(400).json({ message: "OTP has expired." , data: diffMinutes});
         }
 
 
