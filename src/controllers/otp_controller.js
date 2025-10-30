@@ -79,7 +79,7 @@ export const verify_otp = asyncHandler(async (req, res) => {
             return res.status(400).json({ message: "Invalid otp_type." });
         }
 
-        const otpRecord = await OTP.findOne({ user: user._id, [selected.field]: otp });
+        const otpRecord = await OTP.findOne({ user: user.id, [selected.field]: otp });
      
         if (!otpRecord) {
             return res.status(400).json({ message: "Incorrect OTP." });
