@@ -101,8 +101,9 @@ export const verify_otp = asyncHandler(async (req, res) => {
         }
 
 
+        return res.status(200).json({ message: diffMinutes });
         // 6. OTP is valid
-        return res.status(200).json({ message: "OTP verified successfully." });
+        //return res.status(200).json({ message: "OTP verified successfully." });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: "Failed to verify OTP." });
