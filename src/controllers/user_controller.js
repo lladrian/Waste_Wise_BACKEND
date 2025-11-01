@@ -225,7 +225,9 @@ async function save_new_user_resident(hash_password, input_data) {
 
     newOTP.save();
 
-    return newUser; // Return the user object
+    const user = await User.findById(newUser.id).populate('role_action').populate('barangay').populate('garbage_site')
+
+    return user; // Return the user object
 }
 
 
@@ -665,7 +667,9 @@ export const update_user_profile = asyncHandler(async (req, res) => {
             return res.status(400).json({ message: updateSpecificUser });
         }
 
-        return res.status(200).json({ data: await User.findById(id) });
+        const user = await User.findById(id).populate('role_action').populate('barangay').populate('garbage_site')
+
+        return res.status(200).json({ data: user });
        // return res.status(200).json({ data: 'User account successfully updated.' });
     } catch (error) {
         return res.status(500).json({ error: 'Failed to update user account.' });
