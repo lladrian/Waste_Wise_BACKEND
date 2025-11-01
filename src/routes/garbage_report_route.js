@@ -11,5 +11,9 @@ garbageReportRoutes.get('/get_all_garbage_report_specific_user/:user_id', Garbag
 garbageReportRoutes.delete('/delete_garbage_report/:id', GarbageReportController.delete_garbage_report);
 garbageReportRoutes.put('/update_garbage_report_status/:id', GarbageReportController.update_garbage_report_status);
 garbageReportRoutes.put('/update_garbage_report/:id', GarbageReportController.update_garbage_report);
+garbageReportRoutes.put('/update_garbage_report_reponse/:id', GarbageReportController.update_garbage_report_reponse);
+
+
+
 
 export default garbageReportRoutes;

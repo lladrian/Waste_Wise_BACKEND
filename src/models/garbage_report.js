@@ -21,12 +21,25 @@ const GarbageReportSchema = new mongoose.Schema({
         type: String,
         required: false,
     },
+    report_type: {
+        type: String,
+        required: false,
+        enum: ['uncollected', 'other'],
+        default: 'uncollected'
+    },
     garbage_type: {
         type: String,
         required: true,
         enum: ['biodegradable', 'non_biodegradable', 'recyclable', 'other'],
         default: 'biodegradable'
     },
+    responses: [
+        {
+            message: { type: String, required: false },
+            responder: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+            created_at: { type: String, default: null }
+        }
+    ],
     resolution_status: {
         type: String,
         required: false,

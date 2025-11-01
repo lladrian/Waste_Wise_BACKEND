@@ -31,7 +31,7 @@ async function create_notification_many_barangay(barangay_ids, user_role, notif_
         }
 
         // Find all users with the specified role
-        const users = await User.find({ role: user_role, barangay: { $in: barangay_ids }});
+        const users = await User.find({ role: user_role, barangay: { $in: barangay_ids } });
 
         if (!users || users.length === 0) {
             return { message: "No users found with the specified role." };
@@ -159,15 +159,16 @@ async function create_notification_many_enro_scheduler(user_role, notif_content,
 
 
 export const create_garbage_report = asyncHandler(async (req, res) => {
-    const { user, latitude, longitude, notes, garbage_type   } = req.body;
+    const { user, latitude, longitude, notes, garbage_type, report_type } = req.body;
 
     try {
-        if (!latitude || !user || !longitude || !garbage_type) {
-            return res.status(400).json({ message: "Please provide all fields (user, latitude, longitude, garbage_type)." });
+        if (!latitude || !user || !longitude || !garbage_type || !report_type) {
+            return res.status(400).json({ message: "Please provide all fields (user, latitude, longitude, garbage_type, report_type)." });
         }
 
         const newGarbageReportData = {
             user: user,
+            report_type: report_type,
             notes: notes || null,
             position: {
                 lat: latitude,
@@ -184,7 +185,7 @@ export const create_garbage_report = asyncHandler(async (req, res) => {
         // await create_notification_many_enro_scheduler('enro_staff_scheduler', 'A resident has reported uncollected garbage in your area. Please review the report and take appropriate action.', 'report_garbage', 'Uncollected Garbage Report', '/staff/management/report_garbages')
         // await create_notification_many_enro_monitoring('enro_staff_monitoring', 'A resident has reported uncollected garbage in your area. Please review the report and take appropriate action.', 'report_garbage', 'Uncollected Garbage Report', '/staff/management/report_garbages')
         // await create_notification_many_enro_head('enro_staff_head', 'A resident has reported uncollected garbage in your area. Please review the report and take appropriate action.', 'report_garbage', 'Uncollected Garbage Report', '/staff/management/report_garbages')
-       
+
         return res.status(200).json({ data: 'New garbage report successfully created.' });
     } catch (error) {
         return res.status(500).json({ error: 'Failed to create garbage report.' });
@@ -269,6 +270,42 @@ export const get_specific_garbage_report = asyncHandler(async (req, res) => {
 });
 
 
+export const update_garbage_report_reponse = asyncHandler(async (req, res) => {
+    const { id } = req.params; // Get the meal ID from the request parameters
+    const { message, responder_id } = req.body;
+
+    try {
+        if (!message || !responder_id) {
+            return res.status(400).json({ message: "Please provide all fields (responder_id, message)." });
+        }
+
+        const updateObj = {};
+
+        updateObj.$push = {
+            responses: {
+                message,
+                responder: responder_id,
+                created_at: storeCurrentDate(0, "hours")
+            }
+        };
+
+        const updated = await GarbageReport.findByIdAndUpdate(
+            id,
+            updateObj,
+            { new: true }
+        );
+
+
+        if (!updated) {
+            return res.status(404).json({ message: "Garbage report not found" });
+        }
+
+        return res.status(200).json({ data: 'Garbage report successfully updated.' });
+    } catch (error) {
+        return res.status(500).json({ error: 'Failed to update garbage report.' });
+    }
+});
+
 export const update_garbage_report_status = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters
     const { status } = req.body;
@@ -295,11 +332,11 @@ export const update_garbage_report_status = asyncHandler(async (req, res) => {
 
 export const update_garbage_report = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters
-    const { user, latitude, longitude, notes, garbage_type } = req.body;
+    const { user, latitude, longitude, notes, garbage_type, report_type } = req.body;
 
     try {
-        if (!latitude || !user || !longitude || !garbage_type) {
-            return res.status(400).json({ message: "Please provide all fields (user, latitude, longitude, garbage_type)." });
+        if (!latitude || !user || !longitude || !garbage_type || !report_type) {
+            return res.status(400).json({ message: "Please provide all fields (user, latitude, longitude, garbage_type, report_type)." });
         }
 
         const updatedGarbageReport = await GarbageReport.findById(id);
@@ -309,6 +346,7 @@ export const update_garbage_report = asyncHandler(async (req, res) => {
         }
 
         updatedGarbageReport.user = user ? user : updatedGarbageReport.user;
+        updatedGarbageReport.report_type = report_type ? report_type : updatedGarbageReport.report_type;
         updatedGarbageReport.notes = notes ? notes : updatedGarbageReport.notes;
         updatedGarbageReport.garbage_type = garbage_type ? garbage_type : updatedGarbageReport.garbage_type;
         updatedGarbageReport.position.lat = latitude ?? updatedGarbageReport.position.lat;
