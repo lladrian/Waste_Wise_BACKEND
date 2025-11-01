@@ -665,7 +665,8 @@ export const update_user_profile = asyncHandler(async (req, res) => {
             return res.status(400).json({ message: updateSpecificUser });
         }
 
-        return res.status(200).json({ data: 'User account successfully updated.' });
+        return res.status(200).json({ data: updateSpecificUser });
+       // return res.status(200).json({ data: 'User account successfully updated.' });
     } catch (error) {
         return res.status(500).json({ error: 'Failed to update user account.' });
     }
