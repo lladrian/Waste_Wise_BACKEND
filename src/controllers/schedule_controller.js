@@ -354,7 +354,7 @@ export const get_specific_schedule = asyncHandler(async (req, res) => {
 });
 
 
-export const get_all_schedule_specific_user = asyncHandler(async (req, res) => {
+export const get_all_schedule_specific_user_garbage_collector = asyncHandler(async (req, res) => {
     const { user_id } = req.params; // Get the meal ID from the request parameters
 
     try {
