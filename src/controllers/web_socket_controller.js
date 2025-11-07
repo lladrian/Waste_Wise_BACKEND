@@ -19,12 +19,24 @@ async function broadcastList(name, data) {
 
 
 export const get_web_socket_schedule = asyncHandler(async (req, res) => {
-    const { schedules } = req.body;
+    const { scheduled_collection } = req.body;
 
     try {
-        if (!schedules) {
-            return res.status(400).json({ message: "Please provide all fields (schedules)." });
+        if (!scheduled_collection) {
+            return res.status(400).json({ message: "Please provide all fields (scheduled_collection)." });
         }
+
+        const schedules = await Schedule.find({ scheduled_collection: scheduled_collection })
+            .populate('route')
+            // .populate('user')
+            .populate({
+                path: 'truck',
+                populate: {
+                    path: 'user',
+                    model: 'User'
+                }
+            });
+
 
         await broadcastList('trucks', schedules);
 
