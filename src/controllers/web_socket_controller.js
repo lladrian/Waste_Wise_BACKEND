@@ -40,7 +40,7 @@ export const get_web_socket_schedule = asyncHandler(async (req, res) => {
 
         await broadcastList('trucks', schedules);
 
-        return res.status(200).json({ data: 'Web socket schedules successfully updated.' });
+        return res.status(200).json({ data: 'Web socket schedules successfully updated.', schedules: schedules.length });
     } catch (error) {
         console.error('Error creating role action:', error);
         return res.status(500).json({ error: 'Failed to update web socket schedules.' });
