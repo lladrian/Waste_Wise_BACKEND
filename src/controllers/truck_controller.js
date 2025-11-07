@@ -5,6 +5,7 @@ import Truck from '../models/truck.js';
 import Schedule from '../models/schedule.js';
 import { io } from '../config/connect.js';
 
+import axios from "axios";
 
 function base_url(req) {
     const protocol = req.protocol; // "http" or "https"
@@ -136,11 +137,8 @@ export const update_truck_position = asyncHandler(async (req, res) => {
                 });
 
             if (url.includes('localhost') || url.includes('waste-wise-backend-chi.vercel.app')) {
-                console.log('test');
                 const scheduled_collection = getPhilippineDate(); // Should be same format as stored in DB
                 const response = await axios.post(`http://waste-wise-backend-uzub.onrender.com/web_sockets/get_web_socket_schedule`, { scheduled_collection: scheduled_collection });
-                console.log('Websocket schedules updated:', response.data);
-
             } else if (url.includes('waste-wise-backend-uzub.onrender.com')) {
                 await broadcastList('trucks', schedules);
             }
@@ -148,7 +146,7 @@ export const update_truck_position = asyncHandler(async (req, res) => {
 
         return res.status(200).json({ data: "Truck position successfully updated." });
     } catch (error) {
-        return res.status(500).json({ error: 'Failed to update position.' });
+        return res.status(500).json({ error: 'Failed to update position.', error2: error });
     }
 });
 
