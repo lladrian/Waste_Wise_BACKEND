@@ -327,6 +327,20 @@ export const get_all_schedule_current_day = asyncHandler(async (req, res) => {
 export const get_all_schedule = asyncHandler(async (req, res) => {
     try {
         const schedules = await Schedule.find()
+        .populate({
+            path: 'route',
+            populate: {
+                path: 'merge_barangay.barangay_id', // populate each barangay inside route
+                model: 'Barangay'
+            }
+        })
+        .populate({
+            path: 'truck',
+            populate: {
+                path: 'user',
+                model: 'User'
+            }
+        })
 
 
         return res.status(200).json({ data: schedules });
