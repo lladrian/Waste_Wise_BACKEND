@@ -138,7 +138,7 @@ export const update_truck_position = asyncHandler(async (req, res) => {
 
             if (url.includes('localhost') || url.includes('waste-wise-backend-chi.vercel.app')) {
                 const response = await axios.post(`http://waste-wise-backend-uzub.onrender.com/web_sockets/get_web_socket_schedule`, { scheduled_collection: getPhilippineDate() });
-           console.log(response.data)
+                // console.log(response.data)
             } else if (url.includes('waste-wise-backend-uzub.onrender.com')) {
                 await broadcastList('trucks', schedules);
             }

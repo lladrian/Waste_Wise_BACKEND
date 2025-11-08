@@ -65,7 +65,7 @@ function create_user_validation(input_data, type) {
             !input_data.gender ||
             !input_data.contact_number ||
             !input_data.email) {
-            return "Please provide all fields (email, first_name, middle_name, last_name, gender, contact_number, role, is_disabled, role_action).";
+            return "Please provide all fields (email, first_name, middle_name, last_name, gender, contact_number).";
         }
     }
 
@@ -179,7 +179,7 @@ async function update_specific_user(id, input_data, type) {
         }
     }
 
-    updatedUser.save();
+    const result = await updatedUser.save();
 
     return null;
 }
@@ -220,7 +220,7 @@ async function save_new_user_resident(hash_password, input_data) {
     newUser.save();
 
     const newOTP = new OTP({
-        user: newUser._id 
+        user: newUser._id
     });
 
     newOTP.save();
@@ -268,11 +268,11 @@ async function save_new_user(hash_password, input_data, req) {
 
 
     if (input_data.role !== 'resident') {
-         if (url.includes('localhost') || url.includes('waste-wise-backend-chi.vercel.app')) {
+        if (url.includes('localhost') || url.includes('waste-wise-backend-chi.vercel.app')) {
             console.log('working')
             await credential_mailer_new_user(input_data.email, formatted_input_data);
         } else if (url.includes('waste-wise-backend-uzub.onrender.com')) {
-               console.log('not working')
+            console.log('not working')
             await axios.post(`http://waste-wise-backend-chi.vercel.app/otp/credential_mailer_new_user`, { email: input_data.email, formatted_input_data });
         }
     }
@@ -302,7 +302,7 @@ export const create_user_resident = asyncHandler(async (req, res) => {
 
         if (await User.findOne({ email })) return res.status(400).json({ message: 'Email already exists' });
 
-        
+
         const user = await save_new_user_resident(hashConverterMD5(password), input_data);
 
         return res.status(200).json({ data: { user: user, logged_in_at: storeCurrentDate(0, 'hours') } });
@@ -414,13 +414,13 @@ export const login_user = asyncHandler(async (req, res) => {
 
         // Find the user by email
         let user = await User.findOne({ email: email })
-        .populate('role_action')
-        .populate('barangay')
-        .populate('garbage_site')
+            .populate('role_action')
+            .populate('barangay')
+            .populate('garbage_site')
         const hash = hashConverterMD5(password);
         const deviceInfo = getDeviceInfo(req);
 
-     
+
 
         // Check if the admin exists and if the password is correct
         if (user && user.password == hash) {
@@ -669,8 +669,9 @@ export const update_user_profile = asyncHandler(async (req, res) => {
 
         const user = await User.findById(id).populate('role_action').populate('barangay').populate('garbage_site')
 
+
         return res.status(200).json({ data: user });
-       // return res.status(200).json({ data: 'User account successfully updated.' });
+        // return res.status(200).json({ data: 'User account successfully updated.' });
     } catch (error) {
         return res.status(500).json({ error: 'Failed to update user account.' });
     }
@@ -739,7 +740,7 @@ export const update_user_password_admin = asyncHandler(async (req, res) => {
         if (url.includes('localhost') || url.includes('waste-wise-backend-chi.vercel.app')) {
             await credential_mailer(updatedUser.email, formatted_input_data);
         } else if (url.includes('waste-wise-backend-uzub.onrender.com')) {
-            await axios.post(`http://waste-wise-backend-chi.vercel.app/otp/credential_mailer`, { email : updatedUser.email, formatted_input_data });
+            await axios.post(`http://waste-wise-backend-chi.vercel.app/otp/credential_mailer`, { email: updatedUser.email, formatted_input_data });
         }
 
         return res.status(200).json({ data: 'User password successfully updated.' });
@@ -751,29 +752,29 @@ export const update_user_password_admin = asyncHandler(async (req, res) => {
 
 
 export const update_user_resident_garbage_site = asyncHandler(async (req, res) => {
-  const { id } = req.params; // Get the user ID from request parameters
-  const { garbage_site } = req.body;
+    const { id } = req.params; // Get the user ID from request parameters
+    const { garbage_site } = req.body;
 
-  try {
-    if (!garbage_site) {
-        return res.status(400).json({ message: "Please provide all fields (garbage_site)." });
+    try {
+        if (!garbage_site) {
+            return res.status(400).json({ message: "Please provide all fields (garbage_site)." });
+        }
+
+        const user = await User.findById(id);
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found." });
+        }
+
+        // Update the user's position
+        user.garbage_site = garbage_site ? garbage_site : user.garbage_site;
+
+        await user.save();
+
+        return res.status(200).json({ data: "User position successfully updated." });
+    } catch (error) {
+        return res.status(500).json({ error: 'Failed to update position.' });
     }
-
-    const user = await User.findById(id);
-
-    if (!user) {
-      return res.status(404).json({ message: "User not found." });
-    }
-
-    // Update the user's position
-    user.garbage_site = garbage_site ? garbage_site : user.garbage_site;
-
-    await user.save();
-
-    return res.status(200).json({ data: "User position successfully updated." });
-  } catch (error) {
-    return res.status(500).json({ error: 'Failed to update position.' });
-  }
 });
 
 export const update_user_password = asyncHandler(async (req, res) => {
