@@ -287,17 +287,14 @@ export const get_all_schedule_specific_barangay = asyncHandler(async (req, res) 
             }
         })
 
-        // Filter schedules where the route's merge_barangay contains the specified barangay_id
         const filteredSchedules = schedules.filter(schedule => {
-            // Check if route exists and has merge_barangay array
-            if (!schedule.route || !schedule.route.merge_barangay) {
-                return false;
-            }
+            const mergeBarangays = schedule?.route?.merge_barangay;
+            if (!Array.isArray(mergeBarangays)) return false;
 
-            // Check if any barangay in merge_barangay matches the requested barangay_id
-            return schedule.route.merge_barangay.some(barangay =>
-                barangay.barangay_id.toString() === barangay_id
-            );
+            return mergeBarangays.some(item => {
+                const id = item?.barangay_id?._id || item?.barangay_id; // handle populated/unpopulated
+                return id?.toString() === barangay_id.toString();
+            });
         });
 
         return res.status(200).json({ data: filteredSchedules });
