@@ -88,7 +88,7 @@ export const get_specific_collector_attendance = asyncHandler(async (req, res) =
 
 
 export const update_collector_attendance_time_out = asyncHandler(async (req, res) => {
-    const { user } = req.params; // Get the meal ID from the request parameters
+    const { user_id } = req.params; // Get the meal ID from the request parameters
     const { ended_at } = req.body;
 
     try {
@@ -96,7 +96,7 @@ export const update_collector_attendance_time_out = asyncHandler(async (req, res
             return res.status(400).json({ message: "Please provide all fields (ended_at)." });
         }
 
-        const updatedCollectorAttendance = await CollectorAttendance.findOne({ user: user }).sort({ created_at: -1 }); 
+        const updatedCollectorAttendance = await CollectorAttendance.findOne({ user: user_id }).sort({ created_at: -1 }); 
 
 
         if (!updatedCollectorAttendance) {
