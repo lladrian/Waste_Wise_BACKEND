@@ -16,6 +16,23 @@ function storeCurrentDate(expirationAmount, expirationUnit) {
     return formattedExpirationDateTime;
 }
 
+export const check_collector_attendance = asyncHandler(async (req, res) => {
+    const { user_id } = req.params; // Get the meal ID from the request parameters
+
+    try {
+        const last_attendance = await CollectorAttendance.findOne({ user: user_id }).sort({ created_at: -1 }); 
+
+        if(!last_attendance) {
+            return res.status(400).json({ data: 0, message: "Collector attendance not found." });
+        }
+
+        return res.status(200).json({ data: last_attendance.flag });
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ error: 'Failed to create collector attendance.' });
+    }
+});
+
 
 export const create_collector_attendance = asyncHandler(async (req, res) => {
     const { truck, user, schedule, started_at } = req.body;
@@ -37,9 +54,15 @@ export const create_collector_attendance = asyncHandler(async (req, res) => {
 
         const newCollectorAttendance = new CollectorAttendance(newCollectorAttendanceData);
 
-        if(last_attendance.flag === 0) {
+        if(!last_attendance) {
             await newCollectorAttendance.save();
-        } else {
+        }
+
+        if(last_attendance && last_attendance.flag === 0) {
+            await newCollectorAttendance.save();
+        } 
+
+        if(last_attendance && last_attendance.flag === 1) {
             return res.status(400).json({ message: 'Collector attendance already time in.' });
         }
 
@@ -56,6 +79,10 @@ export const get_all_collector_attendance_specific_user = asyncHandler(async (re
     try {
         const collector_attendances = await CollectorAttendance.find({ user: user_id });
 
+        if(!collector_attendances) {
+            return res.status(400).json({ message: "Collector attendance not found." });
+        }
+
         return res.status(200).json({ data: collector_attendances });
     } catch (error) {
         return res.status(500).json({ error: 'Failed to get all collector attendance.' });
@@ -68,6 +95,11 @@ export const get_all_collector_attendance = asyncHandler(async (req, res) => {
     try {
         const collector_attendances = await CollectorAttendance.find();
 
+        if(!collector_attendances) {
+            return res.status(400).json({ message: "Collector attendance not found." });
+        }
+
+
         return res.status(200).json({ data: collector_attendances });
     } catch (error) {
         return res.status(500).json({ error: 'Failed to get all collector attendance.' });
@@ -79,6 +111,10 @@ export const get_specific_collector_attendance = asyncHandler(async (req, res) =
 
     try {
         const collector_attendance = await CollectorAttendance.findById(id);
+
+        if(!collector_attendance) {
+            return res.status(400).json({ message: "Collector attendance not found." });
+        }
 
         res.status(200).json({ data: collector_attendance });
     } catch (error) {
