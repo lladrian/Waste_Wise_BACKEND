@@ -110,7 +110,8 @@ export const get_all_collector_attendance_specific_user = asyncHandler(async (re
               model: 'Route'
             }
         })
-        .populate('truck');
+        .populate('truck')
+        .sort({ created_at: -1 });
 
 
         if(!collector_attendances) {
