@@ -21,7 +21,6 @@ export const check_collector_attendance = asyncHandler(async (req, res) => {
 
     try {
         const last_attendance = await CollectorAttendance.findOne({ user: user_id })
-        .sort({ created_at: -1 })
         .populate('user')
         .populate('schedule')
         .populate({
@@ -31,7 +30,8 @@ export const check_collector_attendance = asyncHandler(async (req, res) => {
               model: 'Route'
             }
         })
-        .populate('truck'); 
+        .populate('truck')
+        .sort({ created_at: -1 }); 
 
         if(!last_attendance) {
             return res.status(200).json({ data: 0, message: "Collector attendance not found." });
@@ -195,11 +195,13 @@ export const update_collector_attendance_time_out = asyncHandler(async (req, res
         updatedCollectorAttendance.ended_at = ended_at ? ended_at : updatedCollectorAttendance.ended_at;
         updatedCollectorAttendance.flag = 0;
 
-        if(updatedCollectorAttendance.flag === 1) {
-            await updatedCollectorAttendance.save();
-        } else {
+        if(updatedCollectorAttendance.flag === 0) {
             return res.status(400).json({ message: 'Collector attendance already time out.' });
         }
+
+        if(updatedCollectorAttendance.flag === 1) {
+            await updatedCollectorAttendance.save();
+        } 
 
         return res.status(200).json({ data: 'Collector attendance successfully updated.' });
     } catch (error) {
