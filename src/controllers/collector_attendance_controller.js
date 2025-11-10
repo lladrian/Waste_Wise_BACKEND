@@ -21,25 +21,31 @@ export const create_collector_attendance = asyncHandler(async (req, res) => {
     const { truck, user, schedule, started_at } = req.body;
 
     try {
-        if (!truck || !user || !route || !started_at) {
+        if (!truck || !user || !started_at || !schedule) {
             return res.status(400).json({ message: "Please provide all fields (truck, user, schedule, started_at)." });
         }
 
+        const last_attendance = await CollectorAttendance.findOne({ user: user }).sort({ created_at: -1 }); 
 
         const newCollectorAttendanceData = {
             started_at: started_at,
             truck: truck,
             user: user,
             schedule: schedule,
-            started_at: storeCurrentDate(0, "hours"),
             created_at: storeCurrentDate(0, "hours")
         };
 
         const newCollectorAttendance = new CollectorAttendance(newCollectorAttendanceData);
-        await newCollectorAttendance.save();
+
+        if(last_attendance.flag === 0) {
+            await newCollectorAttendance.save();
+        } else {
+            return res.status(400).json({ message: 'Collector attendance already time in.' });
+        }
 
         return res.status(200).json({ data: 'New collector attendance successfully created.' });
     } catch (error) {
+        console.log(error)
         return res.status(500).json({ error: 'Failed to create collector attendance.' });
     }
 });
@@ -97,6 +103,7 @@ export const update_collector_attendance_time_out = asyncHandler(async (req, res
         }
 
         updatedCollectorAttendance.ended_at = ended_at ? ended_at : updatedCollectorAttendance.ended_at;
+        updatedCollectorAttendance.flag = 0;
 
         await updatedCollectorAttendance.save();
 

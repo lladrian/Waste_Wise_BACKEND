@@ -9,9 +9,13 @@ const CollectorAttendanceSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Truck',
     },
-    route: {
+    schedule: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Route',
+        ref: 'Schedule',
+    },
+    flag: {
+        type: Number,
+        default: 1
     },
     started_at: {
         type: String,
