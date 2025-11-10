@@ -55,18 +55,19 @@ export const create_collector_attendance = asyncHandler(async (req, res) => {
         const newCollectorAttendance = new CollectorAttendance(newCollectorAttendanceData);
 
         if(!last_attendance) {
-            await newCollectorAttendance.save();
+           var data = await newCollectorAttendance.save();
         }
 
         if(last_attendance && last_attendance.flag === 0) {
-            await newCollectorAttendance.save();
+           var data = await newCollectorAttendance.save();
         } 
 
         if(last_attendance && last_attendance.flag === 1) {
             return res.status(400).json({ message: 'Collector attendance already time in.' });
         }
 
-        return res.status(200).json({ data: 'New collector attendance successfully created.' });
+        return res.status(200).json({ data: data });
+        // return res.status(200).json({ data: 'New collector attendance successfully created.' });
     } catch (error) {
         console.log(error)
         return res.status(500).json({ error: 'Failed to create collector attendance.' });
