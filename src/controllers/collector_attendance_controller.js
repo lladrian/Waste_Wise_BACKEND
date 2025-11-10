@@ -23,7 +23,7 @@ export const check_collector_attendance = asyncHandler(async (req, res) => {
         const last_attendance = await CollectorAttendance.findOne({ user: user_id }).sort({ created_at: -1 }); 
 
         if(!last_attendance) {
-            return res.status(400).json({ data: 0, message: "Collector attendance not found." });
+            return res.status(200).json({ data: 0, message: "Collector attendance not found." });
         }
 
         return res.status(200).json({ data: last_attendance.flag });
