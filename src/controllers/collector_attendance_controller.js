@@ -88,7 +88,7 @@ export const get_specific_collector_attendance = asyncHandler(async (req, res) =
 
 
 export const update_collector_attendance_time_out = asyncHandler(async (req, res) => {
-    const { id } = req.params; // Get the meal ID from the request parameters
+    const { user } = req.params; // Get the meal ID from the request parameters
     const { ended_at } = req.body;
 
     try {
@@ -96,7 +96,8 @@ export const update_collector_attendance_time_out = asyncHandler(async (req, res
             return res.status(400).json({ message: "Please provide all fields (ended_at)." });
         }
 
-        const updatedCollectorAttendance = await CollectorAttendance.findById(id);
+        const updatedCollectorAttendance = await CollectorAttendance.findOne({ user: user }).sort({ created_at: -1 }); 
+
 
         if (!updatedCollectorAttendance) {
             return res.status(404).json({ message: "Collector attendance not found" });
@@ -105,7 +106,11 @@ export const update_collector_attendance_time_out = asyncHandler(async (req, res
         updatedCollectorAttendance.ended_at = ended_at ? ended_at : updatedCollectorAttendance.ended_at;
         updatedCollectorAttendance.flag = 0;
 
-        await updatedCollectorAttendance.save();
+        if(updatedCollectorAttendance.flag === 1) {
+            await updatedCollectorAttendance.save();
+        } else {
+            return res.status(400).json({ message: 'Collector attendance already time out.' });
+        }
 
         return res.status(200).json({ data: 'Collector attendance successfully updated.' });
     } catch (error) {
