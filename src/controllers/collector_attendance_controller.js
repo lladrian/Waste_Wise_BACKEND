@@ -77,7 +77,11 @@ export const get_all_collector_attendance_specific_user = asyncHandler(async (re
     const { user_id } = req.params; // Get the meal ID from the request parameters
 
     try {
-        const collector_attendances = await CollectorAttendance.find({ user: user_id });
+        const collector_attendances = await CollectorAttendance.find({ user: user_id })
+        .populate('user')
+        .populate('schedule')
+        .populate('truck');
+
 
         if(!collector_attendances) {
             return res.status(400).json({ message: "Collector attendance not found." });
@@ -93,7 +97,10 @@ export const get_all_collector_attendance_specific_user = asyncHandler(async (re
 
 export const get_all_collector_attendance = asyncHandler(async (req, res) => {
     try {
-        const collector_attendances = await CollectorAttendance.find();
+        const collector_attendances = await CollectorAttendance.find()
+        .populate('user')
+        .populate('schedule')
+        .populate('truck');
 
         if(!collector_attendances) {
             return res.status(400).json({ message: "Collector attendance not found." });
@@ -110,7 +117,10 @@ export const get_specific_collector_attendance = asyncHandler(async (req, res) =
     const { id } = req.params; // Get the meal ID from the request parameters
 
     try {
-        const collector_attendance = await CollectorAttendance.findById(id);
+        const collector_attendance = await CollectorAttendance.findById(id)
+        .populate('user')
+        .populate('schedule')
+        .populate('truck');
 
         if(!collector_attendance) {
             return res.status(400).json({ message: "Collector attendance not found." });
