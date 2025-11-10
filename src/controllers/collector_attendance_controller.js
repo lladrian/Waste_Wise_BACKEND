@@ -79,7 +79,13 @@ export const get_all_collector_attendance_specific_user = asyncHandler(async (re
     try {
         const collector_attendances = await CollectorAttendance.find({ user: user_id })
         .populate('user')
-        .populate('schedule')
+        .populate({
+            path: 'schedule',
+            populate: {
+              path: 'route',
+              model: 'Route'
+            }
+        })
         .populate('truck');
 
 
@@ -99,7 +105,13 @@ export const get_all_collector_attendance = asyncHandler(async (req, res) => {
     try {
         const collector_attendances = await CollectorAttendance.find()
         .populate('user')
-        .populate('schedule')
+        .populate({
+            path: 'schedule',
+            populate: {
+              path: 'route',
+              model: 'Route'
+            }
+        })
         .populate('truck');
 
         if(!collector_attendances) {
@@ -120,6 +132,13 @@ export const get_specific_collector_attendance = asyncHandler(async (req, res) =
         const collector_attendance = await CollectorAttendance.findById(id)
         .populate('user')
         .populate('schedule')
+        .populate({
+            path: 'schedule',
+            populate: {
+              path: 'route',
+              model: 'Route'
+            }
+        })
         .populate('truck');
 
         if(!collector_attendance) {
