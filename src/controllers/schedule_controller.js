@@ -305,14 +305,15 @@ export const get_all_schedule_specific_barangay = asyncHandler(async (req, res) 
 });
 
 export const get_all_schedule_current_day_specific_user = asyncHandler(async (req, res) => {
-    const { user_id } = req.params; // Get the meal ID from the request parameters
+    const { user_id } = req.params;
 
     try {
-        const schedules = await Schedule.find({ scheduled_collection: getPhilippineDate(), 'truck.user': user_id })
+        // First get all schedules for today
+        const allSchedules = await Schedule.find({ scheduled_collection: getPhilippineDate() })
         .populate({
             path: 'route',
             populate: {
-                path: 'merge_barangay.barangay_id', // populate each barangay inside route
+                path: 'merge_barangay.barangay_id',
                 model: 'Barangay'
             }
         })
@@ -324,8 +325,19 @@ export const get_all_schedule_current_day_specific_user = asyncHandler(async (re
             }
         });
 
-        return res.status(200).json({ data: schedules, today: getPhilippineDate() });
+        // Then filter by user ID
+        const filteredSchedules = allSchedules.filter(schedule => 
+            schedule.truck && 
+            schedule.truck.user && 
+            schedule.truck.user._id.toString() === user_id
+        );
+
+        return res.status(200).json({ 
+            data: filteredSchedules, 
+            today: getPhilippineDate() 
+        });
     } catch (error) {
+        console.error('Error:', error);
         return res.status(500).json({ error: 'Failed to get all schedules.' });
     }
 });
