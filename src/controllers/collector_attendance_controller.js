@@ -18,18 +18,19 @@ function storeCurrentDate(expirationAmount, expirationUnit) {
 
 
 export const create_collector_attendance = asyncHandler(async (req, res) => {
-    const { truck, user, route } = req.body;
+    const { truck, user, schedule, started_at } = req.body;
 
     try {
-        if (!truck || !user || !route) {
-            return res.status(400).json({ message: "Please provide all fields (truck, user, route)." });
+        if (!truck || !user || !route || !started_at) {
+            return res.status(400).json({ message: "Please provide all fields (truck, user, schedule, started_at)." });
         }
 
 
         const newCollectorAttendanceData = {
+            started_at: started_at,
             truck: truck,
             user: user,
-            route: route,
+            schedule: schedule,
             started_at: storeCurrentDate(0, "hours"),
             created_at: storeCurrentDate(0, "hours")
         };
@@ -43,6 +44,17 @@ export const create_collector_attendance = asyncHandler(async (req, res) => {
     }
 });
 
+export const get_all_collector_attendance_specific_user = asyncHandler(async (req, res) => {
+    const { user_id } = req.params; // Get the meal ID from the request parameters
+
+    try {
+        const collector_attendances = await CollectorAttendance.find({ user: user_id });
+
+        return res.status(200).json({ data: collector_attendances });
+    } catch (error) {
+        return res.status(500).json({ error: 'Failed to get all collector attendance.' });
+    }
+});
 
 
 
@@ -69,15 +81,40 @@ export const get_specific_collector_attendance = asyncHandler(async (req, res) =
 });
 
 
+export const update_collector_attendance_time_out = asyncHandler(async (req, res) => {
+    const { id } = req.params; // Get the meal ID from the request parameters
+    const { ended_at } = req.body;
+
+    try {
+        if (!ended_at) {
+            return res.status(400).json({ message: "Please provide all fields (ended_at)." });
+        }
+
+        const updatedCollectorAttendance = await CollectorAttendance.findById(id);
+
+        if (!updatedCollectorAttendance) {
+            return res.status(404).json({ message: "Collector attendance not found" });
+        }
+
+        updatedCollectorAttendance.ended_at = ended_at ? ended_at : updatedCollectorAttendance.ended_at;
+
+        await updatedCollectorAttendance.save();
+
+        return res.status(200).json({ data: 'Collector attendance successfully updated.' });
+    } catch (error) {
+        return res.status(500).json({ error: 'Failed to update collector attendance.' });
+    }
+});
+
 
 
 export const update_collector_attendance = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters
-    const { truck, user, route } = req.body;
+    const { truck, user, schedule } = req.body;
 
     try {
-        if (!truck || !user || !route) {
-            return res.status(400).json({ message: "Please provide all fields (truck, user, route)." });
+        if (!truck || !user || !schedule) {
+            return res.status(400).json({ message: "Please provide all fields (truck, user, schedule)." });
         }
 
         const updatedCollectorAttendance = await CollectorAttendance.findById(id);
@@ -88,7 +125,7 @@ export const update_collector_attendance = asyncHandler(async (req, res) => {
 
         updatedCollectorAttendance.truck = truck ? truck : updatedCollectorAttendance.truck;
         updatedCollectorAttendance.user = user ? user : updatedCollectorAttendance.user;
-        updatedCollectorAttendance.route = route ? route : updatedCollectorAttendance.route;
+        updatedCollectorAttendance.schedule = schedule ? schedule : updatedCollectorAttendance.schedule;
 
 
         await updatedCollectorAttendance.save();
