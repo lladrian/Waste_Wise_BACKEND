@@ -304,19 +304,49 @@ export const get_all_schedule_specific_barangay = asyncHandler(async (req, res) 
     }
 });
 
+export const get_all_schedule_current_day_specific_user = asyncHandler(async (req, res) => {
+    const { user_id } = req.params; // Get the meal ID from the request parameters
+
+    try {
+        const schedules = await Schedule.find({ scheduled_collection: getPhilippineDate(), 'truck.user': user_id })
+        .populate({
+            path: 'route',
+            populate: {
+                path: 'merge_barangay.barangay_id', // populate each barangay inside route
+                model: 'Barangay'
+            }
+        })
+        .populate({
+            path: 'truck',
+            populate: {
+                path: 'user',
+                model: 'User'
+            }
+        });
+
+        return res.status(200).json({ data: schedules, today: getPhilippineDate() });
+    } catch (error) {
+        return res.status(500).json({ error: 'Failed to get all schedules.' });
+    }
+});
 
 export const get_all_schedule_current_day = asyncHandler(async (req, res) => {
     try {
         const schedules = await Schedule.find({ scheduled_collection: getPhilippineDate() })
-            .populate('route')
-            // .populate('user')
-            .populate({
-                path: 'truck',
-                populate: {
-                    path: 'user',
-                    model: 'User'
-                }
-            });
+        .populate({
+            path: 'route',
+            populate: {
+                path: 'merge_barangay.barangay_id', // populate each barangay inside route
+                model: 'Barangay'
+            }
+        })
+        .populate({
+            path: 'truck',
+            populate: {
+                path: 'user',
+                model: 'User'
+            }
+        });
 
         return res.status(200).json({ data: schedules, today: getPhilippineDate() });
     } catch (error) {
