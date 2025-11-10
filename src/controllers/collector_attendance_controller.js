@@ -192,17 +192,15 @@ export const update_collector_attendance_time_out = asyncHandler(async (req, res
             return res.status(404).json({ message: "Collector attendance not found" });
         }
 
-        updatedCollectorAttendance.ended_at = ended_at ? ended_at : updatedCollectorAttendance.ended_at;
-        updatedCollectorAttendance.flag = 0;
-
         if(updatedCollectorAttendance.flag === 0) {
             return res.status(400).json({ message: 'Collector attendance already time out.' });
         }
 
-        if(updatedCollectorAttendance.flag === 1) {
-            await updatedCollectorAttendance.save();
-        } 
+        updatedCollectorAttendance.ended_at = ended_at ? ended_at : updatedCollectorAttendance.ended_at;
+        updatedCollectorAttendance.flag = 0;
 
+        await updatedCollectorAttendance.save();
+        
         return res.status(200).json({ data: 'Collector attendance successfully updated.' });
     } catch (error) {
         return res.status(500).json({ error: 'Failed to update collector attendance.' });
