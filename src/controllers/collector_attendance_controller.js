@@ -103,14 +103,18 @@ export const get_all_collector_attendance_specific_user = asyncHandler(async (re
     try {
         const collector_attendances = await CollectorAttendance.find({ user: user_id })
         .populate('user')
-        .populate({
-            path: 'schedule',
-            populate: {
-              path: 'route',
-              model: 'Route'
-            }
-        })
         .populate('truck')
+        .populate({
+          path: 'schedule',
+          populate: {
+            path: 'route',
+            model: 'Route',
+            populate: {
+              path: 'merge_barangay.barangay_id',
+              model: 'Barangay'
+            }
+          }
+        })
         .sort({ created_at: -1 });
 
 
