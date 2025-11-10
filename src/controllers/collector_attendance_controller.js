@@ -65,8 +65,20 @@ export const create_collector_attendance = asyncHandler(async (req, res) => {
         if(last_attendance && last_attendance.flag === 1) {
             return res.status(400).json({ message: 'Collector attendance already time in.' });
         }
+     
+        const collector_attendance = await CollectorAttendance.findById(data._id)
+        .populate('user')
+        .populate('schedule')
+        .populate({
+            path: 'schedule',
+            populate: {
+              path: 'route',
+              model: 'Route'
+            }
+        })
+        .populate('truck');
 
-        return res.status(200).json({ data: data });
+        return res.status(200).json({ data: collector_attendance });
         // return res.status(200).json({ data: 'New collector attendance successfully created.' });
     } catch (error) {
         console.log(error)
