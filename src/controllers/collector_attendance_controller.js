@@ -18,16 +18,20 @@ function storeCurrentDate(expirationAmount, expirationUnit) {
 
 
 export const create_collector_attendance = asyncHandler(async (req, res) => {
-    const { truck, user, schedule, started_at } = req.body;
+    const { truck, user, schedule, started_at, latitude, longitude } = req.body;
 
     try {
-        if (!truck || !user || !started_at || !schedule) {
-            return res.status(400).json({ message: "Please provide all fields (truck, user, schedule, started_at)." });
+        if (!truck || !user || !started_at || !schedule || !latitude || !longitude) {
+            return res.status(400).json({ message: "Please provide all fields (truck, user, schedule, started_at, latitude, longitude)." });
         }
 
-        const last_attendance = await CollectorAttendance.findOne({ user: user }).sort({ created_at: -1 }); 
+        const last_attendance = await CollectorAttendance.findOne({ user: user }).sort({ created_at: -1 });
 
         const newCollectorAttendanceData = {
+            position_start: {
+                lat: latitude,
+                lng: longitude
+            },
             started_at: started_at,
             truck: truck,
             user: user,
@@ -37,11 +41,11 @@ export const create_collector_attendance = asyncHandler(async (req, res) => {
 
         const newCollectorAttendance = new CollectorAttendance(newCollectorAttendanceData);
 
-        if(last_attendance.flag === 0) {
-            await newCollectorAttendance.save();
-        } else {
+        if (last_attendance.flag === 1) {
             return res.status(400).json({ message: 'Collector attendance already time in.' });
         }
+
+        await newCollectorAttendance.save();
 
         return res.status(200).json({ data: 'New collector attendance successfully created.' });
     } catch (error) {
@@ -66,7 +70,20 @@ export const get_all_collector_attendance_specific_user = asyncHandler(async (re
 
 export const get_all_collector_attendance = asyncHandler(async (req, res) => {
     try {
-        const collector_attendances = await CollectorAttendance.find();
+        const collector_attendances = await CollectorAttendance.find()
+            .populate({
+                path: 'schedule',
+                populate: {
+                    path: 'route',
+                    populate: {
+                        path: 'merge_barangay.barangay_id', // populate each barangay inside route
+                        model: 'Barangay'
+                    }
+                }
+            })
+            .populate('truck')
+            .populate('user')
+
 
         return res.status(200).json({ data: collector_attendances });
     } catch (error) {
@@ -89,24 +106,25 @@ export const get_specific_collector_attendance = asyncHandler(async (req, res) =
 
 export const update_collector_attendance_time_out = asyncHandler(async (req, res) => {
     const { user_id } = req.params; // Get the meal ID from the request parameters
-    const { ended_at } = req.body;
+    const { ended_at, latitude, longitude } = req.body;
 
     try {
-        if (!ended_at) {
-            return res.status(400).json({ message: "Please provide all fields (ended_at)." });
+        if (!ended_at || !latitude || !longitude) {
+            return res.status(400).json({ message: "Please provide all fields (ended_at, longitude, latitude)." });
         }
 
-        const updatedCollectorAttendance = await CollectorAttendance.findOne({ user: user_id }).sort({ created_at: -1 }); 
+        const updatedCollectorAttendance = await CollectorAttendance.findOne({ user: user_id }).sort({ created_at: -1 });
 
 
         if (!updatedCollectorAttendance) {
             return res.status(404).json({ message: "Collector attendance not found" });
         }
-
+        updatedCollectorAttendance.position_end.lat = latitude ?? updatedCollectorAttendance.position_end.lat;
+        updatedCollectorAttendance.position_end.lng = longitude ?? updatedCollectorAttendance.position_end.lng;
         updatedCollectorAttendance.ended_at = ended_at ? ended_at : updatedCollectorAttendance.ended_at;
         updatedCollectorAttendance.flag = 0;
 
-        if(updatedCollectorAttendance.flag === 1) {
+        if (updatedCollectorAttendance.flag === 1) {
             await updatedCollectorAttendance.save();
         } else {
             return res.status(400).json({ message: 'Collector attendance already time out.' });

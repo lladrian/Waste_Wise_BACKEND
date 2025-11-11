@@ -13,6 +13,30 @@ const CollectorAttendanceSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Schedule',
     },
+    position_start: {
+        lat: {
+            type: Number,
+            required: false,
+            default:  null
+        },
+        lng: {
+            type: Number,
+            required: false,
+            default:  null
+        }
+    },
+    position_end: {
+        lat: {
+            type: Number,
+            required: false,
+            default:  null
+        },
+        lng: {
+            type: Number,
+            required: false,
+            default:  null
+        }
+    },
     flag: {
         type: Number,
         default: 1
