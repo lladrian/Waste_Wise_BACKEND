@@ -16,6 +16,34 @@ function storeCurrentDate(expirationAmount, expirationUnit) {
     return formattedExpirationDateTime;
 }
 
+export const check_collector_attendance = asyncHandler(async (req, res) => {
+    const { user_id } = req.params; // Get the meal ID from the request parameters
+
+    try {
+        const last_attendance = await CollectorAttendance.findOne({ user: user_id })
+        .populate('user')
+        .populate('schedule')
+        .populate({
+            path: 'schedule',
+            populate: {
+              path: 'route',
+              model: 'Route'
+            }
+        })
+        .populate('truck')
+        .sort({ created_at: -1 }); 
+
+        if(!last_attendance) {
+            return res.status(200).json({ data: 0, message: "Collector attendance not found." });
+        }
+
+        return res.status(200).json({ data: { flag: last_attendance.flag, attendances: last_attendance } });
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ error: 'Failed to create collector attendance.' });
+    }
+});
+
 
 export const create_collector_attendance = asyncHandler(async (req, res) => {
     const { truck, user, schedule, started_at, latitude, longitude } = req.body;
