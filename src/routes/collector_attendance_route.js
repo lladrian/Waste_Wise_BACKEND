@@ -3,6 +3,8 @@ import * as CollectorAttendanceController from '../controllers/collector_attenda
 
 const collectorAttendanceRoutes = Router();
 
+ 
+collectorAttendanceRoutes.get('/check_collector_attendance/:user_id', CollectorAttendanceController.check_collector_attendance);
 collectorAttendanceRoutes.post('/add_collector_attendance', CollectorAttendanceController.create_collector_attendance);
 collectorAttendanceRoutes.get('/get_all_collector_attendance', CollectorAttendanceController.get_all_collector_attendance);
 collectorAttendanceRoutes.get('/get_specific_collector_attendance/:id', CollectorAttendanceController.get_specific_collector_attendance);
