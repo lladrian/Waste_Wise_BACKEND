@@ -188,7 +188,23 @@ export const update_collector_attendance_time_out = asyncHandler(async (req, res
 
         await updatedCollectorAttendance.save();
 
-        return res.status(200).json({ data: 'Collector attendance successfully updated.' });
+        const data = await CollectorAttendance.findById(updatedCollectorAttendance._id)
+        .populate({
+            path: 'schedule',
+            populate: {
+                path: 'route',
+                populate: {
+                    path: 'merge_barangay.barangay_id', 
+                    model: 'Barangay'
+                }
+            }
+        })
+        .populate('truck')
+        .populate('user')
+
+        
+        return res.status(200).json({ data: data });
+        // return res.status(200).json({ data: 'Collector attendance successfully updated.' });
     } catch (error) {
         return res.status(500).json({ error: 'Failed to update collector attendance.' });
     }

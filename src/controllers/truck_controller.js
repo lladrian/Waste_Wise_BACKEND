@@ -103,6 +103,30 @@ export const get_specific_truck = asyncHandler(async (req, res) => {
     }
 });
 
+export const update_truck_status = asyncHandler(async (req, res) => {
+    const { id } = req.params; // Get the meal ID from the request parameters
+    const { status } = req.body;
+
+    try {
+        if (!status) {
+            return res.status(400).json({ message: "Please provide all fields (status)." });
+        }
+
+        const updatedTruck = await Truck.findById(id);
+
+        if (!updatedTruck) {
+            return res.status(404).json({ message: "Truck not found" });
+        }
+
+        updatedTruck.status = status ? status : updatedTruck.status;
+
+        await updatedTruck.save();
+
+        return res.status(200).json({ data: 'Truck successfully updated.' });
+    } catch (error) {
+        return res.status(500).json({ error: 'Failed to update truck.' });
+    }
+});
 
 export const update_truck_position = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the user ID from request parameters

@@ -9,6 +9,10 @@ truckRoutes.get('/get_specific_truck/:id', TruckController.get_specific_truck);
 truckRoutes.delete('/delete_truck/:id', TruckController.delete_truck);
 truckRoutes.put('/update_truck/:id', TruckController.update_truck);
 truckRoutes.put('/update_truck_position/:id', TruckController.update_truck_position);
+truckRoutes.put('/update_truck_status/:id', TruckController.update_truck_status);
+
+
+
 // truckRoutes.put('/update_truck_hidden/:id', TruckController.update_truck_hidden);
 
 export default truckRoutes;
