@@ -73,9 +73,25 @@ export const create_collector_attendance = asyncHandler(async (req, res) => {
             return res.status(400).json({ message: 'Collector attendance already time in.' });
         }
 
-        await newCollectorAttendance.save();
+        const collector = await newCollectorAttendance.save();
 
-        return res.status(200).json({ data: 'New collector attendance successfully created.' });
+        const data = await CollectorAttendance.findById(collector._id)
+        .populate({
+            path: 'schedule',
+            populate: {
+                path: 'route',
+                populate: {
+                    path: 'merge_barangay.barangay_id', 
+                    model: 'Barangay'
+                }
+            }
+        })
+        .populate('truck')
+        .populate('user')
+
+        
+        return res.status(200).json({ data: data });
+       // return res.status(200).json({ data: 'New collector attendance successfully created.' });
     } catch (error) {
         console.log(error)
         return res.status(500).json({ error: 'Failed to create collector attendance.' });
@@ -104,7 +120,7 @@ export const get_all_collector_attendance = asyncHandler(async (req, res) => {
                 populate: {
                     path: 'route',
                     populate: {
-                        path: 'merge_barangay.barangay_id', // populate each barangay inside route
+                        path: 'merge_barangay.barangay_id', 
                         model: 'Barangay'
                     }
                 }
