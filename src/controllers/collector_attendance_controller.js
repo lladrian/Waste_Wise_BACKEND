@@ -147,16 +147,17 @@ export const update_collector_attendance_time_out = asyncHandler(async (req, res
         if (!updatedCollectorAttendance) {
             return res.status(404).json({ message: "Collector attendance not found" });
         }
+
+        if (updatedCollectorAttendance.flag === 0) {
+            return res.status(400).json({ message: 'Collector attendance already time out.' });
+        }
+
         updatedCollectorAttendance.position_end.lat = latitude ?? updatedCollectorAttendance.position_end.lat;
         updatedCollectorAttendance.position_end.lng = longitude ?? updatedCollectorAttendance.position_end.lng;
         updatedCollectorAttendance.ended_at = ended_at ? ended_at : updatedCollectorAttendance.ended_at;
         updatedCollectorAttendance.flag = 0;
 
-        if (updatedCollectorAttendance.flag === 1) {
-            await updatedCollectorAttendance.save();
-        } else {
-            return res.status(400).json({ message: 'Collector attendance already time out.' });
-        }
+        await updatedCollectorAttendance.save();
 
         return res.status(200).json({ data: 'Collector attendance successfully updated.' });
     } catch (error) {
