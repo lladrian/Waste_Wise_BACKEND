@@ -69,7 +69,7 @@ export const create_collector_attendance = asyncHandler(async (req, res) => {
 
         const newCollectorAttendance = new CollectorAttendance(newCollectorAttendanceData);
 
-        if (last_attendance.flag === 1) {
+        if (last_attendance && last_attendance.flag === 1) {
             return res.status(400).json({ message: 'Collector attendance already time in.' });
         }
 
