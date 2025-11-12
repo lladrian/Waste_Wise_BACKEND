@@ -102,7 +102,19 @@ export const get_all_collector_attendance_specific_user = asyncHandler(async (re
     const { user_id } = req.params; // Get the meal ID from the request parameters
 
     try {
-        const collector_attendances = await CollectorAttendance.find({ user: user_id });
+        const collector_attendances = await CollectorAttendance.find({ user: user_id })
+        .populate({
+            path: 'schedule',
+            populate: {
+                path: 'route',
+                populate: {
+                    path: 'merge_barangay.barangay_id', 
+                    model: 'Barangay'
+                }
+            }
+        })
+        .populate('truck')
+        .populate('user')
 
         return res.status(200).json({ data: collector_attendances });
     } catch (error) {
