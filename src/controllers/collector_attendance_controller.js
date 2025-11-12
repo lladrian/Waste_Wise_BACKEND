@@ -115,6 +115,7 @@ export const get_all_collector_attendance_specific_user = asyncHandler(async (re
         })
         .populate('truck')
         .populate('user')
+        .sort({ created_at: -1 }); 
 
         return res.status(200).json({ data: collector_attendances });
     } catch (error) {
