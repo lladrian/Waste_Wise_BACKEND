@@ -78,5 +78,14 @@ const ScheduleSchema = new mongoose.Schema({
     },
 });
 
+ScheduleSchema.virtual("garbage_sites", {
+    ref: "GarbageSite",
+    localField: "task.barangay_id",
+    foreignField: "barangay",
+});
+
+ScheduleSchema.set("toObject", { virtuals: true });
+ScheduleSchema.set("toJSON", { virtuals: true });
+
 
 export default mongoose.model('Schedule', ScheduleSchema);

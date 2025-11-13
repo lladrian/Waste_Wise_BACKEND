@@ -43,6 +43,7 @@ export const get_all_barangay = asyncHandler(async (req, res) => {
     try {
         const barangays = await Barangay.find();
 
+
         return res.status(200).json({ data: barangays });
     } catch (error) {
         return res.status(500).json({ error: 'Failed to get all barangay.' });

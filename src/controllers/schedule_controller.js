@@ -332,7 +332,8 @@ export const get_all_schedule_current_day_specific_user = asyncHandler(async (re
                 path: 'user',
                 model: 'User'
             }
-        });
+        })
+        .populate('garbage_sites');
 
         // Then filter by user ID
         const filteredSchedules = allSchedules.filter(schedule => 
@@ -371,7 +372,8 @@ export const get_all_schedule_current_day = asyncHandler(async (req, res) => {
                 path: 'user',
                 model: 'User'
             }
-        });
+        })
+        .populate('garbage_sites');
 
         return res.status(200).json({ data: schedules, today: getPhilippineDate() });
     } catch (error) {
@@ -400,6 +402,8 @@ export const get_all_schedule = asyncHandler(async (req, res) => {
                 model: 'User'
             }
         })
+        .populate('garbage_sites')
+        
 
 
         return res.status(200).json({ data: schedules });
