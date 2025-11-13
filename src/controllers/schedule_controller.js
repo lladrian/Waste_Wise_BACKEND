@@ -281,6 +281,10 @@ export const get_all_schedule_specific_barangay = asyncHandler(async (req, res) 
             }
         })
         .populate({
+            path: 'task.barangay_id', // ✅ populate barangay_id inside each task
+            model: 'Barangay'
+        })
+        .populate({
             path: 'truck',
             populate: {
                 path: 'user',
@@ -319,6 +323,10 @@ export const get_all_schedule_current_day_specific_user = asyncHandler(async (re
             }
         })
         .populate({
+            path: 'task.barangay_id', // ✅ populate barangay_id inside each task
+            model: 'Barangay'
+        })
+        .populate({
             path: 'truck',
             populate: {
                 path: 'user',
@@ -354,6 +362,10 @@ export const get_all_schedule_current_day = asyncHandler(async (req, res) => {
             }
         })
         .populate({
+            path: 'task.barangay_id', // ✅ populate barangay_id inside each task
+            model: 'Barangay'
+        })
+        .populate({
             path: 'truck',
             populate: {
                 path: 'user',
@@ -370,13 +382,13 @@ export const get_all_schedule_current_day = asyncHandler(async (req, res) => {
 export const get_all_schedule = asyncHandler(async (req, res) => {
     try {
         const schedules = await Schedule.find()
-        // .populate({
-        //     path: 'task',
-        //     populate: {
-        //         path: 'merge_barangay.barangay_id', // populate each barangay inside route
-        //         model: 'Barangay'
-        //     }
-        // })
+        .populate({
+            path: 'task',
+            populate: {
+                path: 'merge_barangay.barangay_id', // populate each barangay inside route
+                model: 'Barangay'
+            }
+        })
         .populate({
             path: 'task.barangay_id', // ✅ populate barangay_id inside each task
             model: 'Barangay'
@@ -400,7 +412,25 @@ export const get_specific_schedule = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters
 
     try {
-        const schedule = await Schedule.findById(id);
+        const schedule = await Schedule.findById(id)    
+        .populate({
+            path: 'route',
+            populate: {
+                path: 'merge_barangay.barangay_id', // populate each barangay inside route
+                model: 'Barangay'
+            }
+        })
+        .populate({
+            path: 'task.barangay_id', // ✅ populate barangay_id inside each task
+            model: 'Barangay'
+        })
+        .populate({
+            path: 'truck',
+            populate: {
+                path: 'user',
+                model: 'User'
+            }
+        })
 
         res.status(200).json({ data: schedule });
     } catch (error) {
@@ -420,6 +450,10 @@ export const get_all_schedule_specific_user_garbage_collector = asyncHandler(asy
                 path: 'merge_barangay.barangay_id', // populate each barangay inside route
                 model: 'Barangay'
             }
+        })
+        .populate({
+            path: 'task.barangay_id', // ✅ populate barangay_id inside each task
+            model: 'Barangay'
         })
         .populate({
             path: 'truck',
