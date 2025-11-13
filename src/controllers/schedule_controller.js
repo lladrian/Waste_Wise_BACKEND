@@ -232,11 +232,11 @@ async function create_notification_many_barangay(barangay_ids, user_role, notif_
 }
 
 export const create_schedule = asyncHandler(async (req, res) => {
-    const { route, truck, user, scheduled_collection, garbage_type } = req.body;
+    const { route, truck, user, scheduled_collection, garbage_type, task } = req.body;
 
     try {
-        if (!route || !truck || !scheduled_collection || !user || !garbage_type) {
-            return res.status(400).json({ message: "Please provide all fields (route, truck, scheduled_collection, user, garbage_type)." });
+        if (!route || !truck || !scheduled_collection || !user || !garbage_type || !task) {
+            return res.status(400).json({ message: "Please provide all fields (route, truck, scheduled_collection, user, garbage_type, task)." });
         }
 
         if (await Schedule.findOne({ user: user, truck: truck, scheduled_collection: scheduled_collection, route: route })) return res.status(400).json({ message: 'Schedule already exists' });
@@ -245,6 +245,7 @@ export const create_schedule = asyncHandler(async (req, res) => {
         const barangayIds = routeData.merge_barangay.map(b => b.barangay_id);
 
         const newScheduleData = {
+            task: task,
             garbage_type: garbage_type,
             route: route,
             truck: truck,
@@ -369,12 +370,16 @@ export const get_all_schedule_current_day = asyncHandler(async (req, res) => {
 export const get_all_schedule = asyncHandler(async (req, res) => {
     try {
         const schedules = await Schedule.find()
+        // .populate({
+        //     path: 'task',
+        //     populate: {
+        //         path: 'merge_barangay.barangay_id', // populate each barangay inside route
+        //         model: 'Barangay'
+        //     }
+        // })
         .populate({
-            path: 'route',
-            populate: {
-                path: 'merge_barangay.barangay_id', // populate each barangay inside route
-                model: 'Barangay'
-            }
+            path: 'task.barangay_id', // ✅ populate barangay_id inside each task
+            model: 'Barangay'
         })
         .populate({
             path: 'truck',
@@ -494,11 +499,11 @@ export const update_schedule_approval = asyncHandler(async (req, res) => {
 
 export const update_schedule = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters
-    const { route, truck, scheduled_collection, remark, status, garbage_type } = req.body;
+    const { route, truck, scheduled_collection, remark, status, garbage_type, task } = req.body;
 
     try {
-        if (!route || !truck || !scheduled_collection || !remark || !status || !garbage_type) {
-            return res.status(400).json({ message: "Please provide all fields (route, truck, scheduled_collection, remark, status, garbage_type)." });
+        if (!route || !truck || !scheduled_collection || !remark || !status || !garbage_type || !task) {
+            return res.status(400).json({ message: "Please provide all fields (route, truck, scheduled_collection, remark, status, garbage_type, task)." });
         }
 
         if (await Schedule.findOne({ _id: { $ne: id }, truck: truck, scheduled_collection: scheduled_collection, route: route })) return res.status(400).json({ message: 'Schedule already exists' });
@@ -511,6 +516,7 @@ export const update_schedule = asyncHandler(async (req, res) => {
             return res.status(404).json({ message: "Schedule not found" });
         }
 
+        updatedSchedule.task = task ? task : updatedSchedule.task;
         updatedSchedule.garbage_type = garbage_type ? garbage_type : updatedSchedule.garbage_type;
         updatedSchedule.route = route ? route : updatedSchedule.route;
         updatedSchedule.remark = remark ? remark : updatedSchedule.remark;
@@ -561,6 +567,37 @@ export const update_schedule_garbage_collector = asyncHandler(async (req, res) =
     }
 });
 
+export const update_schedule_garbage_collection_status = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+    const { task_updates } = req.body; 
+
+    try {
+        if (!task_updates) {
+            return res.status(400).json({ message: "Please provide all fields (task_updates)." });
+        }
+
+        const updatedSchedule = await Schedule.findById(id);
+
+        if (!updatedSchedule) {
+            return res.status(404).json({ message: "Schedule not found" });
+        }
+
+        if (task_updates && Array.isArray(task_updates)) {
+            task_updates.forEach(task_update => {
+                const task = updatedSchedule.task.id(task_update.task_id);
+                if (task) {
+                    task.status = task_update.status;
+                }
+            });
+        }
+
+        await updatedSchedule.save();
+
+        return res.status(200).json({ message: 'Schedule successfully updated.' });
+    } catch (error) {
+        return res.status(500).json({ error: 'Failed to update schedule.' });
+    }
+})
 
 export const delete_schedule = asyncHandler(async (req, res) => {
 

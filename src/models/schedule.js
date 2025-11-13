@@ -21,6 +21,22 @@ const ScheduleSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
     },
+    task: [{
+        barangay_id: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Barangay',
+            required: false
+        },
+        order_index: {
+            type: Number,
+            required: false,
+            min: 0
+        },
+        status: {
+            type: String,
+            default: null
+        },
+    }],
     approved_at: {
         type: String,
         default: null

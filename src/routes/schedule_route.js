@@ -12,6 +12,7 @@ scheduleRoutes.get('/get_all_schedule_specific_user_garbage_collector/:user_id',
 scheduleRoutes.get('/get_all_schedule_specific_barangay/:barangay_id', ScheduleController.get_all_schedule_specific_barangay);
 scheduleRoutes.delete('/delete_schedule/:id', ScheduleController.delete_schedule);
 scheduleRoutes.put('/update_schedule/:id', ScheduleController.update_schedule);
+scheduleRoutes.put('/update_schedule_garbage_collection_status/:id', ScheduleController.update_schedule_garbage_collection_status);
 scheduleRoutes.put('/update_schedule_approval/:id', ScheduleController.update_schedule_approval);
 scheduleRoutes.put('/update_schedule_garbage_collector/:id', ScheduleController.update_schedule_garbage_collector);
 
