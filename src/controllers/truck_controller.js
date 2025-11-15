@@ -40,14 +40,11 @@ async function broadcastList(name, data) {
 }
 
 const getPhilippineDate = () => {
-    const now = new Date();
-
-    // Convert to milliseconds, add 8 hours (Philippine Time is UTC+8)
-    const philippineTime = new Date(now.getTime() + (8 * 60 * 60 * 1000));
-
-    // Get YYYY-MM-DD format from the adjusted date
-    return philippineTime.toISOString().split('T')[0];
+  const now = new Date();
+  const formatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Manila' });
+  return formatter.format(now); // YYYY-MM-DD in PH timezone
 };
+
 
 export const create_truck = asyncHandler(async (req, res) => {
     const { user, truck_id, status } = req.body;
