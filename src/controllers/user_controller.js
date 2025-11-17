@@ -395,7 +395,10 @@ export const get_specific_user = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters
 
     try {
-        const user = await User.findById(id);
+        const user = await User.findById(id)
+        .populate('role_action')
+        .populate('barangay')
+        .populate('garbage_site')
 
         res.status(200).json({ data: { user: user, fetched_at: storeCurrentDate(0, 'hours') } });
     } catch (error) {
