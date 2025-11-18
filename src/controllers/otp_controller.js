@@ -116,7 +116,7 @@ export const verify_otp = asyncHandler(async (req, res) => {
         // }
 
         // 6. OTP is valid
-        return res.status(200).json({ message: "OTP verified successfully." });
+        return res.status(200).json({ data: "OTP verified successfully.", test: (now - created) / 60000 });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: "Failed to verify OTP." });
