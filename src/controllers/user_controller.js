@@ -495,6 +495,60 @@ export const login_user = asyncHandler(async (req, res) => {
 });
 
 
+
+export const update_user_verified_email = asyncHandler(async (req, res) => {
+    const { verify, email } = req.body;
+
+    try {
+        if (!verify || !email) {
+            return res.status(400).json({ message: "Please provide all fields (verify, email)." });
+        }
+
+        const updatedUserVerify = await User.findOne({ email });
+        const deviceInfo = getDeviceInfo(req);
+        
+
+        if (!updatedUserVerify) {
+            return "User not found";
+        }
+
+        if (verify === true || verify === 'true') {
+            const log = await LoginLog.find({ user: updatedUserVerify.id, remark: "First Login" });
+
+            if (log.length === 0) {
+                const newLoginLog = new LoginLog({
+                    user: updatedUserVerify.id,
+                    status: 'Success',
+                    device: deviceInfo.device,
+                    platform: deviceInfo.platform,
+                    os: deviceInfo.os,
+                    remark: "First Login",
+                    created_at: storeCurrentDate(0, 'hours'),
+                });
+
+                newLoginLog.save();
+            }
+
+            updatedUserVerify.is_verified = verify ? verify : updatedUserVerify.is_verified;
+            updatedUserVerify.verified_at = storeCurrentDate(0, "hours");
+
+            await updatedUserVerify.save();
+        } else {
+            updatedUserVerify.is_verified = false;
+            updatedUserVerify.verified_at = null;
+
+            await updatedUserVerify.save();
+        }
+
+        return res.status(200).json({ data: 'User account successfully verified.' });
+    } catch (error) {
+        console.log(error)
+        return res.status(500).json({ error: 'Failed to verify user account.' });
+    }
+});
+
+
+
 export const update_user_verified = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters
     const { verify } = req.body;
