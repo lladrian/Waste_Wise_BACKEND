@@ -95,10 +95,16 @@ export const verify_otp = asyncHandler(async (req, res) => {
        // const createdTime = new Date(createdTimeStr.replace(" ", "T") + "+00:00");
 
         const created = new Date(createdTimeStr.replace(" ", "T") + "+00:00");
-        const now = new Date(new Date().toLocaleString("en-US", { timeZone:"Asia/Manila" }));
-        console.log((now - created) / 60000)
-        if ((now - created) / 60000 > 2) {
-            return res.status(400).json({ message: "OTP has expired.", test: (now - created) / 60000  });
+        const nowManila = new Date().toLocaleString("en-US", { timeZone: "Asia/Manila" });
+        const now = new Date(new Date(nowManila).toISOString());  // force UTC interpretation
+        const diffMinutes = (now - created) / 60000;
+        console.log("Diff:", diffMinutes);
+
+        if (diffMinutes > 2) {
+            return res.status(400).json({
+                message: "OTP has expired.",
+                test: diffMinutes
+            });
         }
         
         // // Get current time in Manila timezone correctly
@@ -116,7 +122,7 @@ export const verify_otp = asyncHandler(async (req, res) => {
         // }
 
         // 6. OTP is valid
-        return res.status(200).json({ data: "OTP verified successfully.", test: (now - created) / 60000 });
+        return res.status(200).json({ data: "OTP verified successfully.", test: diffMinutes });
     } catch (error) {
         console.error(error);
         return res.status(500).json({ error: "Failed to verify OTP." });
