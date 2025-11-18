@@ -6,6 +6,7 @@ const userRoutes = Router();
 userRoutes.post('/add_user_resident', UserController.create_user_resident);
 userRoutes.post('/add_user', UserController.create_user);
 userRoutes.post('/login_user', UserController.login_user);
+userRoutes.post('/login_user_mobile', UserController.login_user_mobile);
 userRoutes.post('/update_user_verified_email', UserController.update_user_verified_email);
 userRoutes.put('/update_user_verified/:id', UserController.update_user_verified);
 userRoutes.put('/update_user_resident_garbage_site/:id', UserController.update_user_resident_garbage_site);

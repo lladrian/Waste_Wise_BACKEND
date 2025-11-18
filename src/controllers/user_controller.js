@@ -496,6 +496,100 @@ export const login_user = asyncHandler(async (req, res) => {
 
 
 
+
+export const login_user_mobile = asyncHandler(async (req, res) => {
+    const { email, password, device, platform, os } = req.body;
+ 
+
+    try {
+        // Check if both email and password are provided
+        if (!email || !password || !device || !platform || !os) {
+            return res.status(400).json({ message: "All fields are required: (password, email, device, platform, os)." });
+        }
+
+        // Find the user by email
+        let user = await User.findOne({ email: email })
+            .populate('role_action')
+            .populate('barangay')
+            .populate('garbage_site')
+
+        const hash = hashConverterMD5(password);
+        const deviceInfo = getDeviceInfo(req);
+
+
+
+        // Check if the admin exists and if the password is correct
+        if (user && user.password == hash) {
+
+
+            if (user.is_verified === false) {
+                const newLoginLog = new LoginLog({
+                    user: user._id,
+                    status: 'Failed',
+                    device: device,
+                    platform: platform,
+                    os: os,
+                    remark: "Verifying Account",
+                    created_at: storeCurrentDate(0, 'hours'),
+                });
+
+                newLoginLog.save();
+                return res.status(200).json({ data: { user: user, logged_in_at: storeCurrentDate(0, 'hours') } });
+            }
+
+
+            if (user.is_disabled === true) {
+                const newLoginLog = new LoginLog({
+                    user: user._id,
+                    status: 'Failed',
+                    device: device,
+                    platform: platform,
+                    os: os,
+                    remark: "Disabled Account",
+                    created_at: storeCurrentDate(0, 'hours'),
+                });
+
+                newLoginLog.save();
+                return res.status(200).json({ data: { user: user, logged_in_at: storeCurrentDate(0, 'hours') } });
+            }
+
+            const newLoginLog = new LoginLog({
+                user: user._id,
+                status: 'Success',
+                device: device,
+                platform: platform,
+                os: os,
+                remark: "Normal Login",
+                created_at: storeCurrentDate(0, 'hours'),
+            });
+
+            newLoginLog.save();
+            return res.status(200).json({ data: { user: user, logged_in_at: storeCurrentDate(0, 'hours') } });
+        }
+
+        if (user) {
+            const newLoginLog = new LoginLog({
+                user: user._id,
+                status: 'Failed',
+                device: device,
+                platform: platform,
+                os: os,
+                remark: "Wrong Password",
+                created_at: storeCurrentDate(0, 'hours'),
+            });
+
+            newLoginLog.save();
+        }
+
+        return res.status(400).json({ message: 'Wrong email or password.' });
+    } catch (error) {
+        return res.status(500).json({ error: 'Failed to login ' });
+    }
+});
+
+
+
+
 export const update_user_verified_email = asyncHandler(async (req, res) => {
     const { verify, email } = req.body;
 
