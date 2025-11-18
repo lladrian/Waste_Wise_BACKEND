@@ -540,7 +540,14 @@ export const update_user_verified_email = asyncHandler(async (req, res) => {
             await updatedUserVerify.save();
         }
 
-        return res.status(200).json({ data: 'User account successfully verified.' });
+        const user = await User.findById(updatedUserVerify.id)
+        .populate('role_action')
+        .populate('barangay')
+        .populate('garbage_site')
+
+        res.status(200).json({ data: { user: user, fetched_at: storeCurrentDate(0, 'hours') } });
+
+        // return res.status(200).json({ data: 'User account successfully verified.' });
     } catch (error) {
         console.log(error)
         return res.status(500).json({ error: 'Failed to verify user account.' });
