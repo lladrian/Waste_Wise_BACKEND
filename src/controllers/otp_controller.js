@@ -98,7 +98,7 @@ export const verify_otp = asyncHandler(async (req, res) => {
         const now = new Date(new Date().toLocaleString("en-US", { timeZone:"Asia/Manila" }));
         console.log((now - created) / 60000)
         if ((now - created) / 60000 > 2) {
-            return res.status(400).json({ message: "OTP has expired." });
+            return res.status(400).json({ message: "OTP has expired.", test: (now - created) / 60000  });
         }
         
         // // Get current time in Manila timezone correctly
