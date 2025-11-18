@@ -514,7 +514,7 @@ export const login_user_mobile = asyncHandler(async (req, res) => {
             .populate('garbage_site')
 
         const hash = hashConverterMD5(password);
-        const deviceInfo = getDeviceInfo(req);
+        //const deviceInfo = getDeviceInfo(req);
 
 
 
@@ -591,11 +591,12 @@ export const login_user_mobile = asyncHandler(async (req, res) => {
 
 
 export const update_user_verified_email = asyncHandler(async (req, res) => {
-    const { verify, email } = req.body;
+    const { verify, email, device, platform, os  } = req.body;
+
 
     try {
-        if (!verify || !email) {
-            return res.status(400).json({ message: "Please provide all fields (verify, email)." });
+        if (!verify || !email || !device || !platform || !os) {
+            return res.status(400).json({ message: "Please provide all fields (verify, email, device, platform, os)." });
         }
 
         const updatedUserVerify = await User.findOne({ email });
@@ -613,9 +614,9 @@ export const update_user_verified_email = asyncHandler(async (req, res) => {
                 const newLoginLog = new LoginLog({
                     user: updatedUserVerify.id,
                     status: 'Success',
-                    device: deviceInfo.device,
-                    platform: deviceInfo.platform,
-                    os: deviceInfo.os,
+                    device: device,
+                    platform: platform,
+                    os: os,
                     remark: "First Login",
                     created_at: storeCurrentDate(0, 'hours'),
                 });
