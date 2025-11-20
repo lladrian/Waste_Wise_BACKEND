@@ -77,10 +77,9 @@ function create_user_validation(input_data, type) {
             !input_data.gender ||
             !input_data.contact_number ||
             !input_data.email ||
-            !input_data.role_action ||
             !input_data.is_disabled ||
-            !input_data.role) {
-            return "Please provide all fields (email, first_name, middle_name, last_name, gender, contact_number, role, is_disabled, role_action).";
+            !input_data.multiple_role) {
+            return "Please provide all fields (email, first_name, middle_name, last_name, gender, contact_number, multiple_role, is_disabled).";
         }
     }
 
@@ -98,6 +97,8 @@ function create_user_validation(input_data, type) {
         }
     }
 
+   
+
     if (type === 'create_user') {
         if (!input_data.first_name ||
             !input_data.middle_name ||
@@ -107,8 +108,24 @@ function create_user_validation(input_data, type) {
             !input_data.email ||
             !input_data.password ||
             !input_data.role_action ||
+            !input_data.multiple_role ||
             !input_data.role) {
-            return "Please provide all fields (email, password, first_name, middle_name, last_name, gender, contact_number, role, role_action).";
+            return "Please provide all fields (email, password, first_name, middle_name, last_name, gender, contact_number, role, role_action, multiple_role).";
+        }
+    }
+
+     if (type === 'create_user_by_admin') {
+        if (!input_data.first_name ||
+            !input_data.middle_name ||
+            !input_data.last_name ||
+            !input_data.gender ||
+            !input_data.contact_number ||
+            !input_data.email ||
+            !input_data.password ||
+            !input_data.role_action ||
+            !input_data.multiple_role ||
+            !input_data.role) {
+            return "Please provide all fields (email, password, first_name, middle_name, last_name, gender, contact_number, role, multiple_role, role_action).";
         }
     }
 
@@ -152,9 +169,12 @@ async function update_specific_user(id, input_data, type) {
         updatedUser.gender = input_data.gender ? input_data.gender : updatedUser.gender;
         updatedUser.contact_number = input_data.contact_number ? input_data.contact_number : updatedUser.contact_number;
         updatedUser.email = input_data.email ? input_data.email : updatedUser.email;
-        updatedUser.role = input_data.role ? input_data.role : updatedUser.role;
+        updatedUser.multiple_role = input_data.multiple_role ? input_data.multiple_role : updatedUser.multiple_role;
         updatedUser.role_action = input_data.role_action ? input_data.role_action : updatedUser.role_action;
-        updatedUser.barangay = input_data.role == 'barangay_official' || input_data.role == 'resident' ? input_data.barangay : null;
+        updatedUser.barangay = input_data?.multiple_role?.some(roleObj => roleObj.role === 'barangay_official') ||
+                        input_data?.multiple_role?.some(roleObj => roleObj.role === 'resident') 
+                      ? input_data.barangay 
+                      : null;
     }
 
     if (type === 'resident') {
@@ -230,8 +250,7 @@ async function save_new_user_resident(hash_password, input_data) {
     return user; // Return the user object
 }
 
-
-async function save_new_user(hash_password, input_data, req) {
+async function save_new_user_admin(hash_password, input_data, req) {
     const newUserData = {
         first_name: input_data.first_name,
         middle_name: input_data.middle_name,
@@ -239,6 +258,7 @@ async function save_new_user(hash_password, input_data, req) {
         gender: input_data.gender,
         contact_number: input_data.contact_number,
         role: input_data.role,
+        multiple_role: input_data.multiple_role,
         barangay: input_data.role == 'barangay_official' || input_data.role == 'resident' ? input_data.barangay : null,
         password: hash_password,
         email: input_data.email,
@@ -269,7 +289,54 @@ async function save_new_user(hash_password, input_data, req) {
 
     if (input_data.role !== 'resident') {
         if (url.includes('localhost') || url.includes('waste-wise-backend-chi.vercel.app')) {
-            console.log('working')
+            await credential_mailer_new_user(input_data.email, formatted_input_data);
+        } else if (url.includes('waste-wise-backend-uzub.onrender.com')) {
+            console.log('not working')
+            await axios.post(`http://waste-wise-backend-chi.vercel.app/otp/credential_mailer_new_user`, { email: input_data.email, formatted_input_data });
+        }
+    }
+}
+
+
+async function save_new_user(hash_password, input_data, req) {
+    const newUserData = {
+        first_name: input_data.first_name,
+        middle_name: input_data.middle_name,
+        last_name: input_data.last_name,
+        gender: input_data.gender,
+        contact_number: input_data.contact_number,
+        role: input_data.role,
+        barangay: input_data.role == 'barangay_official' || input_data.role == 'resident' ? input_data.barangay : null,
+        password: hash_password,
+        email: input_data.email,
+        role_action: input_data.role_action,
+        multiple_role: input_data.multiple_role,
+        created_at: storeCurrentDate(0, 'hours'),
+    };
+    const url = base_url(req); // pass req to the function
+    const newUser = new User(newUserData);
+    newUser.save();
+
+    const newOTP = new OTP({
+        user: newUser._id
+    });
+
+    newOTP.save();
+
+    const formatted_input_data = {
+        first_name: input_data.first_name,
+        middle_name: input_data.middle_name,
+        last_name: input_data.last_name,
+        gender: input_data.gender[0].toUpperCase() + input_data.gender.substring(1).toLowerCase(),
+        contact_number: input_data.contact_number,
+        password: input_data.password,
+        email: input_data.email,
+        role: format_role(input_data.role),
+    };
+
+
+    if (input_data.role !== 'resident') {
+        if (url.includes('localhost') || url.includes('waste-wise-backend-chi.vercel.app')) {
             await credential_mailer_new_user(input_data.email, formatted_input_data);
         } else if (url.includes('waste-wise-backend-uzub.onrender.com')) {
             console.log('not working')
@@ -314,7 +381,62 @@ export const create_user_resident = asyncHandler(async (req, res) => {
 
 
 export const create_user = asyncHandler(async (req, res) => {
-    const { first_name, middle_name, last_name, gender, contact_number, password, email, role, role_action, barangay } = req.body;
+    const { first_name, middle_name, last_name, gender, contact_number, password, email, roles, role_action, barangay } = req.body;
+
+    try {
+        const processedMultipleRole = Array.isArray(roles) 
+            ? roles.map(roleObj => ({
+                role: roleObj.role,
+                role_action: roleObj.role_action || null
+            }))
+            : [];
+
+        const currentRole = processedMultipleRole[0]?.role || '';
+
+        const input_data = {
+            first_name,
+            middle_name,
+            last_name,
+            gender,
+            contact_number,
+            password,
+            email,
+            multiple_role: processedMultipleRole,
+            role: currentRole,
+            barangay: barangay || "",
+            role_action
+        };
+
+        const validationError = create_user_validation(input_data, 'create_user');
+        // const staff_monitoring = await User.find({ role: 'enro_staff_monitoring', is_disabled: false });
+        // const staff_head = await User.find({ role: 'enro_staff_head', is_disabled: false });
+        // const staff_scheduler = await User.find({ role: 'enro_staff_scheduler', is_disabled: false });
+        // const staff_eswm_section_head = await User.find({ role: 'enro_staff_eswm_section_head', is_disabled: false });
+
+        if (validationError) {
+            return res.status(400).json({ message: validationError });
+        }
+
+        if (await User.findOne({ email })) return res.status(400).json({ message: 'Email already exists' });
+
+        // if (staff_monitoring.length >= 1 && role === 'enro_staff_monitoring') return res.status(400).json({ message: 'Monitoring already exists. Please contact administrator for support.' });
+        // if (staff_head.length >= 1 && role === 'enro_staff_head') return res.status(400).json({ message: 'Staff Head already exists. Please contact administrator for support.' });
+        // if (staff_scheduler.length >= 1 && role === 'enro_staff_scheduler') return res.status(400).json({ message: 'Scheduler already exists. Please contact administrator for support.' });
+        // if (staff_eswm_section_head.length >= 1 && role === 'enro_staff_eswm_section_head') return res.status(400).json({ message: 'ESWM Section Head already exists. Please contact administrator for support.' });
+
+        await save_new_user(hashConverterMD5(password), input_data, req);
+
+        return res.status(200).json({ data: 'New user account successfully created.' });
+    } catch (error) {
+        return res.status(500).json({ error: 'Failed to create user account.', data: error });
+    }
+});
+
+
+
+
+export const create_user_by_admin = asyncHandler(async (req, res) => {
+    const { first_name, middle_name, last_name, gender, contact_number, password, email, multiple_role, role_action, barangay } = req.body;
 
     try {
         const input_data = {
@@ -325,16 +447,17 @@ export const create_user = asyncHandler(async (req, res) => {
             contact_number,
             password,
             email,
-            role,
-            barangay,
-            role_action
+            multiple_role: multiple_role,
+            role: multiple_role[0]?.role,
+            barangay: barangay || "",
+            role_action: multiple_role[0]?.role_action
         };
 
-        const validationError = create_user_validation(input_data, 'create_user');
-        const staff_monitoring = await User.find({ role: 'enro_staff_monitoring', is_disabled: false });
-        const staff_head = await User.find({ role: 'enro_staff_head', is_disabled: false });
-        const staff_scheduler = await User.find({ role: 'enro_staff_scheduler', is_disabled: false });
-        const staff_eswm_section_head = await User.find({ role: 'enro_staff_eswm_section_head', is_disabled: false });
+        const validationError = create_user_validation(input_data, 'create_user_by_admin');
+        // const staff_monitoring = await User.find({ role: 'enro_staff_monitoring', is_disabled: false });
+        // const staff_head = await User.find({ role: 'enro_staff_head', is_disabled: false });
+        // const staff_scheduler = await User.find({ role: 'enro_staff_scheduler', is_disabled: false });
+        // const staff_eswm_section_head = await User.find({ role: 'enro_staff_eswm_section_head', is_disabled: false });
 
         if (validationError) {
             return res.status(400).json({ message: validationError });
@@ -342,13 +465,12 @@ export const create_user = asyncHandler(async (req, res) => {
 
         if (await User.findOne({ email })) return res.status(400).json({ message: 'Email already exists' });
 
-        if (staff_monitoring.length >= 1 && role === 'enro_staff_monitoring') return res.status(400).json({ message: 'Monitoring already exists. Please contact administrator for support.' });
-        if (staff_head.length >= 1 && role === 'enro_staff_head') return res.status(400).json({ message: 'Staff Head already exists. Please contact administrator for support.' });
-        if (staff_scheduler.length >= 1 && role === 'enro_staff_scheduler') return res.status(400).json({ message: 'Scheduler already exists. Please contact administrator for support.' });
-        if (staff_eswm_section_head.length >= 1 && role === 'enro_staff_eswm_section_head') return res.status(400).json({ message: 'ESWM Section Head already exists. Please contact administrator for support.' });
+        // if (staff_monitoring.length >= 1 && role === 'enro_staff_monitoring') return res.status(400).json({ message: 'Monitoring already exists. Please contact administrator for support.' });
+        // if (staff_head.length >= 1 && role === 'enro_staff_head') return res.status(400).json({ message: 'Staff Head already exists. Please contact administrator for support.' });
+        // if (staff_scheduler.length >= 1 && role === 'enro_staff_scheduler') return res.status(400).json({ message: 'Scheduler already exists. Please contact administrator for support.' });
+        // if (staff_eswm_section_head.length >= 1 && role === 'enro_staff_eswm_section_head') return res.status(400).json({ message: 'ESWM Section Head already exists. Please contact administrator for support.' });
 
-
-        await save_new_user(hashConverterMD5(password), input_data, req);
+        await save_new_user_admin(hashConverterMD5(password), input_data, req);
 
         return res.status(200).json({ data: 'New user account successfully created.' });
     } catch (error) {
@@ -417,18 +539,16 @@ export const login_user = asyncHandler(async (req, res) => {
 
         // Find the user by email
         let user = await User.findOne({ email: email })
-            .populate('role_action')
-            .populate('barangay')
-            .populate('garbage_site')
+        .populate('role_action')
+        .populate('barangay')
+        .populate('garbage_site')
+
         const hash = hashConverterMD5(password);
         const deviceInfo = getDeviceInfo(req);
 
 
-
         // Check if the admin exists and if the password is correct
         if (user && user.password == hash) {
-
-
             if (user.is_verified === false) {
                 const newLoginLog = new LoginLog({
                     user: user._id,
@@ -742,7 +862,7 @@ export const update_user_resident = asyncHandler(async (req, res) => {
 
 export const update_user = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters
-    const { first_name, middle_name, last_name, gender, contact_number, email, role, is_disabled, role_action, barangay } = req.body;
+    const { first_name, middle_name, last_name, gender, contact_number, email, multiple_role, is_disabled, barangay } = req.body;
 
     try {
         const input_data = {
@@ -752,8 +872,7 @@ export const update_user = asyncHandler(async (req, res) => {
             gender,
             contact_number,
             email,
-            role,
-            role_action,
+            multiple_role: multiple_role,
             barangay,
             is_disabled
         };
@@ -764,23 +883,23 @@ export const update_user = asyncHandler(async (req, res) => {
             return res.status(400).json({ message: validationError });
         }
 
-        const staff_monitoring = await User.find({ role: 'enro_staff_monitoring', _id: { $ne: id }, is_disabled: false });
-        const staff_head = await User.find({ role: 'enro_staff_head', _id: { $ne: id }, is_disabled: false });
-        const staff_scheduler = await User.find({ role: 'enro_staff_scheduler', _id: { $ne: id }, is_disabled: false });
-        const staff_eswm_section_head = await User.find({ role: 'enro_staff_eswm_section_head', _id: { $ne: id }, is_disabled: false });
+        // const staff_monitoring = await User.find({ role: 'enro_staff_monitoring', _id: { $ne: id }, is_disabled: false });
+        // const staff_head = await User.find({ role: 'enro_staff_head', _id: { $ne: id }, is_disabled: false });
+        // const staff_scheduler = await User.find({ role: 'enro_staff_scheduler', _id: { $ne: id }, is_disabled: false });
+        // const staff_eswm_section_head = await User.find({ role: 'enro_staff_eswm_section_head', _id: { $ne: id }, is_disabled: false });
 
-        if (staff_monitoring.length >= 1 && role === 'enro_staff_monitoring') {
-            return res.status(400).json({ message: 'Monitoring already exists. Try contacting admin to resolve.' });
-        }
-        if (staff_head.length >= 1 && role === 'enro_staff_head') {
-            return res.status(400).json({ message: 'Staff Head already exists. Try contacting admin to resolve.' });
-        }
-        if (staff_scheduler.length >= 1 && role === 'enro_staff_scheduler') {
-            return res.status(400).json({ message: 'Scheduler already exists. Try contacting admin to resolve.' });
-        }
-        if (staff_eswm_section_head.length >= 1 && role === 'enro_staff_eswm_section_head') {
-            return res.status(400).json({ message: 'ESWM Section Head already exists. Try contacting admin to resolve.' });
-        }
+        // if (staff_monitoring.length >= 1 && role === 'enro_staff_monitoring') {
+        //     return res.status(400).json({ message: 'Monitoring already exists. Try contacting admin to resolve.' });
+        // }
+        // if (staff_head.length >= 1 && role === 'enro_staff_head') {
+        //     return res.status(400).json({ message: 'Staff Head already exists. Try contacting admin to resolve.' });
+        // }
+        // if (staff_scheduler.length >= 1 && role === 'enro_staff_scheduler') {
+        //     return res.status(400).json({ message: 'Scheduler already exists. Try contacting admin to resolve.' });
+        // }
+        // if (staff_eswm_section_head.length >= 1 && role === 'enro_staff_eswm_section_head') {
+        //     return res.status(400).json({ message: 'ESWM Section Head already exists. Try contacting admin to resolve.' });
+        // }
 
         const updateSpecificUser = await update_specific_user(id, input_data, 'user');
 
@@ -908,6 +1027,36 @@ export const update_user_password_admin = asyncHandler(async (req, res) => {
     }
 });
 
+
+
+
+export const update_user_selected_role = asyncHandler(async (req, res) => {
+    const { id } = req.params; // Get the user ID from request parameters
+    const { role, role_action } = req.body;
+
+    try {
+        if (!role || !role_action) {
+            return res.status(400).json({ message: "Please provide all fields (role, role_action)." });
+        }
+
+        const user = await User.findById(id);
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found." });
+        }
+
+        // Update the user's position
+        user.role = role ? role : user.role;
+        user.role_action = role_action ? role_action : user.role_action;
+
+        await user.save();
+
+        return res.status(200).json({ data: user });
+        // return res.status(200).json({ data: "User position successfully updated." });
+    } catch (error) {
+        return res.status(500).json({ error: 'Failed to update position.' });
+    }
+});
 
 
 export const update_user_resident_garbage_site = asyncHandler(async (req, res) => {

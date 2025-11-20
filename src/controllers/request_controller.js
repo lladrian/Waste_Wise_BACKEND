@@ -96,6 +96,20 @@ export const create_request = asyncHandler(async (req, res) => {
         if (await Request.findOne({ email })) return res.status(400).json({ message: 'Email already exists' });
         if (await User.findOne({ email })) return res.status(400).json({ message: 'Email already exists' });
 
+            // Handle role as array or single value
+        let rolesArray = [];
+        let currentRole = '';
+        
+        if (Array.isArray(role)) {
+            // If role is already an array, use it directly
+            rolesArray = role.map(r => ({ role: r }));
+            currentRole = role[0]; // Set first role as current role
+        } else {
+            // If role is a single string, convert to array
+            rolesArray = [{ role: role }];
+            currentRole = role;
+        }
+
         const newRequestData = {
             first_name: first_name,
             middle_name: middle_name,
@@ -104,8 +118,9 @@ export const create_request = asyncHandler(async (req, res) => {
             contact_number: contact_number,
             password: hashConverterMD5(password),
             email: email,
-            role: role,
-            barangay: role == 'barangay_official' ? barangay : null,
+            multiple_role: rolesArray, 
+            role: currentRole, 
+            barangay: role?.includes('barangay_official') ? barangay : null,
             created_at: storeCurrentDate(0, "hours")
         };
 
@@ -147,8 +162,8 @@ export const update_request_approval = asyncHandler(async (req, res) => {
     const { status, user } = req.body;
 
     try {
-        if (!status) {
-            return res.status(400).json({ message: "Please provide all fields (status)." });
+        if (!status || !user) {
+            return res.status(400).json({ message: "Please provide all fields (status, user)." });
         }
 
         const updatedRequest = await Request.findById(id)
