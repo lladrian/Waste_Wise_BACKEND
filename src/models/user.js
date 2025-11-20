@@ -32,6 +32,23 @@ const UserSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
+    multiple_role: [{
+        role: {
+            type: String,
+            enum: ['admin', 'resident',
+                'enro_staff_monitoring', 'enro_staff_head',
+                'enro_staff_scheduler', 'enro_staff_eswm_section_head',
+                'barangay_official', 'garbage_collector',
+            ],
+            default: 'resident',
+        },
+        role_action: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Action',
+            required: false,
+            default: null
+        },
+    }],
     role: {
         type: String,
         enum: ['admin', 'resident',
