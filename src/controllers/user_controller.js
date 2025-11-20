@@ -169,8 +169,9 @@ async function update_specific_user(id, input_data, type) {
         updatedUser.gender = input_data.gender ? input_data.gender : updatedUser.gender;
         updatedUser.contact_number = input_data.contact_number ? input_data.contact_number : updatedUser.contact_number;
         updatedUser.email = input_data.email ? input_data.email : updatedUser.email;
+        updatedUser.role = input_data.multiple_role[0]?.role ? input_data.multiple_role[0]?.role : updatedUser.role;
         updatedUser.multiple_role = input_data.multiple_role ? input_data.multiple_role : updatedUser.multiple_role;
-        updatedUser.role_action = input_data.role_action ? input_data.role_action : updatedUser.role_action;
+        updatedUser.role_action = input_data.multiple_role[0]?.role_action ? input_data.multiple_role[0]?.role_action : updatedUser.role_action;
         updatedUser.barangay = input_data?.multiple_role?.some(roleObj => roleObj.role === 'barangay_official') ||
                         input_data?.multiple_role?.some(roleObj => roleObj.role === 'resident') 
                       ? input_data.barangay 
@@ -436,7 +437,7 @@ export const create_user = asyncHandler(async (req, res) => {
 
 
 export const create_user_by_admin = asyncHandler(async (req, res) => {
-    const { first_name, middle_name, last_name, gender, contact_number, password, email, multiple_role, role_action, barangay } = req.body;
+    const { first_name, middle_name, last_name, gender, contact_number, password, email, multiple_role, barangay } = req.body;
 
     try {
         const input_data = {
