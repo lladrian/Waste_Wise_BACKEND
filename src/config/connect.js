@@ -2,9 +2,11 @@ import "dotenv/config";
 import mongoose from "mongoose";
 import express from 'express';
 import http from 'http';
-import { WebSocketServer, WebSocket  } from 'ws';
+import { WebSocketServer, WebSocket } from 'ws';
 import Schedule from '../models/schedule.js';
 import Truck from '../models/truck.js';
+import CollectorAttendance from '../models/collector_attendance.js';
+
 
 // Export constants and instances
 export const PORT = process.env.PORT || 5000;
@@ -19,14 +21,27 @@ const getPhilippineDate = () => {
   return formatter.format(now); // YYYY-MM-DD in PH timezone
 };
 
-function broadcastList(name, data) {
-    const message = JSON.stringify({ name, data });
+function storeCurrentDate(expirationAmount, expirationUnit) {
+    // Get the current date and time in Asia/Manila timezone
+    const currentDateTime = moment.tz("Asia/Manila");
+    // Calculate the expiration date and time
+    const expirationDateTime = currentDateTime.clone().add(expirationAmount, expirationUnit);
 
-    io.clients.forEach(client => {
-        if (client.readyState === WebSocket.OPEN) {
-            client.send(message);
-        }
-    });
+    // Format the current date and expiration date
+    const formattedExpirationDateTime = expirationDateTime.format('YYYY-MM-DD HH:mm:ss');
+
+    // Return both current and expiration date-time
+    return formattedExpirationDateTime;
+}
+
+function broadcastList(name, data) {
+  const message = JSON.stringify({ name, data });
+
+  io.clients.forEach(client => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(message);
+    }
+  });
 }
 
 async function handleTruckPositionUpdate(ws, data) {
@@ -34,9 +49,9 @@ async function handleTruckPositionUpdate(ws, data) {
 
   try {
     if (latitude == null || longitude == null) {
-      ws.send(JSON.stringify({ 
-        type: 'error', 
-        message: "Please provide both latitude and longitude." 
+      ws.send(JSON.stringify({
+        type: 'error',
+        message: "Please provide both latitude and longitude."
       }));
       return;
     }
@@ -44,9 +59,9 @@ async function handleTruckPositionUpdate(ws, data) {
     const truck = await Truck.findById(truck_id);
 
     if (!truck) {
-      ws.send(JSON.stringify({ 
-        type: 'error', 
-        message: "Truck not found." 
+      ws.send(JSON.stringify({
+        type: 'error',
+        message: "Truck not found."
       }));
       return;
     }
@@ -69,7 +84,7 @@ async function handleTruckPositionUpdate(ws, data) {
 
       // Broadcast updated truck positions to all clients
       broadcastList('trucks', schedules);
-      
+
       // Send success response to the requesting client
       ws.send(JSON.stringify({
         type: 'success',
@@ -80,13 +95,70 @@ async function handleTruckPositionUpdate(ws, data) {
     }
   } catch (error) {
     console.error('Failed to update position:', error);
-    ws.send(JSON.stringify({ 
-      type: 'error', 
+    ws.send(JSON.stringify({
+      type: 'error',
       message: 'Failed to update position.',
-      error: error.message 
+      error: error.message
     }));
   }
 }
+
+
+
+
+async function handleAttendanceTruckPositionUpdate(ws, data) {
+  const { user_id, latitude, longitude, route_status } = data;
+
+  try {
+    if (latitude == null || longitude == null || user_id == null || route_status == null) {
+      ws.send(JSON.stringify({
+        type: 'error',
+        message: "Please provide all fields (latitude, longitude, user_id, route_status)."
+      }));
+      return;
+    }
+
+    const attendance = await CollectorAttendance.find({ user: user_id });
+
+    if (!attendance) {
+      ws.send(JSON.stringify({
+        type: 'error',
+        message: "Collector attendance not found."
+      }));
+      return;
+    }
+
+    const newRoutePoint = {
+      position: {
+        lat: latitude,
+        lng: longitude
+      },
+      route_status: route_status,
+      created_at: storeCurrentDate(0, "hours")
+    };
+
+    if(attendance.flag === 1) {
+      attendance.route_history.push(newRoutePoint);
+
+      await attendance.save()
+    }
+
+
+    // Send success response to the requesting client
+    ws.send(JSON.stringify({
+      type: 'success',
+      message: "Collector attendance position successfully updated.",
+      name: "attendances",
+    }));
+  } catch (error) {
+    ws.send(JSON.stringify({
+      type: 'error',
+      message: 'Failed to update position.',
+      error: error.message
+    }));
+  }
+}
+
 
 // Export the connectDB function
 export const connectDB = async () => {
@@ -110,6 +182,10 @@ io.on('connection', (ws) => {
     // Handle truck position updates via WebSocket
     if (data.type === 'update_truck_position') {
       await handleTruckPositionUpdate(ws, data);
+    }
+
+    if (data.type === 'update_collector_attendance_truck_position') {
+      await handleAttendanceTruckPositionUpdate(ws, data);
     }
   });
 
