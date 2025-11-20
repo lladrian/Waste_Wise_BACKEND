@@ -199,6 +199,9 @@ export const create_otp = asyncHandler(async (req, res) => {
         if (!otp_type || !email) {
             return res.status(400).json({ message: "Please provide all fields (otp_type, email)." });
         }
+
+ 
+
         const url = base_url(req); // pass req to the function
         const user = await User.findOne({ email })
         const subject = "OTP Code";
