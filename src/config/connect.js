@@ -6,6 +6,8 @@ import { WebSocketServer, WebSocket } from 'ws';
 import Schedule from '../models/schedule.js';
 import Truck from '../models/truck.js';
 import CollectorAttendance from '../models/collector_attendance.js';
+import moment from 'moment-timezone';
+
 
 
 // Export constants and instances
@@ -22,16 +24,16 @@ const getPhilippineDate = () => {
 };
 
 function storeCurrentDate(expirationAmount, expirationUnit) {
-    // Get the current date and time in Asia/Manila timezone
-    const currentDateTime = moment.tz("Asia/Manila");
-    // Calculate the expiration date and time
-    const expirationDateTime = currentDateTime.clone().add(expirationAmount, expirationUnit);
+  // Get the current date and time in Asia/Manila timezone
+  const currentDateTime = moment.tz("Asia/Manila");
+  // Calculate the expiration date and time
+  const expirationDateTime = currentDateTime.clone().add(expirationAmount, expirationUnit);
 
-    // Format the current date and expiration date
-    const formattedExpirationDateTime = expirationDateTime.format('YYYY-MM-DD HH:mm:ss');
+  // Format the current date and expiration date
+  const formattedExpirationDateTime = expirationDateTime.format('YYYY-MM-DD HH:mm:ss');
 
-    // Return both current and expiration date-time
-    return formattedExpirationDateTime;
+  // Return both current and expiration date-time
+  return formattedExpirationDateTime;
 }
 
 function broadcastList(name, data) {
@@ -48,6 +50,14 @@ async function handleTruckPositionUpdate(ws, data) {
   const { truck_id, latitude, longitude } = data;
 
   try {
+    if (!mongoose.Types.ObjectId.isValid(truck_id)) {
+      ws.send(JSON.stringify({
+        type: 'error',
+        message: 'Invalid truck_id format.'
+      }));
+      return;
+    }
+
     if (latitude == null || longitude == null) {
       ws.send(JSON.stringify({
         type: 'error',
@@ -118,7 +128,8 @@ async function handleAttendanceTruckPositionUpdate(ws, data) {
       return;
     }
 
-    const attendance = await CollectorAttendance.find({ user: user_id });
+    const attendance = await CollectorAttendance.findOne({ user: user_id, flag: 1 });
+
 
     if (!attendance) {
       ws.send(JSON.stringify({
@@ -137,11 +148,17 @@ async function handleAttendanceTruckPositionUpdate(ws, data) {
       created_at: storeCurrentDate(0, "hours")
     };
 
-    if(attendance.flag === 1) {
-      attendance.route_history.push(newRoutePoint);
+    if (attendance.flag && attendance.flag === 1) {
 
-      await attendance.save()
+      if (!Array.isArray(attendance.route_history)) {
+        attendance.route_history = [];
+      }
+
+      attendance.route_history.push(newRoutePoint);
+      await attendance.save();
     }
+
+
 
 
     // Send success response to the requesting client
@@ -177,7 +194,16 @@ io.on('connection', (ws) => {
   ws.on('message', async (message) => {
     console.log(`Message received:${message}`);
 
-    const data = JSON.parse(message);
+    let data;
+    try {
+      data = JSON.parse(message);
+    } catch (err) {
+      ws.send(JSON.stringify({
+        type: 'error',
+        message: 'Invalid JSON format.'
+      }));
+      return;
+    }
 
     // Handle truck position updates via WebSocket
     if (data.type === 'update_truck_position') {
