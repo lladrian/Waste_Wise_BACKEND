@@ -1040,7 +1040,10 @@ export const update_user_selected_role = asyncHandler(async (req, res) => {
             return res.status(400).json({ message: "Please provide all fields (role, role_action)." });
         }
 
-        const user = await User.findById(id);
+        const user = await User.findById(id)  
+        .populate('role_action')
+        .populate('barangay')
+        .populate('garbage_site')
 
         if (!user) {
             return res.status(404).json({ message: "User not found." });
