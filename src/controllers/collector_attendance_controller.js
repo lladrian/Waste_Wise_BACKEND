@@ -21,19 +21,19 @@ export const check_collector_attendance = asyncHandler(async (req, res) => {
 
     try {
         const last_attendance = await CollectorAttendance.findOne({ user: user_id })
-        .populate('user')
-        .populate('schedule')
-        .populate({
-            path: 'schedule',
-            populate: {
-              path: 'route',
-              model: 'Route'
-            }
-        })
-        .populate('truck')
-        .sort({ created_at: -1 }); 
+            .populate('user')
+            .populate('schedule')
+            .populate({
+                path: 'schedule',
+                populate: {
+                    path: 'route',
+                    model: 'Route'
+                }
+            })
+            .populate('truck')
+            .sort({ created_at: -1 });
 
-        if(!last_attendance) {
+        if (!last_attendance) {
             return res.status(200).json({ data: 0, message: "Collector attendance not found." });
         }
 
@@ -76,22 +76,22 @@ export const create_collector_attendance = asyncHandler(async (req, res) => {
         const collector = await newCollectorAttendance.save();
 
         const data = await CollectorAttendance.findById(collector._id)
-        .populate({
-            path: 'schedule',
-            populate: {
-                path: 'route',
+            .populate({
+                path: 'schedule',
                 populate: {
-                    path: 'merge_barangay.barangay_id', 
-                    model: 'Barangay'
+                    path: 'route',
+                    populate: {
+                        path: 'merge_barangay.barangay_id',
+                        model: 'Barangay'
+                    }
                 }
-            }
-        })
-        .populate('truck')
-        .populate('user')
+            })
+            .populate('truck')
+            .populate('user')
 
-        
+
         return res.status(200).json({ data: data });
-       // return res.status(200).json({ data: 'New collector attendance successfully created.' });
+        // return res.status(200).json({ data: 'New collector attendance successfully created.' });
     } catch (error) {
         console.log(error)
         return res.status(500).json({ error: 'Failed to create collector attendance.' });
@@ -103,26 +103,26 @@ export const get_all_collector_attendance_specific_user = asyncHandler(async (re
 
     try {
         const collector_attendances = await CollectorAttendance.find({ user: user_id })
-        .populate({
-            path: 'schedule',
-            populate: {
-                path: 'route',
+            .populate({
+                path: 'schedule',
                 populate: {
-                    path: 'merge_barangay.barangay_id', 
+                    path: 'route',
+                    populate: {
+                        path: 'merge_barangay.barangay_id',
+                        model: 'Barangay'
+                    }
+                }
+            })
+            .populate({
+                path: 'schedule',
+                populate: {
+                    path: 'task.barangay_id',
                     model: 'Barangay'
                 }
-            }
-        })
-        .populate({
-            path: 'schedule',
-            populate: {
-                path: 'task.barangay_id',
-                model: 'Barangay'
-            }
-        })
-        .populate('truck')
-        .populate('user')
-        .sort({ created_at: -1 }); 
+            })
+            .populate('truck')
+            .populate('user')
+            .sort({ created_at: -1 });
 
         return res.status(200).json({ data: collector_attendances });
     } catch (error) {
@@ -140,9 +140,16 @@ export const get_all_collector_attendance = asyncHandler(async (req, res) => {
                 populate: {
                     path: 'route',
                     populate: {
-                        path: 'merge_barangay.barangay_id', 
+                        path: 'merge_barangay.barangay_id',
                         model: 'Barangay'
                     }
+                }
+            })
+            .populate({
+                path: 'schedule',
+                populate: {
+                    path: 'task.barangay_id',
+                    model: 'Barangay'
                 }
             })
             .populate('truck')
@@ -196,20 +203,20 @@ export const update_collector_attendance_time_out = asyncHandler(async (req, res
         await updatedCollectorAttendance.save();
 
         const data = await CollectorAttendance.findById(updatedCollectorAttendance._id)
-        .populate({
-            path: 'schedule',
-            populate: {
-                path: 'route',
+            .populate({
+                path: 'schedule',
                 populate: {
-                    path: 'merge_barangay.barangay_id', 
-                    model: 'Barangay'
+                    path: 'route',
+                    populate: {
+                        path: 'merge_barangay.barangay_id',
+                        model: 'Barangay'
+                    }
                 }
-            }
-        })
-        .populate('truck')
-        .populate('user')
+            })
+            .populate('truck')
+            .populate('user')
 
-        
+
         return res.status(200).json({ data: data });
         // return res.status(200).json({ data: 'Collector attendance successfully updated.' });
     } catch (error) {
