@@ -5,7 +5,18 @@ import Schedule from '../models/schedule.js';
 import Notification from '../models/notification.js';
 import User from '../models/user.js';
 import Route from '../models/route.js';
+import { io } from '../config/connect.js';
+import CollectorAttendance from '../models/collector_attendance.js';
 
+async function broadcastList(name, data) {
+    const message = JSON.stringify({ name, data });
+
+    io.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(message);
+        }
+    });
+}
 
 function storeCurrentDate(expirationAmount, expirationUnit) {
     // Get the current date and time in Asia/Manila timezone
@@ -392,6 +403,13 @@ export const get_all_schedule = asyncHandler(async (req, res) => {
             }
         })
         .populate({
+            path: 'route',
+            populate: {
+                path: 'merge_barangay.barangay_id', // populate each barangay inside route
+                model: 'Barangay'
+            }
+        })
+        .populate({
             path: 'task.barangay_id', // ✅ populate barangay_id inside each task
             model: 'Barangay'
         })
@@ -629,9 +647,39 @@ export const update_schedule_garbage_collection_status = asyncHandler(async (req
             });
         }
 
+     
         await updatedSchedule.save();
 
-        return res.status(200).json({ message: 'Schedule successfully updated.' });
+        const collector_attendances = await CollectorAttendance.findOne({ user: updatedSchedule.user._id, flag: 1 })
+                    .populate({
+                        path: 'schedule',
+                        populate: {
+                            path: 'route',
+                            populate: {
+                                path: 'merge_barangay.barangay_id',
+                                model: 'Barangay'
+                            }
+                        }
+                    })
+                    .populate({
+                        path: 'schedule',
+                        populate: {
+                            path: 'task.barangay_id',
+                            model: 'Barangay'
+                        }
+                    })
+                    .populate('truck')
+                    .populate('user')
+                    .sort({ created_at: -1 });
+
+
+
+        await broadcastList('attendance', collector_attendances);
+
+
+        return res.status(200).json({ message: 'Schedule successfully updated.', collector_attendances });
+
+       // return res.status(200).json({ message: 'Schedule successfully updated.' });
     } catch (error) {
         return res.status(500).json({ error: 'Failed to update schedule.' });
     }
