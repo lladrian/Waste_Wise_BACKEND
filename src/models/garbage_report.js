@@ -24,7 +24,7 @@ const GarbageReportSchema = new mongoose.Schema({
     report_type: {
         type: String,
         required: true,
-        enum: ['uncollected', 'other'],
+        enum: ['uncollected', 'overflowing', 'illegal_dumping', 'missed_route', 'other'],
         default: 'uncollected'
     },
     garbage_type: {
