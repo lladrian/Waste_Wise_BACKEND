@@ -16,7 +16,7 @@ const BarangayRequestSchema = new mongoose.Schema({
     request_type: {
         type: String,
         required: false,
-        enum: ["request_help", "request_new_schedule", "request_new_truck"],
+        enum: ["request_help", "request_new_schedule", "request_new_truck", "other"],
         default: 'request_help'
     },
     responses: [
