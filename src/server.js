@@ -21,6 +21,8 @@ import garbageReportRoutes from "./routes/garbage_report_route.js";
 import webSocketRoutes from "./routes/web_socket_route.js";
 import collectorReportRoutes from "./routes/collector_report_route.js";
 import garbageSiteRoutes from "./routes/garbage_site_route.js";
+import barangayRequestRoutes from "./routes/barangay_request_route.js";
+
 
 
 
@@ -44,6 +46,7 @@ connectDB();
 
 
 //app.use("/residents", residentUserRoutes);
+// app.use("/truck_activities", truckActivityRoutes);
 app.use("/users", userRoutes);
 app.use("/otp", otpRoutes);
 app.use("/actions", roleActionRoutes);
@@ -51,7 +54,6 @@ app.use("/notifications", notificationRoutes);
 app.use("/logs", logRoutes);
 app.use("/routes", routeRoutes);
 app.use("/barangays", barangayRoutes);
-app.use("/truck_activities", truckActivityRoutes);
 app.use("/schedules", scheduleRoutes);
 app.use("/generate_reports", generateReportRoutes);
 app.use("/trucks", truckRoutes);
@@ -62,3 +64,6 @@ app.use("/garbage_reports", garbageReportRoutes);
 app.use("/collector_reports", collectorReportRoutes);
 app.use("/web_sockets", webSocketRoutes);
 app.use("/garbage_sites", garbageSiteRoutes);
+app.use("/barangay_requests", barangayRequestRoutes);
+
+
