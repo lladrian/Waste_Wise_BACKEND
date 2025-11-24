@@ -8,6 +8,8 @@ import Route from '../models/route.js';
 import { io } from '../config/connect.js';
 import CollectorAttendance from '../models/collector_attendance.js';
 
+import axios from "axios";
+
 async function broadcastList(name, data) {
     const message = JSON.stringify({ name, data });
 
@@ -688,12 +690,8 @@ export const update_schedule_garbage_collection_status = asyncHandler(async (req
         if (url.includes('localhost') || url.includes('waste-wise-backend-chi.vercel.app')) {
             const response = await axios.post(`http://waste-wise-backend-uzub.onrender.com/web_sockets/get_web_socket_attendance`, { user: updatedSchedule.user._id, flag: 1 });
             // console.log(response.data)
-                        console.log(100)
-
         } else if (url.includes('waste-wise-backend-uzub.onrender.com')) {
             await broadcastList('attendance', collector_attendances);
-                        console.log(200)
-
         }
 
         return res.status(200).json({ message: 'Schedule successfully updated.' });
