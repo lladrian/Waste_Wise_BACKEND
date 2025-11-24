@@ -3,6 +3,8 @@ import moment from 'moment-timezone';
 // import dotenv from 'dotenv';
 import Truck from '../models/truck.js';
 import Schedule from '../models/schedule.js';
+import CollectorAttendance from '../models/collector_attendance.js';
+
 import { io } from '../config/connect.js';
 
 
@@ -16,6 +18,47 @@ async function broadcastList(name, data) {
         }
     });
 }
+
+export const get_web_socket_attendance = asyncHandler(async (req, res) => {
+    const { user, flag  } = req.body;
+
+    try {
+        if (!user || !flag) {
+            return res.status(400).json({ message: "Please provide all fields (user, flag)." });
+        }
+
+
+        const collector_attendances = await CollectorAttendance.findOne({ user: user, flag: flag })
+            .populate({
+                path: 'schedule',
+                populate: {
+                    path: 'route',
+                    populate: {
+                        path: 'merge_barangay.barangay_id',
+                        model: 'Barangay'
+                    }
+                }
+            })
+            .populate({
+                path: 'schedule',
+                populate: {
+                    path: 'task.barangay_id',
+                    model: 'Barangay'
+                }
+            })
+            .populate('truck')
+            .populate('user')
+            .sort({ created_at: -1 });
+
+
+        await broadcastList('attendance', collector_attendances);
+
+        return res.status(200).json({ data: 'Web socket attendance successfully updated.', collector_attendances: collector_attendances.length });
+    } catch (error) {
+        console.error('Error creating role action:', error);
+        return res.status(500).json({ error: 'Failed to update web socket attendance.' });
+    }
+});
 
 
 export const get_web_socket_schedule = asyncHandler(async (req, res) => {

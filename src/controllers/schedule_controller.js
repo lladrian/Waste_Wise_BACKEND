@@ -242,6 +242,14 @@ async function create_notification_many_barangay(barangay_ids, user_role, notif_
     }
 }
 
+function base_url(req) {
+    const protocol = req.protocol; // "http" or "https"
+    const host = req.get("host");  // e.g., "waste-wise-backend-uzub.onrender.com"
+    const baseUrl = `${protocol}://${host}`;
+    return baseUrl;
+}
+
+
 export const create_schedule = asyncHandler(async (req, res) => {
     const { route, truck, user, scheduled_collection, garbage_type, task } = req.body;
 
@@ -284,24 +292,24 @@ export const get_all_schedule_specific_barangay = asyncHandler(async (req, res) 
 
     try {
         const schedules = await Schedule.find()
-        .populate({
-            path: 'route',
-            populate: {
-                path: 'merge_barangay.barangay_id', // populate each barangay inside route
+            .populate({
+                path: 'route',
+                populate: {
+                    path: 'merge_barangay.barangay_id', // populate each barangay inside route
+                    model: 'Barangay'
+                }
+            })
+            .populate({
+                path: 'task.barangay_id', // ✅ populate barangay_id inside each task
                 model: 'Barangay'
-            }
-        })
-        .populate({
-            path: 'task.barangay_id', // ✅ populate barangay_id inside each task
-            model: 'Barangay'
-        })
-        .populate({
-            path: 'truck',
-            populate: {
-                path: 'user',
-                model: 'User'
-            }
-        })
+            })
+            .populate({
+                path: 'truck',
+                populate: {
+                    path: 'user',
+                    model: 'User'
+                }
+            })
 
         const filteredSchedules = schedules.filter(schedule => {
             const mergeBarangays = schedule?.route?.merge_barangay;
@@ -326,36 +334,36 @@ export const get_all_schedule_current_day_specific_user = asyncHandler(async (re
     try {
         // First get all schedules for today
         const allSchedules = await Schedule.find({ scheduled_collection: getPhilippineDate() })
-        .populate({
-            path: 'route',
-            populate: {
-                path: 'merge_barangay.barangay_id',
+            .populate({
+                path: 'route',
+                populate: {
+                    path: 'merge_barangay.barangay_id',
+                    model: 'Barangay'
+                }
+            })
+            .populate({
+                path: 'task.barangay_id', // ✅ populate barangay_id inside each task
                 model: 'Barangay'
-            }
-        })
-        .populate({
-            path: 'task.barangay_id', // ✅ populate barangay_id inside each task
-            model: 'Barangay'
-        })
-        .populate({
-            path: 'truck',
-            populate: {
-                path: 'user',
-                model: 'User'
-            }
-        })
-        .populate('garbage_sites');
+            })
+            .populate({
+                path: 'truck',
+                populate: {
+                    path: 'user',
+                    model: 'User'
+                }
+            })
+            .populate('garbage_sites');
 
         // Then filter by user ID
-        const filteredSchedules = allSchedules.filter(schedule => 
-            schedule.truck && 
-            schedule.truck.user && 
+        const filteredSchedules = allSchedules.filter(schedule =>
+            schedule.truck &&
+            schedule.truck.user &&
             schedule.truck.user._id.toString() === user_id
         );
 
-        return res.status(200).json({ 
-            data: filteredSchedules, 
-            today: getPhilippineDate() 
+        return res.status(200).json({
+            data: filteredSchedules,
+            today: getPhilippineDate()
         });
     } catch (error) {
         console.error('Error:', error);
@@ -366,25 +374,25 @@ export const get_all_schedule_current_day_specific_user = asyncHandler(async (re
 export const get_all_schedule_current_day = asyncHandler(async (req, res) => {
     try {
         const schedules = await Schedule.find({ scheduled_collection: getPhilippineDate() })
-        .populate({
-            path: 'route',
-            populate: {
-                path: 'merge_barangay.barangay_id', // populate each barangay inside route
+            .populate({
+                path: 'route',
+                populate: {
+                    path: 'merge_barangay.barangay_id', // populate each barangay inside route
+                    model: 'Barangay'
+                }
+            })
+            .populate({
+                path: 'task.barangay_id', // ✅ populate barangay_id inside each task
                 model: 'Barangay'
-            }
-        })
-        .populate({
-            path: 'task.barangay_id', // ✅ populate barangay_id inside each task
-            model: 'Barangay'
-        })
-        .populate({
-            path: 'truck',
-            populate: {
-                path: 'user',
-                model: 'User'
-            }
-        })
-        .populate('garbage_sites');
+            })
+            .populate({
+                path: 'truck',
+                populate: {
+                    path: 'user',
+                    model: 'User'
+                }
+            })
+            .populate('garbage_sites');
 
         return res.status(200).json({ data: schedules, today: getPhilippineDate() });
     } catch (error) {
@@ -395,33 +403,33 @@ export const get_all_schedule_current_day = asyncHandler(async (req, res) => {
 export const get_all_schedule = asyncHandler(async (req, res) => {
     try {
         const schedules = await Schedule.find()
-        .populate({
-            path: 'task',
-            populate: {
-                path: 'merge_barangay.barangay_id', // populate each barangay inside route
+            .populate({
+                path: 'task',
+                populate: {
+                    path: 'merge_barangay.barangay_id', // populate each barangay inside route
+                    model: 'Barangay'
+                }
+            })
+            .populate({
+                path: 'route',
+                populate: {
+                    path: 'merge_barangay.barangay_id', // populate each barangay inside route
+                    model: 'Barangay'
+                }
+            })
+            .populate({
+                path: 'task.barangay_id', // ✅ populate barangay_id inside each task
                 model: 'Barangay'
-            }
-        })
-        .populate({
-            path: 'route',
-            populate: {
-                path: 'merge_barangay.barangay_id', // populate each barangay inside route
-                model: 'Barangay'
-            }
-        })
-        .populate({
-            path: 'task.barangay_id', // ✅ populate barangay_id inside each task
-            model: 'Barangay'
-        })
-        .populate({
-            path: 'truck',
-            populate: {
-                path: 'user',
-                model: 'User'
-            }
-        })
-        .populate('garbage_sites')
-        
+            })
+            .populate({
+                path: 'truck',
+                populate: {
+                    path: 'user',
+                    model: 'User'
+                }
+            })
+            .populate('garbage_sites')
+
 
 
         return res.status(200).json({ data: schedules });
@@ -434,25 +442,25 @@ export const get_specific_schedule = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters
 
     try {
-        const schedule = await Schedule.findById(id)    
-        .populate({
-            path: 'route',
-            populate: {
-                path: 'merge_barangay.barangay_id', // populate each barangay inside route
+        const schedule = await Schedule.findById(id)
+            .populate({
+                path: 'route',
+                populate: {
+                    path: 'merge_barangay.barangay_id', // populate each barangay inside route
+                    model: 'Barangay'
+                }
+            })
+            .populate({
+                path: 'task.barangay_id', // ✅ populate barangay_id inside each task
                 model: 'Barangay'
-            }
-        })
-        .populate({
-            path: 'task.barangay_id', // ✅ populate barangay_id inside each task
-            model: 'Barangay'
-        })
-        .populate({
-            path: 'truck',
-            populate: {
-                path: 'user',
-                model: 'User'
-            }
-        })
+            })
+            .populate({
+                path: 'truck',
+                populate: {
+                    path: 'user',
+                    model: 'User'
+                }
+            })
 
         res.status(200).json({ data: schedule });
     } catch (error) {
@@ -465,25 +473,25 @@ export const get_all_schedule_specific_user_garbage_collector = asyncHandler(asy
     const { user_id } = req.params; // Get the meal ID from the request parameters
 
     try {
-       const schedules = await Schedule.find({ user: user_id })
-        .populate({
-            path: 'route',
-            populate: {
-                path: 'merge_barangay.barangay_id', // populate each barangay inside route
+        const schedules = await Schedule.find({ user: user_id })
+            .populate({
+                path: 'route',
+                populate: {
+                    path: 'merge_barangay.barangay_id', // populate each barangay inside route
+                    model: 'Barangay'
+                }
+            })
+            .populate({
+                path: 'task.barangay_id', // ✅ populate barangay_id inside each task
                 model: 'Barangay'
-            }
-        })
-        .populate({
-            path: 'task.barangay_id', // ✅ populate barangay_id inside each task
-            model: 'Barangay'
-        })
-        .populate({
-            path: 'truck',
-            populate: {
-                path: 'user',
-                model: 'User'
-            }
-        })
+            })
+            .populate({
+                path: 'truck',
+                populate: {
+                    path: 'user',
+                    model: 'User'
+                }
+            })
 
 
         res.status(200).json({ data: schedules });
@@ -625,7 +633,7 @@ export const update_schedule_garbage_collector = asyncHandler(async (req, res) =
 
 export const update_schedule_garbage_collection_status = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { task_updates } = req.body; 
+    const { task_updates } = req.body;
 
     try {
         if (!task_updates) {
@@ -633,6 +641,8 @@ export const update_schedule_garbage_collection_status = asyncHandler(async (req
         }
 
         const updatedSchedule = await Schedule.findById(id);
+        const url = base_url(req); // pass req to the function
+
 
         if (!updatedSchedule) {
             return res.status(404).json({ message: "Schedule not found" });
@@ -647,39 +657,46 @@ export const update_schedule_garbage_collection_status = asyncHandler(async (req
             });
         }
 
-     
+
         await updatedSchedule.save();
 
         const collector_attendances = await CollectorAttendance.findOne({ user: updatedSchedule.user._id, flag: 1 })
-                    .populate({
-                        path: 'schedule',
-                        populate: {
-                            path: 'route',
-                            populate: {
-                                path: 'merge_barangay.barangay_id',
-                                model: 'Barangay'
-                            }
-                        }
-                    })
-                    .populate({
-                        path: 'schedule',
-                        populate: {
-                            path: 'task.barangay_id',
-                            model: 'Barangay'
-                        }
-                    })
-                    .populate('truck')
-                    .populate('user')
-                    .sort({ created_at: -1 });
+            .populate({
+                path: 'schedule',
+                populate: {
+                    path: 'route',
+                    populate: {
+                        path: 'merge_barangay.barangay_id',
+                        model: 'Barangay'
+                    }
+                }
+            })
+            .populate({
+                path: 'schedule',
+                populate: {
+                    path: 'task.barangay_id',
+                    model: 'Barangay'
+                }
+            })
+            .populate('truck')
+            .populate('user')
+            .sort({ created_at: -1 });
 
 
 
-        await broadcastList('attendance', collector_attendances);
 
+        if (url.includes('localhost') || url.includes('waste-wise-backend-chi.vercel.app')) {
+            const response = await axios.post(`http://waste-wise-backend-uzub.onrender.com/web_sockets/get_web_socket_attendance`, { user: updatedSchedule.user._id, flag: 1 });
+            // console.log(response.data)
+                        console.log(100)
 
-        return res.status(200).json({ message: 'Schedule successfully updated.', collector_attendances });
+        } else if (url.includes('waste-wise-backend-uzub.onrender.com')) {
+            await broadcastList('attendance', collector_attendances);
+                        console.log(200)
 
-       // return res.status(200).json({ message: 'Schedule successfully updated.' });
+        }
+
+        return res.status(200).json({ message: 'Schedule successfully updated.' });
     } catch (error) {
         return res.status(500).json({ error: 'Failed to update schedule.' });
     }
