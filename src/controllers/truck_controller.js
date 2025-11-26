@@ -100,6 +100,19 @@ export const get_specific_truck = asyncHandler(async (req, res) => {
     }
 });
 
+
+export const get_all_truck_specific_user = asyncHandler(async (req, res) => {
+    const { user_id } = req.params; 
+
+    try {
+        const truck = await Truck.find({ user : user_id });
+
+        res.status(200).json({ data: truck });
+    } catch (error) {
+        return res.status(500).json({ error: 'Failed to get all truck.' });
+    }
+});
+
 export const update_truck_status = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters
     const { status } = req.body;
