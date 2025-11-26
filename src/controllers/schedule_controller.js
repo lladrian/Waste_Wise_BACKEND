@@ -685,6 +685,28 @@ export const update_schedule_garbage_collection_status = asyncHandler(async (req
             .sort({ created_at: -1 });
 
 
+            const schedules = await Schedule.find({ scheduled_collection: getPhilippineDate() })
+            .populate({
+                path: 'route',
+                populate: {
+                    path: 'merge_barangay.barangay_id', // populate each barangay inside route
+                    model: 'Barangay'
+                }
+            })
+            .populate({
+                path: 'task.barangay_id', // ✅ populate barangay_id inside each task
+                model: 'Barangay'
+            })
+            .populate({
+                path: 'truck',
+                populate: {
+                    path: 'user',
+                    model: 'User'
+                }
+            })
+            .populate('garbage_sites');
+
+
 
 
         if (url.includes('localhost') || url.includes('waste-wise-backend-chi.vercel.app')) {
@@ -692,6 +714,7 @@ export const update_schedule_garbage_collection_status = asyncHandler(async (req
             // console.log(response.data)
         } else if (url.includes('waste-wise-backend-uzub.onrender.com')) {
             await broadcastList('attendance', collector_attendances);
+            await broadcastList('trucks', schedules);
         }
 
         return res.status(200).json({ message: 'Schedule successfully updated.' });
