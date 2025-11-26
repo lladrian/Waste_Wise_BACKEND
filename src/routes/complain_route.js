@@ -10,7 +10,7 @@ complainRoutes.get('/get_specific_complain/:id', ComplainController.get_specific
 complainRoutes.delete('/delete_complain/:id', ComplainController.delete_complain);
 complainRoutes.put('/update_complain/:id', ComplainController.update_complain);
 complainRoutes.put('/update_complain_verification/:id', ComplainController.update_complain_verification);
-
+complainRoutes.put('/update_complain_status/:id', ComplainController.update_complain_status);
 
 
 export default complainRoutes;

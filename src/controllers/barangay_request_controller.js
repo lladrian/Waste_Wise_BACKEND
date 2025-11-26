@@ -117,6 +117,30 @@ export const update_barangay_request = asyncHandler(async (req, res) => {
     }
 });
 
+export const update_barangay_request_status = asyncHandler(async (req, res) => {
+    const { id } = req.params; // Get the meal ID from the request parameters
+    const { status } = req.body;
+
+    try {
+        if (!status) {
+            return res.status(400).json({ message: "Please provide all fields (status)." });
+        }
+
+        const updatedBarangayRequest = await BarangayRequest.findById(id);
+
+        if (!updatedBarangayRequest) {
+            return res.status(404).json({ message: "Barangay request not found" });
+        }
+
+        updatedBarangayRequest.resolution_status = status ? status : updatedBarangayRequest.resolution_status;
+        await updatedBarangayRequest.save();
+
+        return res.status(200).json({ data: 'Barangay request successfully updated.' });
+    } catch (error) {
+        return res.status(500).json({ error: 'Failed to update barangay request.' });
+    }
+});
+
 
 export const delete_barangay_request = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters

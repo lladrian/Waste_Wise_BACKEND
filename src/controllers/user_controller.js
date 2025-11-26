@@ -483,6 +483,7 @@ export const get_all_user = asyncHandler(async (req, res) => {
     try {
         const users = await User.find()
             .populate('role_action')
+            .populate('garbage_site')
             .populate('barangay');
 
         return res.status(200).json({ data: users });
@@ -491,6 +492,20 @@ export const get_all_user = asyncHandler(async (req, res) => {
     }
 });
 
+export const get_all_user_specific_barangay = asyncHandler(async (req, res) => {
+    const { barangay_id } = req.params; // Get the meal ID from the request parameters
+
+    try {
+        const users = await User.find({ barangay: barangay_id, role: 'resident'})
+            .populate('role_action')
+            .populate('garbage_site')
+            .populate('barangay');
+
+        return res.status(200).json({ data: users });
+    } catch (error) {
+        return res.status(500).json({ error: 'Failed to get all users.' });
+    }
+});
 
 export const get_all_user_truck_driver = asyncHandler(async (req, res) => {
     try {
@@ -504,8 +519,10 @@ export const get_all_user_truck_driver = asyncHandler(async (req, res) => {
         const users = await User.find({
             _id: { $nin: assignedUserIds },
             role: 'garbage_collector'
-        }).populate('role_action')
-            .populate('barangay');
+        })
+        .populate('role_action')
+        .populate('garbage_site')
+        .populate('barangay');
 
         return res.status(200).json({ data: users });
     } catch (error) {
