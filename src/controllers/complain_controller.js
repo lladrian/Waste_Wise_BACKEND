@@ -159,6 +159,30 @@ export const update_complain = asyncHandler(async (req, res) => {
 });
 
 
+export const update_complain_status = asyncHandler(async (req, res) => {
+    const { id } = req.params; // Get the meal ID from the request parameters
+    const { status } = req.body;
+
+    try {
+        if (!status) {
+            return res.status(400).json({ message: "Please provide all fields (status)." });
+        }
+
+        const updatedComplain = await Complain.findById(id);
+
+        if (!updatedComplain) {
+            return res.status(404).json({ message: "Complain not found" });
+        }
+
+        updatedComplain.resolution_status = status ? status : updatedComplain.resolution_status;
+        await updatedComplain.save();
+
+        return res.status(200).json({ data: 'Complain successfully updated.' });
+    } catch (error) {
+        return res.status(500).json({ error: 'Failed to update complain.' });
+    }
+});
+
 export const delete_complain = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters
 

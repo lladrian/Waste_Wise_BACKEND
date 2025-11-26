@@ -9,6 +9,9 @@ barangayRequestRoutes.get('/get_all_barangay_request_specific_barangay/:barangay
 barangayRequestRoutes.get('/get_specific_barangay_request/:id', BarangayRequestController.get_specific_barangay_request);
 barangayRequestRoutes.delete('/delete_barangay_request/:id', BarangayRequestController.delete_barangay_request);
 barangayRequestRoutes.put('/update_barangay_request/:id', BarangayRequestController.update_barangay_request);
+barangayRequestRoutes.put('/update_barangay_request_status/:id', BarangayRequestController.update_barangay_request_status);
+
+
 
 
 export default barangayRequestRoutes;

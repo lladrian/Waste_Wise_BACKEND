@@ -21,6 +21,7 @@ userRoutes.put('/update_user_password_recovery', UserController.update_user_pass
 userRoutes.get('/get_all_user_truck_driver', UserController.get_all_user_truck_driver);
 userRoutes.get('/get_all_user', UserController.get_all_user);
 userRoutes.get('/get_specific_user/:id', UserController.get_specific_user);
+userRoutes.get('/get_all_user_specific_barangay/:barangay_id', UserController.get_all_user_specific_barangay);
 userRoutes.delete('/delete_user/:id', UserController.delete_user);
 
 

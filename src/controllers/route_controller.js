@@ -43,7 +43,7 @@ export const create_route = asyncHandler(async (req, res) => {
 
 export const get_all_route = asyncHandler(async (req, res) => {
     try {
-        const routes = await Route.find();
+        const routes = await Route.find().populate('merge_barangay.barangay_id');
 
         return res.status(200).json({ data: routes });
     } catch (error) {
@@ -55,7 +55,7 @@ export const get_specific_route = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters
 
     try {
-        const route = await Route.findById(id);
+        const route = await Route.findById(id).populate('merge_barangay.barangay_id');
 
         res.status(200).json({ data: route });
     } catch (error) {
