@@ -20,7 +20,7 @@ async function broadcastList(name, data) {
 }
 
 export const get_web_socket_attendance = asyncHandler(async (req, res) => {
-    const { user, flag  } = req.body;
+    const { user, flag } = req.body;
 
     try {
         if (!user || !flag) {
@@ -69,16 +69,27 @@ export const get_web_socket_schedule = asyncHandler(async (req, res) => {
             return res.status(400).json({ message: "Please provide all fields (scheduled_collection)." });
         }
 
+
         const schedules = await Schedule.find({ scheduled_collection: scheduled_collection })
-            .populate('route')
-            // .populate('user')
+            .populate({
+                path: 'route',
+                populate: {
+                    path: 'merge_barangay.barangay_id', // populate each barangay inside route
+                    model: 'Barangay'
+                }
+            })
+            .populate({
+                path: 'task.barangay_id', // ✅ populate barangay_id inside each task
+                model: 'Barangay'
+            })
             .populate({
                 path: 'truck',
                 populate: {
                     path: 'user',
                     model: 'User'
                 }
-            });
+            })
+            .populate('garbage_sites');
 
 
         await broadcastList('trucks', schedules);

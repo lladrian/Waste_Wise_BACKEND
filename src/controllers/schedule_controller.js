@@ -685,32 +685,14 @@ export const update_schedule_garbage_collection_status = asyncHandler(async (req
             .sort({ created_at: -1 });
 
 
-            const schedules = await Schedule.find({ scheduled_collection: getPhilippineDate() })
-            .populate({
-                path: 'route',
-                populate: {
-                    path: 'merge_barangay.barangay_id', // populate each barangay inside route
-                    model: 'Barangay'
-                }
-            })
-            .populate({
-                path: 'task.barangay_id', // ✅ populate barangay_id inside each task
-                model: 'Barangay'
-            })
-            .populate({
-                path: 'truck',
-                populate: {
-                    path: 'user',
-                    model: 'User'
-                }
-            })
-            .populate('garbage_sites');
+         
 
 
 
 
         if (url.includes('localhost') || url.includes('waste-wise-backend-chi.vercel.app')) {
             const response = await axios.post(`http://waste-wise-backend-uzub.onrender.com/web_sockets/get_web_socket_attendance`, { user: updatedSchedule.user._id, flag: 1 });
+            const response2= await axios.post(`http://waste-wise-backend-uzub.onrender.com/web_sockets/get_web_socket_schedule`, { scheduled_collection: getPhilippineDate() });
             // console.log(response.data)
         } else if (url.includes('waste-wise-backend-uzub.onrender.com')) {
             await broadcastList('attendance', collector_attendances);
