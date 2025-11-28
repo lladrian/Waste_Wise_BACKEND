@@ -292,7 +292,6 @@ async function save_new_user_admin(hash_password, input_data, req) {
         if (url.includes('localhost') || url.includes('waste-wise-backend-chi.vercel.app')) {
             await credential_mailer_new_user(input_data.email, formatted_input_data);
         } else if (url.includes('waste-wise-backend-uzub.onrender.com')) {
-            console.log('not working')
             await axios.post(`http://waste-wise-backend-chi.vercel.app/otp/credential_mailer_new_user`, { email: input_data.email, formatted_input_data });
         }
     }
@@ -340,7 +339,6 @@ async function save_new_user(hash_password, input_data, req) {
         if (url.includes('localhost') || url.includes('waste-wise-backend-chi.vercel.app')) {
             await credential_mailer_new_user(input_data.email, formatted_input_data);
         } else if (url.includes('waste-wise-backend-uzub.onrender.com')) {
-            console.log('not working')
             await axios.post(`http://waste-wise-backend-chi.vercel.app/otp/credential_mailer_new_user`, { email: input_data.email, formatted_input_data });
         }
     }
@@ -560,6 +558,7 @@ export const login_user = asyncHandler(async (req, res) => {
         .populate('role_action')
         .populate('barangay')
         .populate('garbage_site')
+
 
         const hash = hashConverterMD5(password);
         const deviceInfo = getDeviceInfo(req);
@@ -782,7 +781,6 @@ export const update_user_verified_email = asyncHandler(async (req, res) => {
 
         // return res.status(200).json({ data: 'User account successfully verified.' });
     } catch (error) {
-        console.log(error)
         return res.status(500).json({ error: 'Failed to verify user account.' });
     }
 });
