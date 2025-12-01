@@ -19,6 +19,10 @@ const ActionSchema = new mongoose.Schema({
     //         default: ['none'], // Default as array with one element
     //     },
     // }],
+    route: {
+        type: [String], // Array of strings
+        default: null, // Default as array with one element
+    },
     management: {
         type: [String], // Array of strings
         default: null, // Default as array with one element

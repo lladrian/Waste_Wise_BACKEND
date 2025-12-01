@@ -18,7 +18,7 @@ function storeCurrentDate(expirationAmount, expirationUnit) {
 
 
 export const create_role_action = asyncHandler(async (req, res) => {
-    const { action_name, permission, management, role } = req.body;
+    const { action_name, permission, management, role, route } = req.body;
 
     try {
         if (!action_name || !role) {
@@ -49,11 +49,25 @@ export const create_role_action = asyncHandler(async (req, res) => {
             return res.status(400).json({ message: "Management must be a string or array of strings." });
         }
 
+
+        // Handle different management input types
+        let routeArray;
+        if (!route) {
+            routeArray = ['none']; // Use default
+        } else if (typeof route === 'string') {
+            routeArray = [route]; // Convert string to array
+        } else if (Array.isArray(route)) {
+            routeArray = route; // Use array as is
+        } else {
+            return res.status(400).json({ message: "Route must be a string or array of strings." });
+        }
+
         const newRoleActionData = {
             role: role,
             action_name: action_name,
             permission: permissionArray,
             management: managementArray,
+            route: routeArray,
             created_at: storeCurrentDate(0, "hours")
         };
 
@@ -94,12 +108,12 @@ export const get_specific_role_action = asyncHandler(async (req, res) => {
 
 export const update_role_action = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters
-    const { action_name, permission, management, role } = req.body;
+    const { action_name, permission, management, route, role } = req.body;
 
     try {
-        if (!action_name || !permission || !role || !management) {
+        if (!action_name || !permission || !role || !management || !route) {
             
-            return res.status(400).json({ message: "Please provide all fields (action_name, permission, role, management)." });
+            return res.status(400).json({ message: "Please provide all fields (action_name, permission, role, management, route)." });
         }
 
         const updatedRoleAction = await Action.findById(id);
@@ -112,8 +126,8 @@ export const update_role_action = asyncHandler(async (req, res) => {
         updatedRoleAction.action_name = action_name ? action_name : updatedRoleAction.action_name;
         updatedRoleAction.permission = permission ? permission : updatedRoleAction.permission;
         updatedRoleAction.management = management ? management : updatedRoleAction.management;
+        updatedRoleAction.route = route ? route : updatedRoleAction.route;
 
-        
 
         await updatedRoleAction.save();
 

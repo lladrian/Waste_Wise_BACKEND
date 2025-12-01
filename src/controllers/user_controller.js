@@ -1070,7 +1070,13 @@ export const update_user_selected_role = asyncHandler(async (req, res) => {
 
         await user.save();
 
-        return res.status(200).json({ data: user });
+
+        const user_updated = await User.findById(user._id)  
+        .populate('role_action')
+        .populate('barangay')
+        .populate('garbage_site')
+
+        return res.status(200).json({ data: user_updated });
         // return res.status(200).json({ data: "User position successfully updated." });
     } catch (error) {
         return res.status(500).json({ error: 'Failed to update position.' });
