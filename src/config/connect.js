@@ -84,6 +84,13 @@ async function handleTruckPositionUpdate(ws, data) {
       // Get updated schedules
       const schedules = await Schedule.find({ scheduled_collection: getPhilippineDate() })
         .populate({
+          path: 'task',
+          populate: {
+            path: 'merge_barangay.barangay_id', // populate each barangay inside route
+            model: 'Barangay'
+          }
+        })
+        .populate({
           path: 'route',
           populate: {
             path: 'merge_barangay.barangay_id', // populate each barangay inside route
@@ -101,7 +108,7 @@ async function handleTruckPositionUpdate(ws, data) {
             model: 'User'
           }
         })
-        .populate('garbage_sites');
+        .populate('garbage_sites')
 
       // Broadcast updated truck positions to all clients
       broadcastList('trucks', schedules);
@@ -168,8 +175,6 @@ async function handleAttendanceTruckPositionUpdate(ws, data) {
       attendance.route_history.push(newRoutePoint);
       await attendance.save();
     }
-
-
 
 
     // Send success response to the requesting client
