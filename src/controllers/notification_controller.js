@@ -19,15 +19,15 @@ function storeCurrentDate(expirationAmount, expirationUnit) {
 
 
 export const create_notification_many = asyncHandler(async (req, res) => {
-    const { user_role, notif_content } = req.body;
+    const { role, notif_content } = req.body;
 
     try {
-        if (!user_role || !notif_content) {
-            return res.status(400).json({ message: "All fields are required: (user_role, notif_content)." });
+        if (!role || !notif_content) {
+            return res.status(400).json({ message: "All fields are required: (role, notif_content)." });
         }
 
         // Find all users with the specified role
-        const users = await User.find({ role: user_role });
+        const users = await User.find({ role: role });
 
         if (!users || users.length === 0) {
             return res.status(404).json({ message: "No users found with the specified role." });
@@ -36,6 +36,7 @@ export const create_notification_many = asyncHandler(async (req, res) => {
         // Prepare notifications array for bulk insert
         const notifications = users.map(user => ({
             user: user._id,
+            role: role,
             notif_content: notif_content,
             created_at: storeCurrentDate(0, "hours"),
             is_read: false // Add default values if needed
@@ -51,15 +52,16 @@ export const create_notification_many = asyncHandler(async (req, res) => {
 });
 
 export const create_notification = asyncHandler(async (req, res) => {
-    const { user, notif_content } = req.body;
+    const { user, notif_content, role } = req.body;
 
     try {
-        if (!user || !notif_content) {
-            return res.status(400).json({ message: "All fields are required: (user, notif_content)." });
+        if (!user || !notif_content || !role) {
+            return res.status(400).json({ message: "All fields are required: (user, notif_content, role)." });
         }
 
         const newNotificationData = {
             user: user,
+            role: role,
             notif_content: notif_content,
             created_at: storeCurrentDate(0, "hours")
         };
@@ -75,10 +77,10 @@ export const create_notification = asyncHandler(async (req, res) => {
 
 
 export const get_all_notification_specific_user = asyncHandler(async (req, res) => {
-    const { user_id } = req.params; // Get the meal ID from the request parameters
+    const { user_id, role } = req.params; // Get the meal ID from the request parameters
 
     try {
-        const notifications = await Notification.find({ user: user_id });
+        const notifications = await Notification.find({ user: user_id, role: role });
 
         return res.status(200).json({ data: notifications });
     } catch (error) {
