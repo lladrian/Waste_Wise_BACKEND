@@ -58,7 +58,11 @@ async function create_notification_many_garbage_collector(id, user_role, notif_c
         }
 
         // Find all users with the specified role
-        const users = await User.find({ role: user_role, is_disabled: false, _id: id });
+        const users = await User.find({
+            multiple_role: { $elemMatch: { role: user_role } },
+            is_disabled: false,
+            _id: id
+        });
 
         if (!users || users.length === 0) {
             return { message: "No users found with the specified role." };
@@ -70,6 +74,7 @@ async function create_notification_many_garbage_collector(id, user_role, notif_c
             notif_content: notif_content,
             title: title,
             category: category,
+            role: user_role,
             link: link,
             created_at: storeCurrentDate(0, "hours")
         }));
@@ -91,7 +96,10 @@ async function create_notification_many_admin(user_role, notif_content, category
         }
 
         // Find all users with the specified role
-        const users = await User.find({ role: user_role, is_disabled: false });
+        const users = await User.find({
+            multiple_role: { $elemMatch: { role: user_role } },
+            is_disabled: false
+        });
 
         if (!users || users.length === 0) {
             return { message: "No users found with the specified role." };
@@ -102,6 +110,7 @@ async function create_notification_many_admin(user_role, notif_content, category
             user: user._id,
             notif_content: notif_content,
             title: title,
+            role: user_role,
             category: category,
             link: link,
             created_at: storeCurrentDate(0, "hours")
@@ -125,7 +134,10 @@ async function create_notification_many_enro_head(user_role, notif_content, cate
         }
 
         // Find all users with the specified role
-        const users = await User.find({ role: user_role, is_disabled: false });
+        const users = await User.find({
+            multiple_role: { $elemMatch: { role: user_role } },
+            is_disabled: false
+        });
 
         if (!users || users.length === 0) {
             return { message: "No users found with the specified role." };
@@ -137,6 +149,7 @@ async function create_notification_many_enro_head(user_role, notif_content, cate
             notif_content: notif_content,
             title: title,
             category: category,
+            role: user_role,
             link: link,
             created_at: storeCurrentDate(0, "hours")
         }));
@@ -158,7 +171,10 @@ async function create_notification_many_enro_scheduler(user_role, notif_content,
         }
 
         // Find all users with the specified role
-        const users = await User.find({ role: user_role, is_disabled: false });
+        const users = await User.find({
+            multiple_role: { $elemMatch: { role: user_role } },
+            is_disabled: false
+        });
 
         if (!users || users.length === 0) {
             return { message: "No users found with the specified role." };
@@ -170,6 +186,7 @@ async function create_notification_many_enro_scheduler(user_role, notif_content,
             notif_content: notif_content,
             title: title,
             category: category,
+            role: user_role,
             link: link,
             created_at: storeCurrentDate(0, "hours")
         }));
@@ -191,7 +208,10 @@ async function create_notification_many_resident(barangay_ids, user_role, notif_
         }
 
         // Find all users with the specified role
-        const users = await User.find({ role: user_role, barangay: { $in: barangay_ids } });
+        const users = await User.find({
+            multiple_role: { $elemMatch: { role: user_role } },
+            barangay: { $in: barangay_ids }
+        });
 
         if (!users || users.length === 0) {
             return { message: "No users found with the specified role." };
@@ -202,6 +222,7 @@ async function create_notification_many_resident(barangay_ids, user_role, notif_
             user: user._id,
             notif_content: notif_content,
             title: title,
+            role: user_role, 
             category: category,
             link: link,
             created_at: storeCurrentDate(0, "hours")
@@ -224,7 +245,10 @@ async function create_notification_many_barangay(barangay_ids, user_role, notif_
         }
 
         // Find all users with the specified role
-        const users = await User.find({ role: user_role, barangay: { $in: barangay_ids } });
+        const users = await User.find({
+            multiple_role: { $elemMatch: { role: user_role } },
+            barangay: { $in: barangay_ids }
+        });
 
         if (!users || users.length === 0) {
             return { message: "No users found with the specified role." };
@@ -236,6 +260,7 @@ async function create_notification_many_barangay(barangay_ids, user_role, notif_
             notif_content: notif_content,
             title: title,
             category: category,
+            role: user_role,
             link: link,
             created_at: storeCurrentDate(0, "hours")
         }));
@@ -284,12 +309,15 @@ export const create_schedule = asyncHandler(async (req, res) => {
         };
 
         const newSchedule = new Schedule(newScheduleData);
+
         await newSchedule.save();
-        await create_notification_many_garbage_collector(user, 'garbage_collector', 'A new waste collection schedule has been created. Please review the schedule details.', 'schedule', 'New Schedule Created', '/collector/management/schedules');
-        await create_notification_many_resident(barangayIds, 'resident', 'A new waste collection schedule has been created. Please review the schedule details.', 'schedule', 'New Schedule Created', '/official/management/schedules');
-        await create_notification_many_barangay(barangayIds, 'barangay_official', 'A new waste collection schedule has been created. Please review the schedule details.', 'schedule', 'New Schedule Created', '/official/management/schedules');
-        await create_notification_many_enro_head('enro_staff_head', 'A new waste collection schedule has been created. Please review the schedule details.', 'schedule', 'New Schedule Created', '/staff/management/schedules');
-        await create_notification_many_admin('admin', 'A new waste collection schedule has been created. Please review the schedule details.', 'schedule', 'New Schedule Created', '/admin/management/schedules');
+
+       await create_notification_many_garbage_collector(user, 'garbage_collector', 'A new waste collection schedule has been created. Please review the schedule details.', 'schedule', 'New Schedule Created', '/collector/management/schedules');
+       await create_notification_many_resident(barangayIds, 'resident', 'A new waste collection schedule has been created. Please review the schedule details.', 'schedule', 'New Schedule Created', '/official/management/schedules');
+       await create_notification_many_barangay(barangayIds, 'barangay_official', 'A new waste collection schedule has been created. Please review the schedule details.', 'schedule', 'New Schedule Created', '/official/management/schedules');
+       await create_notification_many_enro_head('enro_staff_head', 'A new waste collection schedule has been created. Please review the schedule details.', 'schedule', 'New Schedule Created', '/staff/management/schedules');
+       await create_notification_many_admin('admin', 'A new waste collection schedule has been created. Please review the schedule details.', 'schedule', 'New Schedule Created', '/admin/management/schedules');
+       
         return res.status(200).json({ data: 'New schedule successfully created.' });
     } catch (error) {
         console.error('Error creating role action:', error);

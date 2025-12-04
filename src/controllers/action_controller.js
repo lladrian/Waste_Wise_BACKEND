@@ -2,6 +2,8 @@ import asyncHandler from 'express-async-handler';
 import moment from 'moment-timezone';
 // import dotenv from 'dotenv';
 import Action from '../models/action.js';
+import User from '../models/user.js';
+
 
 function storeCurrentDate(expirationAmount, expirationUnit) {
     // Get the current date and time in Asia/Manila timezone
@@ -37,7 +39,7 @@ export const create_role_action = asyncHandler(async (req, res) => {
             return res.status(400).json({ message: "Permission must be a string or array of strings." });
         }
 
-          // Handle different management input types
+        // Handle different management input types
         let managementArray;
         if (!management) {
             managementArray = ['none']; // Use default
@@ -112,7 +114,7 @@ export const update_role_action = asyncHandler(async (req, res) => {
 
     try {
         if (!action_name || !permission || !role || !management || !route) {
-            
+
             return res.status(400).json({ message: "Please provide all fields (action_name, permission, role, management, route)." });
         }
 
@@ -142,11 +144,19 @@ export const delete_role_action = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters
 
     try {
-        const deletedRoleAction = await Action.findByIdAndDelete(id);
+        const users_count = await User.countDocuments({
+            "multiple_role.role_action": id
+        });
 
-        if (!deletedRoleAction) return res.status(404).json({ message: 'Role action not found' });
+        if (users_count === 0) {
+            const deletedRoleAction = await Action.findByIdAndDelete(id);
 
-        return res.status(200).json({ data: 'Role action successfully deleted.' });
+            if (!deletedRoleAction) return res.status(404).json({ message: 'Role action not found' });
+
+            return res.status(200).json({ data: 'Role action successfully deleted.' });
+        }
+
+        return res.status(200).json({ data: `Cannot be deleted ${users_count} users are affected.` });
     } catch (error) {
         return res.status(500).json({ error: 'Failed to delete role action.' });
     }
