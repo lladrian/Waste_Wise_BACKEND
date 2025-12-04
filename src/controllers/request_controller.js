@@ -59,7 +59,9 @@ async function create_notification_many(user_role, notif_content, category, titl
         }
 
         // Find all users with the specified role
-        const users = await User.find({ role: user_role });
+        const users = await User.find({
+            multiple_role: { $elemMatch: { role: user_role } }
+        });
 
         if (!users || users.length === 0) {
             return { message: "No users found with the specified role." };
@@ -69,6 +71,7 @@ async function create_notification_many(user_role, notif_content, category, titl
         const notifications = users.map(user => ({
             user: user._id,
             notif_content: notif_content,
+            role: user_role,
             title: title,
             category: category,
             link: link,
@@ -96,10 +99,10 @@ export const create_request = asyncHandler(async (req, res) => {
         if (await Request.findOne({ email })) return res.status(400).json({ message: 'Email already exists' });
         if (await User.findOne({ email })) return res.status(400).json({ message: 'Email already exists' });
 
-            // Handle role as array or single value
+        // Handle role as array or single value
         let rolesArray = [];
         let currentRole = '';
-        
+
         if (Array.isArray(role)) {
             // If role is already an array, use it directly
             rolesArray = role.map(r => ({ role: r }));
@@ -118,15 +121,15 @@ export const create_request = asyncHandler(async (req, res) => {
             contact_number: contact_number,
             password: hashConverterMD5(password),
             email: email,
-            multiple_role: rolesArray, 
-            role: currentRole, 
+            multiple_role: rolesArray,
+            role: currentRole,
             barangay: role?.includes('barangay_official') ? barangay : null,
             created_at: storeCurrentDate(0, "hours")
         };
 
         const newRequest = new Request(newRequestData);
         await newRequest.save();
-        await create_notification_many('admin', 'New user request for an account.', 'account_request', 'New Account Request', '/admin/approval/requests'); 
+        await create_notification_many('admin', 'New user requesting for an account.', 'account_request', 'New Account Request', '/admin/approval/requests');
 
         return res.status(200).json({ data: 'New request successfully created.' });
     } catch (error) {
