@@ -6,8 +6,6 @@ import User from '../models/user.js';
 import Notification from '../models/notification.js';
 
 
-import mongoose from "mongoose";
-
 function storeCurrentDate(expirationAmount, expirationUnit) {
     // Get the current date and time in Asia/Manila timezone
     const currentDateTime = moment.tz("Asia/Manila");
@@ -22,49 +20,17 @@ function storeCurrentDate(expirationAmount, expirationUnit) {
 }
 
 
-
-
-async function create_notification_many_barangay(barangay_ids, user_role, notif_content, category, title, link) {
-    try {
-        if (!user_role || !notif_content || !category || !title || !link || !barangay_ids) {
-            return { message: "All fields are required: (user_role, notif_content, category, title, link, barangay_ids)." };
-        }
-
-        // Find all users with the specified role
-        const users = await User.find({ role: user_role, barangay: { $in: barangay_ids } });
-
-        if (!users || users.length === 0) {
-            return { message: "No users found with the specified role." };
-        }
-
-        // Prepare notifications array for bulk insert
-        const notifications = users.map(user => ({
-            user: user._id,
-            notif_content: notif_content,
-            title: title,
-            category: category,
-            link: link,
-            created_at: storeCurrentDate(0, "hours")
-        }));
-
-        // Bulk insert all notifications at once
-        const result = await Notification.insertMany(notifications);
-
-        return { data: `Notification successfully sent to ${result.length} users.` };
-    } catch (error) {
-        console.error('Error creating notifications:', error);
-        return error;
-    }
-}
-
-async function create_notification_many_enro_head(user_role, notif_content, category, title, link) {
+async function create_notification_many_enro_section_head(user_role, notif_content, category, title, link) {
     try {
         if (!user_role || !notif_content || !category || !title || !link) {
             return { message: "All fields are required: (user_role, notif_content, category, title, link)." };
         }
 
         // Find all users with the specified role
-        const users = await User.find({ role: user_role, is_disabled: false });
+        const users = await User.find({
+            multiple_role: { $elemMatch: { role: user_role } },
+            is_disabled: false
+        });
 
         if (!users || users.length === 0) {
             return { message: "No users found with the specified role." };
@@ -76,6 +42,7 @@ async function create_notification_many_enro_head(user_role, notif_content, cate
             notif_content: notif_content,
             title: title,
             category: category,
+            role: user_role,
             link: link,
             created_at: storeCurrentDate(0, "hours")
         }));
@@ -89,7 +56,6 @@ async function create_notification_many_enro_head(user_role, notif_content, cate
         return error;
     }
 }
-
 
 async function create_notification_many_enro_monitoring(user_role, notif_content, category, title, link) {
     try {
@@ -98,7 +64,10 @@ async function create_notification_many_enro_monitoring(user_role, notif_content
         }
 
         // Find all users with the specified role
-        const users = await User.find({ role: user_role, is_disabled: false });
+        const users = await User.find({
+            multiple_role: { $elemMatch: { role: user_role } },
+            is_disabled: false
+        });
 
         if (!users || users.length === 0) {
             return { message: "No users found with the specified role." };
@@ -110,6 +79,7 @@ async function create_notification_many_enro_monitoring(user_role, notif_content
             notif_content: notif_content,
             title: title,
             category: category,
+            role: user_role,
             link: link,
             created_at: storeCurrentDate(0, "hours")
         }));
@@ -123,6 +93,7 @@ async function create_notification_many_enro_monitoring(user_role, notif_content
         return error;
     }
 }
+
 
 async function create_notification_many_enro_scheduler(user_role, notif_content, category, title, link) {
     try {
@@ -131,7 +102,10 @@ async function create_notification_many_enro_scheduler(user_role, notif_content,
         }
 
         // Find all users with the specified role
-        const users = await User.find({ role: user_role, is_disabled: false });
+        const users = await User.find({
+            multiple_role: { $elemMatch: { role: user_role } },
+            is_disabled: false
+        });
 
         if (!users || users.length === 0) {
             return { message: "No users found with the specified role." };
@@ -142,6 +116,45 @@ async function create_notification_many_enro_scheduler(user_role, notif_content,
             user: user._id,
             notif_content: notif_content,
             title: title,
+            category: category,
+            role: user_role,
+            link: link,
+            created_at: storeCurrentDate(0, "hours")
+        }));
+
+        // Bulk insert all notifications at once
+        const result = await Notification.insertMany(notifications);
+
+        return { data: `Notification successfully sent to ${result.length} users.` };
+    } catch (error) {
+        console.error('Error creating notifications:', error);
+        return error;
+    }
+}
+
+
+async function create_notification_many_admin(user_role, notif_content, category, title, link) {
+    try {
+        if (!user_role || !notif_content || !category || !title || !link) {
+            return { message: "All fields are required: (user_role, notif_content, category, title, link)." };
+        }
+
+        // Find all users with the specified role
+        const users = await User.find({
+            multiple_role: { $elemMatch: { role: user_role } },
+            is_disabled: false
+        });
+
+        if (!users || users.length === 0) {
+            return { message: "No users found with the specified role." };
+        }
+
+        // Prepare notifications array for bulk insert
+        const notifications = users.map(user => ({
+            user: user._id,
+            notif_content: notif_content,
+            title: title,
+            role: user_role,
             category: category,
             link: link,
             created_at: storeCurrentDate(0, "hours")
@@ -157,6 +170,43 @@ async function create_notification_many_enro_scheduler(user_role, notif_content,
     }
 }
 
+
+async function create_notification_many_enro_head(user_role, notif_content, category, title, link) {
+    try {
+        if (!user_role || !notif_content || !category || !title || !link) {
+            return { message: "All fields are required: (user_role, notif_content, category, title, link)." };
+        }
+
+        // Find all users with the specified role
+        const users = await User.find({
+            multiple_role: { $elemMatch: { role: user_role } },
+            is_disabled: false
+        });
+
+        if (!users || users.length === 0) {
+            return { message: "No users found with the specified role." };
+        }
+
+        // Prepare notifications array for bulk insert
+        const notifications = users.map(user => ({
+            user: user._id,
+            notif_content: notif_content,
+            title: title,
+            category: category,
+            role: user_role,
+            link: link,
+            created_at: storeCurrentDate(0, "hours")
+        }));
+
+        // Bulk insert all notifications at once
+        const result = await Notification.insertMany(notifications);
+
+        return { data: `Notification successfully sent to ${result.length} users.` };
+    } catch (error) {
+        console.error('Error creating notifications:', error);
+        return error;
+    }
+} 
 
 export const create_garbage_report = asyncHandler(async (req, res) => {
     const { user, latitude, longitude, notes, garbage_type, report_type } = req.body;
@@ -179,12 +229,14 @@ export const create_garbage_report = asyncHandler(async (req, res) => {
         };
 
         const newGarbageReport = new GarbageReport(newGarbageReportData);
+
         await newGarbageReport.save();
 
-        // await create_notification_many_barangay([barangay], 'barangay_official', 'A resident has reported uncollected garbage in your area. Please review the report and take appropriate action.', 'report_garbage', 'Uncollected Garbage Report', '/official/management/report_garbages'); 
-        // await create_notification_many_enro_scheduler('enro_staff_scheduler', 'A resident has reported uncollected garbage in your area. Please review the report and take appropriate action.', 'report_garbage', 'Uncollected Garbage Report', '/staff/management/report_garbages')
-        // await create_notification_many_enro_monitoring('enro_staff_monitoring', 'A resident has reported uncollected garbage in your area. Please review the report and take appropriate action.', 'report_garbage', 'Uncollected Garbage Report', '/staff/management/report_garbages')
-        // await create_notification_many_enro_head('enro_staff_head', 'A resident has reported uncollected garbage in your area. Please review the report and take appropriate action.', 'report_garbage', 'Uncollected Garbage Report', '/staff/management/report_garbages')
+        await create_notification_many_enro_section_head('enro_staff_eswm_section_head', 'A new garbage report has been created. Please review the details.', 'garbage_report', 'Garbage Report', '/staff/management/garbage_reports');
+        await create_notification_many_enro_monitoring('enro_staff_monitoring', 'A new garbage report has been created. Please review the details.', 'garbage_report', 'Garbage Report', '/staff/management/garbage_reports');
+        await create_notification_many_enro_scheduler('enro_staff_scheduler', 'A new garbage report has been created. Please review the details.', 'garbage_report', 'Garbage Report', '/staff/management/garbage_reports');
+        await create_notification_many_enro_head('enro_staff_head', 'A new garbage report has been created. Please review the details.', 'garbage_report', 'Garbage Report', '/admin/management/garbage_reports');
+        await create_notification_many_admin('admin', 'A new garbage report has been created. Please review the details.', 'garbage_report', 'Garbage Report', '/admin/management/garbage_reports');
 
         return res.status(200).json({ data: 'New garbage report successfully created.' });
     } catch (error) {

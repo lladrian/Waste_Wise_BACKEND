@@ -571,7 +571,7 @@ export const update_schedule_approval = asyncHandler(async (req, res) => {
             updatedSchedule.approved_at = storeCurrentDate(0, "hours");
             updatedSchedule.cancelled_by = null;
             updatedSchedule.cancelled_at = null;
-            await create_notification_many_garbage_collector(updatedSchedule.user, 'garbage_collector', 'A new waste collection schedule has been created. Please review the schedule details.', 'schedule', 'New Schedule Created', '/collector/management/schedules');
+            await create_notification_many_garbage_collector(updatedSchedule.user, 'garbage_collector', 'The waste collection schedule has been approved. Please review the updated details', 'schedule', 'New Schedule Created', '/collector/management/schedules');
             await create_notification_many_enro_scheduler('enro_staff_scheduler', 'The waste collection schedule has been approved. Please review the updated details.', 'schedule', 'Schedule Approved', '/staff/management/schedules');
             await create_notification_many_barangay(barangayIds, 'barangay_official', 'The waste collection schedule has been approved. Please review the updated details.', 'schedule', 'Schedule Approved', '/official/management/schedules');
         }
@@ -749,7 +749,6 @@ export const update_schedule_garbage_collection_status = asyncHandler(async (req
         if (url.includes('localhost') || url.includes('waste-wise-backend-chi.vercel.app')) {
             const response = await axios.post(`http://waste-wise-backend-uzub.onrender.com/web_sockets/get_web_socket_attendance`, { user: updatedSchedule.user._id, flag: 1 });
             const response2= await axios.post(`http://waste-wise-backend-uzub.onrender.com/web_sockets/get_web_socket_schedule`, { scheduled_collection: getPhilippineDate() });
-            // console.log(response.data)
         } else if (url.includes('waste-wise-backend-uzub.onrender.com')) {
             await broadcastList('attendance', collector_attendances);
             await broadcastList('trucks', schedules);
