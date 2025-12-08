@@ -146,8 +146,8 @@ const sendEmail = async (email, data) => {
                                 <span style="color: #3b82f6; font-size: 16px; margin-right: 10px; margin-top: 2px;">🌐</span>
                                 <div>
                                     <div style="color: #374151; font-weight: 500; margin-bottom: 2px;">Website</div>
-                                    <a href="https://waste-wise-frontend-two.vercel.app" style="color: #3b82f6; text-decoration: none; font-weight: 500;">
-                                        waste-wise-frontend-two.vercel.app
+                                    <a href="https://waste-wise-ormoc-ddm.vercel.app" style="color: #3b82f6; text-decoration: none; font-weight: 500;">
+                                        waste-wise-ormoc-ddm.vercel.app
                                     </a>
                                 </div>
                             </div>
