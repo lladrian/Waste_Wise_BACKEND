@@ -21,6 +21,24 @@ const ScheduleSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
     },
+    approved_by_role: {
+        type: String,
+        enum: ['admin', 'resident',
+            'enro_staff_monitoring', 'enro_staff_head',
+            'enro_staff_scheduler', 'enro_staff_eswm_section_head',
+            'barangay_official', 'garbage_collector',
+        ],
+        default: 'resident',
+    },
+    cancelled_by_role: {
+        type: String,
+        enum: ['admin', 'resident',
+            'enro_staff_monitoring', 'enro_staff_head',
+            'enro_staff_scheduler', 'enro_staff_eswm_section_head',
+            'barangay_official', 'garbage_collector',
+        ],
+        default: 'resident',
+    },
     task: [{
         barangay_id: {
             type: mongoose.Schema.Types.ObjectId,

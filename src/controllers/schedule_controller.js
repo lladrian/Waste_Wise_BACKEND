@@ -46,9 +46,9 @@ function storeCurrentDate(expirationAmount, expirationUnit) {
 
 
 const getPhilippineDate = () => {
-  const now = new Date();
-  const formatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Manila' });
-  return formatter.format(now); // YYYY-MM-DD in PH timezone
+    const now = new Date();
+    const formatter = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Manila' });
+    return formatter.format(now); // YYYY-MM-DD in PH timezone
 };
 
 async function create_notification_many_garbage_collector(id, user_role, notif_content, category, title, link) {
@@ -222,7 +222,7 @@ async function create_notification_many_resident(barangay_ids, user_role, notif_
             user: user._id,
             notif_content: notif_content,
             title: title,
-            role: user_role, 
+            role: user_role,
             category: category,
             link: link,
             created_at: storeCurrentDate(0, "hours")
@@ -312,12 +312,12 @@ export const create_schedule = asyncHandler(async (req, res) => {
 
         await newSchedule.save();
 
-       await create_notification_many_garbage_collector(user, 'garbage_collector', 'A new waste collection schedule has been created. Please review the schedule details.', 'schedule', 'New Schedule Created', '/collector/management/schedules');
-       await create_notification_many_resident(barangayIds, 'resident', 'A new waste collection schedule has been created. Please review the schedule details.', 'schedule', 'New Schedule Created', '/official/management/schedules');
-       await create_notification_many_barangay(barangayIds, 'barangay_official', 'A new waste collection schedule has been created. Please review the schedule details.', 'schedule', 'New Schedule Created', '/official/management/schedules');
-       await create_notification_many_enro_head('enro_staff_head', 'A new waste collection schedule has been created. Please review the schedule details.', 'schedule', 'New Schedule Created', '/staff/management/schedules');
-       await create_notification_many_admin('admin', 'A new waste collection schedule has been created. Please review the schedule details.', 'schedule', 'New Schedule Created', '/admin/management/schedules');
-       
+        await create_notification_many_garbage_collector(user, 'garbage_collector', 'A new waste collection schedule has been created. Please review the schedule details.', 'schedule', 'New Schedule Created', '/collector/management/schedules');
+        await create_notification_many_resident(barangayIds, 'resident', 'A new waste collection schedule has been created. Please review the schedule details.', 'schedule', 'New Schedule Created', '/official/management/schedules');
+        await create_notification_many_barangay(barangayIds, 'barangay_official', 'A new waste collection schedule has been created. Please review the schedule details.', 'schedule', 'New Schedule Created', '/official/management/schedules');
+        await create_notification_many_enro_head('enro_staff_head', 'A new waste collection schedule has been created. Please review the schedule details.', 'schedule', 'New Schedule Created', '/staff/management/schedules');
+        await create_notification_many_admin('admin', 'A new waste collection schedule has been created. Please review the schedule details.', 'schedule', 'New Schedule Created', '/admin/management/schedules');
+
         return res.status(200).json({ data: 'New schedule successfully created.' });
     } catch (error) {
         console.error('Error creating role action:', error);
@@ -348,6 +348,9 @@ export const get_all_schedule_specific_barangay = asyncHandler(async (req, res) 
                     model: 'User'
                 }
             })
+            .populate('user')
+            .populate('approved_by')
+            .populate('cancelled_by')
 
         const filteredSchedules = schedules.filter(schedule => {
             const mergeBarangays = schedule?.route?.merge_barangay;
@@ -390,7 +393,10 @@ export const get_all_schedule_current_day_specific_user = asyncHandler(async (re
                     model: 'User'
                 }
             })
-            .populate('garbage_sites');
+            .populate('garbage_sites')
+            .populate('user')
+            .populate('approved_by')
+            .populate('cancelled_by');
 
         // Then filter by user ID
         const filteredSchedules = allSchedules.filter(schedule =>
@@ -430,7 +436,10 @@ export const get_all_schedule_current_day = asyncHandler(async (req, res) => {
                     model: 'User'
                 }
             })
-            .populate('garbage_sites');
+            .populate('garbage_sites')
+            .populate('user')
+            .populate('approved_by')
+            .populate('cancelled_by');
 
         return res.status(200).json({ data: schedules, today: getPhilippineDate() });
     } catch (error) {
@@ -467,6 +476,10 @@ export const get_all_schedule = asyncHandler(async (req, res) => {
                 }
             })
             .populate('garbage_sites')
+            .populate('user')
+            .populate('approved_by')
+            .populate('cancelled_by')
+
 
 
 
@@ -499,6 +512,9 @@ export const get_specific_schedule = asyncHandler(async (req, res) => {
                     model: 'User'
                 }
             })
+            .populate('user')
+            .populate('approved_by')
+            .populate('cancelled_by')
 
         res.status(200).json({ data: schedule });
     } catch (error) {
@@ -530,7 +546,9 @@ export const get_all_schedule_specific_user_garbage_collector = asyncHandler(asy
                     model: 'User'
                 }
             })
-
+            .populate('user')
+            .populate('approved_by')
+            .populate('cancelled_by')
 
         res.status(200).json({ data: schedules });
     } catch (error) {
@@ -540,10 +558,38 @@ export const get_all_schedule_specific_user_garbage_collector = asyncHandler(asy
 
 
 
+export const update_schedule_opposal = asyncHandler(async (req, res) => {
+    const { id } = req.params; // Get the meal ID from the request parameters
+    const { user } = req.body;
+
+    try {
+        if (!user) {
+            return res.status(400).json({ message: "Please provide all fields (user)." });
+        }
+
+        const updatedSchedule = await Schedule.findById(id);
+
+        if (!updatedSchedule) {
+            return res.status(404).json({ message: "Schedule not found" });
+        }
+
+        updatedSchedule.is_editable = is_editable ? is_editable : updatedSchedule.is_editable;
+        updatedSchedule.remark = remark ? remark : updatedSchedule.remark;
+        updatedSchedule.status = status ? status : updatedSchedule.status;
+
+        await updatedSchedule.save();
+
+        return res.status(200).json({ data: 'Schedule successfully updated.' });
+    } catch (error) {
+        return res.status(500).json({ error: 'Failed to update schedule.' });
+    }
+});
+
+
 
 export const update_schedule_approval = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters
-    const { remark, status, is_editable, user } = req.body;
+    const { remark, status, is_editable, user, role } = req.body;
 
     try {
         if (!remark || !status || !is_editable || !user) {
@@ -559,16 +605,20 @@ export const update_schedule_approval = asyncHandler(async (req, res) => {
         }
 
         if (status === "Pending") {
+            updatedSchedule.approved_by_role = null;
             updatedSchedule.approved_by = null;
             updatedSchedule.approved_at = null;
+            updatedSchedule.cancelled_by_role = null;
             updatedSchedule.cancelled_by = null;
             updatedSchedule.cancelled_at = null;
         }
 
 
         if (status === "Scheduled") {
+            updatedSchedule.approved_by_role = role ? role : updatedSchedule.approved_by_role;
             updatedSchedule.approved_by = user ? user : updatedSchedule.approved_by;
             updatedSchedule.approved_at = storeCurrentDate(0, "hours");
+            updatedSchedule.cancelled_by_role = null;
             updatedSchedule.cancelled_by = null;
             updatedSchedule.cancelled_at = null;
             await create_notification_many_garbage_collector(updatedSchedule.user, 'garbage_collector', 'The waste collection schedule has been approved. Please review the updated details', 'schedule', 'New Schedule Created', '/collector/management/schedules');
@@ -577,8 +627,10 @@ export const update_schedule_approval = asyncHandler(async (req, res) => {
         }
 
         if (status === "Cancelled") {
+            updatedSchedule.cancelled_by_role = role ? role : updatedSchedule.cancelled_by_role;
             updatedSchedule.cancelled_by = user ? user : updatedSchedule.cancelled_by;
             updatedSchedule.cancelled_at = storeCurrentDate(0, "hours");
+            updatedSchedule.approved_by_role = null;
             updatedSchedule.approved_by = null;
             updatedSchedule.approved_at = null;
             await create_notification_many_enro_scheduler('enro_staff_scheduler', 'The waste collection schedule has been cancelled. Please review the updated details.', 'schedule', 'Schedule Cancelled', '/staff/management/schedules');
@@ -721,34 +773,34 @@ export const update_schedule_garbage_collection_status = asyncHandler(async (req
             .sort({ created_at: -1 });
 
 
-            const schedules = await Schedule.find({ scheduled_collection: getPhilippineDate() })
-                     .populate({
-                         path: 'route',
-                         populate: {
-                             path: 'merge_barangay.barangay_id', // populate each barangay inside route
-                             model: 'Barangay'
-                         }
-                     })
-                     .populate({
-                         path: 'task.barangay_id', // ✅ populate barangay_id inside each task
-                         model: 'Barangay'
-                     })
-                     .populate({
-                         path: 'truck',
-                         populate: {
-                             path: 'user',
-                             model: 'User'
-                         }
-                     })
-                     .populate('garbage_sites');
-         
+        const schedules = await Schedule.find({ scheduled_collection: getPhilippineDate() })
+            .populate({
+                path: 'route',
+                populate: {
+                    path: 'merge_barangay.barangay_id', // populate each barangay inside route
+                    model: 'Barangay'
+                }
+            })
+            .populate({
+                path: 'task.barangay_id', // ✅ populate barangay_id inside each task
+                model: 'Barangay'
+            })
+            .populate({
+                path: 'truck',
+                populate: {
+                    path: 'user',
+                    model: 'User'
+                }
+            })
+            .populate('garbage_sites');
+
 
 
 
 
         if (url.includes('localhost') || url.includes('waste-wise-backend-chi.vercel.app')) {
             const response = await axios.post(`http://waste-wise-backend-uzub.onrender.com/web_sockets/get_web_socket_attendance`, { user: updatedSchedule.user._id, flag: 1 });
-            const response2= await axios.post(`http://waste-wise-backend-uzub.onrender.com/web_sockets/get_web_socket_schedule`, { scheduled_collection: getPhilippineDate() });
+            const response2 = await axios.post(`http://waste-wise-backend-uzub.onrender.com/web_sockets/get_web_socket_schedule`, { scheduled_collection: getPhilippineDate() });
         } else if (url.includes('waste-wise-backend-uzub.onrender.com')) {
             await broadcastList('attendance', collector_attendances);
             await broadcastList('trucks', schedules);

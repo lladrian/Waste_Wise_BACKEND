@@ -98,7 +98,7 @@ const sendEmail = async (email, data) => {
 
                     <!-- Next Steps -->
                     <div style="text-align: center; margin: 30px 0 20px;">
-                        <a href="https://waste-wise-frontend-two.vercel.app" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 14px 32px; text-decoration: none; border-radius: 25px; font-weight: 500; display: inline-block; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);">
+                        <a href="https://waste-wise-ormoc-ddm.vercel.app" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 14px 32px; text-decoration: none; border-radius: 25px; font-weight: 500; display: inline-block; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);">
                             🚀 Get Started with WasteWise
                         </a>
                     </div>
