@@ -5,18 +5,21 @@ const RouteSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    polyline_color: {
+        type: String,
+        required: false,
+        default: "#8B0000"
+    },
     route_points: [{
-        position: {
-            lat: {
-                type: Number,
-                required: false,
-                default: null
-            },
-            lng: {
-                type: Number,
-                required: false,
-                default: null
-            }
+        lat: {
+            type: Number,
+            required: false,
+            default: null
+        },
+        lng: {
+            type: Number,
+            required: false,
+            default: null
         }
     }],
     merge_barangay: [{
