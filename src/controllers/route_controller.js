@@ -80,8 +80,8 @@ export const update_route = asyncHandler(async (req, res) => {
   const { route_name, merge_barangay, route_points } = req.body;
 
   try {
-    if (!route_name || !merge_barangay) {
-      return res.status(400).json({ message: "Please provide all fields (route_name, merge_barangay)." });
+    if (!route_name || !merge_barangay || !route_points || route_points.length === 0) {
+      return res.status(400).json({ message: "Please provide all fields (route_name, merge_barangay, route_points)." });
     }
 
     const updatedRoute = await Route.findById(id);
