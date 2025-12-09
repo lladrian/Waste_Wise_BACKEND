@@ -18,27 +18,36 @@ function storeCurrentDate(expirationAmount, expirationUnit) {
 
 
 export const create_route = asyncHandler(async (req, res) => {
-    const { route_name, merge_barangay } = req.body;
+  const { route_name, merge_barangay, route_points } = req.body;
 
-    try {
-        if (!route_name || !merge_barangay) {
-            return res.status(400).json({ message: "Please provide all fields (route_name, merge_barangay)." });
-        }
-
-        const routeData = {
-            route_name: route_name,
-            merge_barangay: merge_barangay,
-            created_at: storeCurrentDate(0, "hours")
-        };
-
-        const newRouteData = new Route(routeData);
-        await newRouteData.save();
-
-        return res.status(200).json({ data: 'New route successfully created.' });
-    } catch (error) {
-        console.error('Error creating role action:', error);
-        return res.status(500).json({ error: 'Failed to create route.' });
+  try {
+    if (!route_name || !merge_barangay || !route_points || route_points.length === 0) {
+      return res.status(400).json({ message: "Please provide all fields (route_name, merge_barangay, route_points)." });
     }
+
+    // Wrap each point with `position`
+    const formattedPoints = route_points.map((point) => ({
+      position: {
+        lat: point.lat || null,
+        lng: point.lng || null,
+      },
+    }));
+
+    const routeData = {
+      route_name,
+      merge_barangay,
+      route_points: formattedPoints,
+      created_at: storeCurrentDate(0, "hours"),
+    };
+
+    const newRoute = new Route(routeData);
+    await newRoute.save();
+
+    return res.status(200).json({ data: "New route successfully created." });
+  } catch (error) {
+    console.error("Error creating route:", error);
+    return res.status(500).json({ error: "Failed to create route." });
+  }
 });
 
 export const get_all_route = asyncHandler(async (req, res) => {
@@ -66,31 +75,41 @@ export const get_specific_route = asyncHandler(async (req, res) => {
 
 
 
-
 export const update_route = asyncHandler(async (req, res) => {
-    const { id } = req.params; // Get the meal ID from the request parameters
-    const { route_name, merge_barangay } = req.body;
+  const { id } = req.params;
+  const { route_name, merge_barangay, route_points } = req.body;
 
-    try {
-        if (!route_name || !merge_barangay) {
-            return res.status(400).json({ message: "Please provide all fields (route_name, merge_barangay)." });
-        }
-
-        const updatedRoute = await Route.findById(id);
-
-        if (!updatedRoute) {
-            return res.status(404).json({ message: "Route not found" });
-        }
-
-        updatedRoute.route_name = route_name ? route_name : updatedRoute.route_name;
-        updatedRoute.merge_barangay = merge_barangay ? merge_barangay : updatedRoute.merge_barangay;
-
-        await updatedRoute.save();
-
-        return res.status(200).json({ data: 'Route successfully updated.' });
-    } catch (error) {
-        return res.status(500).json({ error: 'Failed to update route.' });
+  try {
+    if (!route_name || !merge_barangay) {
+      return res.status(400).json({ message: "Please provide all fields (route_name, merge_barangay)." });
     }
+
+    const updatedRoute = await Route.findById(id);
+    if (!updatedRoute) {
+      return res.status(404).json({ message: "Route not found" });
+    }
+
+    // Update basic fields
+    updatedRoute.route_name = route_name;
+    updatedRoute.merge_barangay = merge_barangay;
+
+    // Update route points if provided
+    if (route_points && Array.isArray(route_points)) {
+      updatedRoute.route_points = route_points.map((point) => ({
+        position: {
+          lat: point.lat || null,
+          lng: point.lng || null,
+        },
+      }));
+    }
+
+    await updatedRoute.save();
+
+    return res.status(200).json({ data: "Route successfully updated." });
+  } catch (error) {
+    console.error("Error updating route:", error);
+    return res.status(500).json({ error: "Failed to update route." });
+  }
 });
 
 

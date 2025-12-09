@@ -5,6 +5,20 @@ const RouteSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    route_points: [{
+        position: {
+            lat: {
+                type: Number,
+                required: false,
+                default: null
+            },
+            lng: {
+                type: Number,
+                required: false,
+                default: null
+            }
+        }
+    }],
     merge_barangay: [{
         barangay_id: {
             type: mongoose.Schema.Types.ObjectId,

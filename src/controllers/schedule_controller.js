@@ -286,14 +286,14 @@ function base_url(req) {
 
 
 export const create_schedule = asyncHandler(async (req, res) => {
-    const { route, truck, user, scheduled_collection, garbage_type, task } = req.body;
+    const { route, truck, user, garbage_type, task, recurring_day } = req.body;
 
     try {
-        if (!route || !truck || !scheduled_collection || !user || !garbage_type || !task) {
-            return res.status(400).json({ message: "Please provide all fields (route, truck, scheduled_collection, user, garbage_type, task)." });
+        if (!route || !truck || !user || !garbage_type || !task || !recurring_day) {
+            return res.status(400).json({ message: "Please provide all fields (route, truck, user, garbage_type, task, recurring_day)." });
         }
 
-        if (await Schedule.findOne({ user: user, truck: truck, scheduled_collection: scheduled_collection, route: route })) return res.status(400).json({ message: 'Schedule already exists' });
+        if (await Schedule.findOne({ user: user, truck: truck, route: route, recurring_day: recurring_day })) return res.status(400).json({ message: 'Schedule already exists' });
 
         const routeData = await Route.findById(route);
         const barangayIds = routeData.merge_barangay.map(b => b.barangay_id);
@@ -303,8 +303,8 @@ export const create_schedule = asyncHandler(async (req, res) => {
             garbage_type: garbage_type,
             route: route,
             truck: truck,
+            recurring_day: recurring_day,
             user: user,
-            scheduled_collection: scheduled_collection,
             created_at: storeCurrentDate(0, "hours")
         };
 
@@ -653,14 +653,16 @@ export const update_schedule_approval = asyncHandler(async (req, res) => {
 
 export const update_schedule = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters
-    const { route, truck, scheduled_collection, remark, status, garbage_type, task } = req.body;
+    const { route, truck, recurring_day, remark, status, garbage_type, task } = req.body;
 
+    console.log(truck)
+     console.log(recurring_day)
     try {
-        if (!route || !truck || !scheduled_collection || !remark || !status || !garbage_type || !task) {
-            return res.status(400).json({ message: "Please provide all fields (route, truck, scheduled_collection, remark, status, garbage_type, task)." });
+        if (!route || !truck || !recurring_day || !remark || !status || !garbage_type || !task) {
+            return res.status(400).json({ message: "Please provide all fields (route, truck, recurring_day, remark, status, garbage_type, task)." });
         }
 
-        if (await Schedule.findOne({ _id: { $ne: id }, truck: truck, scheduled_collection: scheduled_collection, route: route })) return res.status(400).json({ message: 'Schedule already exists' });
+        if (await Schedule.findOne({ _id: { $ne: id }, truck: truck, recurring_day: recurring_day, route: route })) return res.status(400).json({ message: 'Schedule already exists' });
 
         const updatedSchedule = await Schedule.findById(id);
         const routeData = await Route.findById(route);
@@ -676,7 +678,7 @@ export const update_schedule = asyncHandler(async (req, res) => {
         updatedSchedule.remark = remark ? remark : updatedSchedule.remark;
         updatedSchedule.status = status ? status : updatedSchedule.status;
         updatedSchedule.truck = truck ? truck : updatedSchedule.truck;
-        updatedSchedule.scheduled_collection = scheduled_collection ? scheduled_collection : updatedSchedule.scheduled_collection;
+        updatedSchedule.recurring_day = recurring_day ? recurring_day : updatedSchedule.recurring_day;
 
         await updatedSchedule.save();
 
