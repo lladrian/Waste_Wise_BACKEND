@@ -90,6 +90,15 @@ const ScheduleSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    recurring_day: {
+        type: String,
+        enum: [
+            "none",
+            "monday", "tuesday", "wednesday",
+            "thursday", "friday", "saturday", "sunday"
+        ],
+        default: "none"
+    },
     created_at: {
         type: String,
         default: null
