@@ -47,7 +47,7 @@ const getPhilippineDate = () => {
 
 
 export const create_truck = asyncHandler(async (req, res) => {
-    const { user, truck_id, status } = req.body;
+    const { user, truck_id, status, } = req.body;
 
     try {
         if (!user || !truck_id || !status) {

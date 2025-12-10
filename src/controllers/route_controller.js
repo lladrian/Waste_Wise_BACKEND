@@ -18,24 +18,25 @@ function storeCurrentDate(expirationAmount, expirationUnit) {
 
 
 export const create_route = asyncHandler(async (req, res) => {
-  const { route_name, merge_barangay, route_points } = req.body;
+  const { route_name, merge_barangay, route_points, polyline_color } = req.body;
 
   try {
-    if (!route_name || !merge_barangay || !route_points || route_points.length === 0) {
-      return res.status(400).json({ message: "Please provide all fields (route_name, merge_barangay, route_points)." });
+    if (!route_name || !merge_barangay || !route_points || route_points.length === 0 || !polyline_color) {
+      return res.status(400).json({
+        message: "Please provide all fields (route_name, merge_barangay, route_points, polyline_color)."
+      });
     }
 
-    // Wrap each point with `position`
+    // DIRECT lat/lng (no more position: {})
     const formattedPoints = route_points.map((point) => ({
-      position: {
-        lat: point.lat || null,
-        lng: point.lng || null,
-      },
+      lat: point.lat ?? null,
+      lng: point.lng ?? null
     }));
 
     const routeData = {
       route_name,
       merge_barangay,
+      polyline_color,
       route_points: formattedPoints,
       created_at: storeCurrentDate(0, "hours"),
     };
@@ -72,16 +73,15 @@ export const get_specific_route = asyncHandler(async (req, res) => {
     }
 });
 
-
-
-
 export const update_route = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { route_name, merge_barangay, route_points } = req.body;
+  const { route_name, merge_barangay, route_points, polyline_color } = req.body;
 
   try {
-    if (!route_name || !merge_barangay || !route_points || route_points.length === 0) {
-      return res.status(400).json({ message: "Please provide all fields (route_name, merge_barangay, route_points)." });
+    if (!route_name || !merge_barangay || !route_points || route_points.length === 0 || !polyline_color) {
+      return res.status(400).json({
+        message: "Please provide all fields (route_name, merge_barangay, route_points, polyline_color)."
+      });
     }
 
     const updatedRoute = await Route.findById(id);
@@ -92,14 +92,13 @@ export const update_route = asyncHandler(async (req, res) => {
     // Update basic fields
     updatedRoute.route_name = route_name;
     updatedRoute.merge_barangay = merge_barangay;
+    updatedRoute.polyline_color = polyline_color;
 
-    // Update route points if provided
-    if (route_points && Array.isArray(route_points)) {
-      updatedRoute.route_points = route_points.map((point) => ({
-        position: {
-          lat: point.lat || null,
-          lng: point.lng || null,
-        },
+    // DIRECTLY assign lat/lng (NO MORE position: {})
+    if (Array.isArray(route_points)) {
+      updatedRoute.route_points = route_points.map(point => ({
+        lat: point.lat ?? null,
+        lng: point.lng ?? null
       }));
     }
 
@@ -111,7 +110,6 @@ export const update_route = asyncHandler(async (req, res) => {
     return res.status(500).json({ error: "Failed to update route." });
   }
 });
-
 
 export const delete_route = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters
