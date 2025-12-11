@@ -46,6 +46,18 @@ function broadcastList(name, data) {
   });
 }
 
+  function getTodayDayName() {
+    const now = new Date();
+    // Convert to Philippines time (UTC+8)
+    const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+    const philippinesTime = new Date(utc + 8 * 3600000);
+
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const dayName = days[philippinesTime.getDay()];
+
+    return dayName.toLowerCase();
+  }
+
 async function handleTruckPositionUpdate(ws, data) {
   const { truck_id, latitude, longitude } = data;
 
@@ -82,7 +94,7 @@ async function handleTruckPositionUpdate(ws, data) {
 
     if (await truck.save()) {
       // Get updated schedules
-      const schedules = await Schedule.find({ scheduled_collection: getPhilippineDate() })
+      const schedules = await Schedule.find({ recurring_day: getTodayDayName() })
         .populate({
           path: 'task',
           populate: {

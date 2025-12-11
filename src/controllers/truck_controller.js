@@ -46,8 +46,20 @@ const getPhilippineDate = () => {
 };
 
 
+  function getTodayDayName() {
+    const now = new Date();
+    // Convert to Philippines time (UTC+8)
+    const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+    const philippinesTime = new Date(utc + 8 * 3600000);
+
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const dayName = days[philippinesTime.getDay()];
+
+    return dayName.toLowerCase();
+  }
+
 export const create_truck = asyncHandler(async (req, res) => {
-    const { user, truck_id, status, } = req.body;
+    const { user, truck_id, status } = req.body;
 
     try {
         if (!user || !truck_id || !status) {
@@ -159,7 +171,7 @@ export const update_truck_position = asyncHandler(async (req, res) => {
         truck.position.lng = longitude;
 
         if (await truck.save()) {
-            const schedules = await Schedule.find({ scheduled_collection: getPhilippineDate() })
+            const schedules = await Schedule.find({ recurring_day: getTodayDayName() })
                 .populate('route')
                 // .populate('user')
                 .populate({
@@ -171,7 +183,7 @@ export const update_truck_position = asyncHandler(async (req, res) => {
                 });
 
             if (url.includes('localhost') || url.includes('waste-wise-backend-chi.vercel.app')) {
-                const response = await axios.post(`http://waste-wise-backend-uzub.onrender.com/web_sockets/get_web_socket_schedule`, { scheduled_collection: getPhilippineDate() });
+                const response = await axios.post(`http://waste-wise-backend-uzub.onrender.com/web_sockets/get_web_socket_schedule`, { recurring_day: getTodayDayName() });
                 // console.log(response.data)
             } else if (url.includes('waste-wise-backend-uzub.onrender.com')) {
                 await broadcastList('trucks', schedules);
