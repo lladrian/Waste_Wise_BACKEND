@@ -18,15 +18,19 @@ function storeCurrentDate(expirationAmount, expirationUnit) {
 
 
 export const create_barangay = asyncHandler(async (req, res) => {
-    const { barangay_name } = req.body;
+    const { barangay_name, latitude, longitude } = req.body;
 
     try {
-        if (!barangay_name) {
-            return res.status(400).json({ message: "Please provide barangay_name." });
+        if (!barangay_name || !latitude || !longitude) {
+            return res.status(400).json({ message: "Please provide all fields (latitude, position, longitude)." });
         }
 
         const barangayData = {
             barangay_name: barangay_name,
+            position: {
+                lat: latitude,
+                lng: longitude
+            },
             created_at: storeCurrentDate(0, "hours")
         };
 
@@ -66,11 +70,11 @@ export const get_specific_barangay = asyncHandler(async (req, res) => {
 
 export const update_barangay = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters
-    const { barangay_name } = req.body;
+    const { barangay_name, latitude, longitude } = req.body;
 
     try {
-        if (!barangay_name) {
-            return res.status(400).json({ message: "Please provide all fields (barangay_name)." });
+        if (!barangay_name || !latitude || !longitude) {
+            return res.status(400).json({ message: "Please provide all fields (barangay_name, latitude, longitude)." });
         }
 
         const updatedBarangay = await Barangay.findById(id);
@@ -79,7 +83,9 @@ export const update_barangay = asyncHandler(async (req, res) => {
             return res.status(404).json({ message: "Barangay not found" });
         }
 
-        updatedBarangay.barangay_name = barangay_name ? barangay_name : updatedRoute.barangay_name;
+        updatedBarangay.barangay_name = barangay_name ? barangay_name : updatedBarangay.barangay_name;
+        updatedBarangay.position.lat = latitude ? latitude : updatedBarangay.position.lat;
+        updatedBarangay.position.lng = longitude ? longitude : updatedBarangay.position.lng;
 
         await updatedBarangay.save();
 

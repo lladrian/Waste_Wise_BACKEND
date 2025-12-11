@@ -62,15 +62,15 @@ export const get_web_socket_attendance = asyncHandler(async (req, res) => {
 
 
 export const get_web_socket_schedule = asyncHandler(async (req, res) => {
-    const { scheduled_collection } = req.body;
+    const { recurring_day } = req.body;
 
     try {
-        if (!scheduled_collection) {
-            return res.status(400).json({ message: "Please provide all fields (scheduled_collection)." });
+        if (!recurring_day) {
+            return res.status(400).json({ message: "Please provide all fields (recurring_day)." });
         }
 
 
-        const schedules = await Schedule.find({ scheduled_collection: scheduled_collection })
+        const schedules = await Schedule.find({ recurring_day: recurring_day })
             .populate({
                 path: 'route',
                 populate: {

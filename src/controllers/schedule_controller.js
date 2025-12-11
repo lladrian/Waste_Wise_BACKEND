@@ -34,16 +34,17 @@ function storeCurrentDate(expirationAmount, expirationUnit) {
 }
 
 
-// const getPhilippineDate = () => {
-//     const now = new Date();
+  function getTodayDayName() {
+    const now = new Date();
+    // Convert to Philippines time (UTC+8)
+    const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+    const philippinesTime = new Date(utc + 8 * 3600000);
 
-//     // Convert to milliseconds, add 8 hours (Philippine Time is UTC+8)
-//     const philippineTime = new Date(now.getTime() + (8 * 60 * 60 * 1000));
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const dayName = days[philippinesTime.getDay()];
 
-//     // Get YYYY-MM-DD format from the adjusted date
-//     return philippineTime.toISOString().split('T')[0];
-// };
-
+    return dayName.toLowerCase();
+  }
 
 const getPhilippineDate = () => {
     const now = new Date();
@@ -369,12 +370,15 @@ export const get_all_schedule_specific_barangay = asyncHandler(async (req, res) 
     }
 });
 
+
+
+
 export const get_all_schedule_current_day_specific_user = asyncHandler(async (req, res) => {
     const { user_id } = req.params;
 
     try {
         // First get all schedules for today
-        const allSchedules = await Schedule.find({ scheduled_collection: getPhilippineDate() })
+        const allSchedules = await Schedule.find({ recurring_day: getTodayDayName() })
             .populate({
                 path: 'route',
                 populate: {
@@ -405,10 +409,7 @@ export const get_all_schedule_current_day_specific_user = asyncHandler(async (re
             schedule.truck.user._id.toString() === user_id
         );
 
-        return res.status(200).json({
-            data: filteredSchedules,
-            today: getPhilippineDate()
-        });
+        return res.status(200).json({ data: filteredSchedules });
     } catch (error) {
         console.error('Error:', error);
         return res.status(500).json({ error: 'Failed to get all schedules.' });
@@ -417,7 +418,7 @@ export const get_all_schedule_current_day_specific_user = asyncHandler(async (re
 
 export const get_all_schedule_current_day = asyncHandler(async (req, res) => {
     try {
-        const schedules = await Schedule.find({ scheduled_collection: getPhilippineDate() })
+        const schedules = await Schedule.find({ recurring_day: getTodayDayName() })
             .populate({
                 path: 'route',
                 populate: {
@@ -441,7 +442,7 @@ export const get_all_schedule_current_day = asyncHandler(async (req, res) => {
             .populate('approved_by')
             .populate('cancelled_by');
 
-        return res.status(200).json({ data: schedules, today: getPhilippineDate() });
+        return res.status(200).json({ data: schedules });
     } catch (error) {
         return res.status(500).json({ error: 'Failed to get all schedules.' });
     }
@@ -775,7 +776,7 @@ export const update_schedule_garbage_collection_status = asyncHandler(async (req
             .sort({ created_at: -1 });
 
 
-        const schedules = await Schedule.find({ scheduled_collection: getPhilippineDate() })
+        const schedules = await Schedule.find({ recurring_day: getTodayDayName() })
             .populate({
                 path: 'route',
                 populate: {
@@ -802,7 +803,7 @@ export const update_schedule_garbage_collection_status = asyncHandler(async (req
 
         if (url.includes('localhost') || url.includes('waste-wise-backend-chi.vercel.app')) {
             const response = await axios.post(`http://waste-wise-backend-uzub.onrender.com/web_sockets/get_web_socket_attendance`, { user: updatedSchedule.user._id, flag: 1 });
-            const response2 = await axios.post(`http://waste-wise-backend-uzub.onrender.com/web_sockets/get_web_socket_schedule`, { scheduled_collection: getPhilippineDate() });
+            const response2 = await axios.post(`http://waste-wise-backend-uzub.onrender.com/web_sockets/get_web_socket_schedule`, { recurring_day: getTodayDayName() });
         } else if (url.includes('waste-wise-backend-uzub.onrender.com')) {
             await broadcastList('attendance', collector_attendances);
             await broadcastList('trucks', schedules);
