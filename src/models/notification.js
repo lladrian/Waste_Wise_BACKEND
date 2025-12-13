@@ -5,6 +5,15 @@ const NotificationSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   },
+  recurring_day: {
+    type: String,
+    enum: [
+      "none",
+      "monday", "tuesday", "wednesday",
+      "thursday", "friday", "saturday", "sunday"
+    ],
+    default: null
+  },
   role: {
     type: String,
     required: true
@@ -37,6 +46,10 @@ const NotificationSchema = new mongoose.Schema({
     type: String,
     required: false,
     default: null
+  },
+  created_date: {
+    type: String,
+    required: false
   },
   created_at: {
     type: String,
