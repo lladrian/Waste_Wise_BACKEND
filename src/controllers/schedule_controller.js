@@ -290,11 +290,11 @@ export const create_schedule = asyncHandler(async (req, res) => {
     const { route, truck, user, garbage_type, task, recurring_day } = req.body;
 
     try {
-        if (!route || !truck || !user || !garbage_type || !task || !recurring_day) {
+        if (!route || !truck || !user || !garbage_type || !task || !Array.isArray(recurring_day) || recurring_day.length === 0) {
             return res.status(400).json({ message: "Please provide all fields (route, truck, user, garbage_type, task, recurring_day)." });
         }
 
-        if (await Schedule.findOne({ user: user, truck: truck, route: route, recurring_day: recurring_day })) return res.status(400).json({ message: 'Schedule already exists' });
+        if (await Schedule.findOne({ user: user, truck: truck, route: route })) return res.status(400).json({ message: 'Schedule already exists' });
 
         const routeData = await Route.findById(route);
         const barangayIds = routeData.merge_barangay.map(b => b.barangay_id);

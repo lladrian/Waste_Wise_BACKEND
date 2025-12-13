@@ -2,6 +2,8 @@ import asyncHandler from 'express-async-handler';
 import moment from 'moment-timezone';
 // import dotenv from 'dotenv';
 import Barangay from '../models/barangay.js';
+import axios from "axios";
+
 
 function storeCurrentDate(expirationAmount, expirationUnit) {
     // Get the current date and time in Asia/Manila timezone
@@ -16,6 +18,87 @@ function storeCurrentDate(expirationAmount, expirationUnit) {
     return formattedExpirationDateTime;
 }
 
+
+
+export const get_barangay_with_coordinates = asyncHandler(async (req, res) => {
+  try {
+    // 1. Get all barangays from PSGC
+    const psgcResponse = await axios.get(
+      'https://psgc.gitlab.io/api/cities/083738000/barangays'
+    );
+    
+    // 2. Find "Barangay 1 (Pob.)"
+    const barangay1 = psgcResponse.data.find(b => 
+      b.code === '083738021' || b.name === 'Barangay 1 (Pob.)'
+    );
+    
+    if (!barangay1) {
+      throw new Error('Barangay 1 not found');
+    }
+    
+    // 3. Get coordinates from Nominatim
+    const nomResponse = await axios.get(
+      'https://nominatim.openstreetmap.org/search',
+      {
+        params: {
+          q: 'Barangay 1, Ormoc City, Philippines',
+          format: 'json',
+          limit: 1
+        },
+        headers: {
+          'User-Agent': 'YourApp/1.0 adrianmanatad5182@gmail.com' // Required by Nominatim
+        }
+      }
+    );
+    
+    // 4. Combine data
+    const result = {
+      barangay: {
+        code: barangay1.code,
+        name: barangay1.name,
+        oldName: barangay1.oldName || null
+      },
+      coordinates: nomResponse.data.length > 0 ? {
+        latitude: parseFloat(nomResponse.data[0].lat),
+        longitude: parseFloat(nomResponse.data[0].lon),
+        displayName: nomResponse.data[0].display_name
+      } : null,
+      city: 'Ormoc City',
+      province: 'Leyte',
+      region: 'Eastern Visayas'
+    };
+    
+    console.log(result);
+    return result;
+    
+  } catch (error) {
+    console.error('Error:', error.message);
+  }
+});
+
+export const get_simple_barangay_list = asyncHandler(async (req, res) => {
+  try {
+    const response = await axios.get(
+      'https://psgc.gitlab.io/api/cities/083738000/barangays'
+    );
+    
+    const barangayNames = response.data.map(barangay => barangay.name);
+    
+    res.json({
+      success: true,
+      count: barangayNames.length,
+      barangays: barangayNames,
+      city: 'Ormoc City'
+    });
+    
+  } catch (error) {
+    console.error('API Error:', error.message);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to fetch barangay list'
+    });
+  }
+});
 
 export const create_barangay = asyncHandler(async (req, res) => {
     const { barangay_name, latitude, longitude } = req.body;
