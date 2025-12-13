@@ -178,7 +178,7 @@ export const get_specific_collector_attendance = asyncHandler(async (req, res) =
 
 export const update_collector_attendance_time_out = asyncHandler(async (req, res) => {
     const { user_id } = req.params; // Get the meal ID from the request parameters
-    const { ended_at, latitude, longitude } = req.body;
+    const { ended_at, latitude, longitude, task } = req.body;
 
     try {
         if (!ended_at || !latitude || !longitude) {
@@ -200,6 +200,14 @@ export const update_collector_attendance_time_out = asyncHandler(async (req, res
         updatedCollectorAttendance.position_end.lng = longitude ?? updatedCollectorAttendance.position_end.lng;
         updatedCollectorAttendance.ended_at = ended_at ? ended_at : updatedCollectorAttendance.ended_at;
         updatedCollectorAttendance.flag = 0;
+
+        if (Array.isArray(task) && task.length > 0) {
+            updatedCollectorAttendance.task = task.map(t => ({
+                barangay_id: t.barangay_id,
+                order_index: t.order_index ?? 0,
+                status: t.status ?? null
+            }));
+        }
 
         await updatedCollectorAttendance.save();
 
