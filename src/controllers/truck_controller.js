@@ -172,15 +172,36 @@ export const update_truck_position = asyncHandler(async (req, res) => {
 
         if (await truck.save()) {
             const schedules = await Schedule.find({ recurring_day: getTodayDayName() })
-                .populate('route')
-                // .populate('user')
-                .populate({
-                    path: 'truck',
-                    populate: {
-                        path: 'user',
-                        model: 'User'
-                    }
-                });
+           .populate({
+                          path: 'task',
+                          populate: {
+                              path: 'merge_barangay.barangay_id', // populate each barangay inside route
+                              model: 'Barangay'
+                          }
+                      })
+                      .populate({
+                          path: 'route',
+                          populate: {
+                              path: 'merge_barangay.barangay_id', // populate each barangay inside route
+                              model: 'Barangay'
+                          }
+                      })
+                      .populate({
+                          path: 'task.barangay_id', // ✅ populate barangay_id inside each task
+                          model: 'Barangay'
+                      })
+                      .populate({
+                          path: 'truck',
+                          populate: {
+                              path: 'user',
+                              model: 'User'
+                          }
+                      })
+                      .populate('garbage_sites')
+                      .populate('user')
+                      .populate('approved_by')
+                      .populate('cancelled_by')
+          
 
             if (url.includes('localhost') || url.includes('waste-wise-backend-chi.vercel.app')) {
                 const response = await axios.post(`http://waste-wise-backend-uzub.onrender.com/web_sockets/get_web_socket_schedule`, { recurring_day: getTodayDayName() });
