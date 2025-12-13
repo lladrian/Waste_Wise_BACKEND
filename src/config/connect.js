@@ -78,7 +78,7 @@ async function handleTruckPositionUpdate(ws, data) {
       return;
     }
 
-    const truck = await Truck.findById(truck_id);
+    const truck = await Truck.findById('693adb39b3ef3bb709ed5037');
 
     if (!truck) {
       ws.send(JSON.stringify({
