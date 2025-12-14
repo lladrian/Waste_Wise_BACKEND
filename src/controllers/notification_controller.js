@@ -88,7 +88,7 @@ export const create_notification_garbage_collector = asyncHandler(async (req, re
             return res.status(400).json({ message: "All fields are required: (user_id, recurring_day)." });
         }
 
-        const schedules = await Schedule.find({ recurring_day: getTodayDayName() })
+        const schedules = await Schedule.find({ recurring_day: recurring_day })
             .populate({
                 path: 'route',
                 populate: {

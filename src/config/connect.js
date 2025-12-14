@@ -46,17 +46,17 @@ function broadcastList(name, data) {
   });
 }
 
-  function getTodayDayName() {
-    const now = new Date();
-    // Convert to Philippines time (UTC+8)
-    const utc = now.getTime() + now.getTimezoneOffset() * 60000;
-    const philippinesTime = new Date(utc + 8 * 3600000);
+function getTodayDayName() {
+  const now = new Date();
+  // Convert to Philippines time (UTC+8)
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  const philippinesTime = new Date(utc + 8 * 3600000);
 
-    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-    const dayName = days[philippinesTime.getDay()];
+  const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  const dayName = days[philippinesTime.getDay()];
 
-    return dayName.toLowerCase();
-  }
+  return dayName.toLowerCase();
+}
 
 async function handleTruckPositionUpdate(ws, data) {
   const { truck_id, latitude, longitude } = data;
@@ -121,6 +121,10 @@ async function handleTruckPositionUpdate(ws, data) {
           }
         })
         .populate('garbage_sites')
+        .populate('user')
+        .populate('approved_by')
+        .populate('cancelled_by')
+
 
       // Broadcast updated truck positions to all clients
       broadcastList('trucks', schedules);

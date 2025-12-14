@@ -25,6 +25,22 @@ const CollectorAttendanceSchema = new mongoose.Schema({
             default: null
         }
     },
+    task: [{
+        barangay_id: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Barangay',
+            required: false
+        },
+        order_index: {
+            type: Number,
+            required: false,
+            min: 0
+        },
+        status: {
+            type: String,
+            default: null
+        },
+    }],
     route_history: [{
         position: {
             lat: {
