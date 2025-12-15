@@ -78,7 +78,7 @@ async function handleTruckPositionUpdate(ws, data) {
       return;
     }
 
-    const truck = await Truck.findById(truck_id);
+    const truck = await Truck.findById(truck_id).populate('user');
 
     if (!truck) {
       ws.send(JSON.stringify({
@@ -87,56 +87,59 @@ async function handleTruckPositionUpdate(ws, data) {
       }));
       return;
     }
+    
+    const attendance = await CollectorAttendance.findOne({ user: truck?.user?._id, flag: 1 });
 
     // Update the truck's position
     truck.position.lat = latitude;
     truck.position.lng = longitude;
 
-    if (await truck.save()) {
-      // Get updated schedules
-      const schedules = await Schedule.find({ recurring_day: getTodayDayName() })
-        .populate({
-          path: 'task',
-          populate: {
-            path: 'merge_barangay.barangay_id', // populate each barangay inside route
-            model: 'Barangay'
-          }
-        })
-        .populate({
-          path: 'route',
-          populate: {
-            path: 'merge_barangay.barangay_id', // populate each barangay inside route
-            model: 'Barangay'
-          }
-        })
-        .populate({
-          path: 'task.barangay_id', // ✅ populate barangay_id inside each task
-          model: 'Barangay'
-        })
-        .populate({
-          path: 'truck',
-          populate: {
-            path: 'user',
-            model: 'User'
-          }
-        })
-        .populate('garbage_sites')
-        .populate('user')
-        .populate('approved_by')
-        .populate('cancelled_by')
-
-
-      // Broadcast updated truck positions to all clients
-      broadcastList('trucks', schedules);
-
-      // Send success response to the requesting client
-      ws.send(JSON.stringify({
-        type: 'success',
-        message: "Truck position successfully updated.",
-        name: "schedules",
-        data: schedules
-      }));
+    if (attendance.flag && attendance.flag === 1) {
+      await truck.save()
     }
+    // Get updated schedules
+    const schedules = await Schedule.find({ recurring_day: getTodayDayName() })
+      .populate({
+        path: 'task',
+        populate: {
+          path: 'merge_barangay.barangay_id', // populate each barangay inside route
+          model: 'Barangay'
+        }
+      })
+      .populate({
+        path: 'route',
+        populate: {
+          path: 'merge_barangay.barangay_id', // populate each barangay inside route
+          model: 'Barangay'
+        }
+      })
+      .populate({
+        path: 'task.barangay_id', // ✅ populate barangay_id inside each task
+        model: 'Barangay'
+      })
+      .populate({
+        path: 'truck',
+        populate: {
+          path: 'user',
+          model: 'User'
+        }
+      })
+      .populate('garbage_sites')
+      .populate('user')
+      .populate('approved_by')
+      .populate('cancelled_by')
+
+
+    // Broadcast updated truck positions to all clients
+    broadcastList('trucks', schedules);
+
+    // Send success response to the requesting client
+    ws.send(JSON.stringify({
+      type: 'success',
+      message: "Truck position successfully updated.",
+      name: "schedules",
+      data: schedules
+    }));
   } catch (error) {
     console.error('Failed to update position:', error);
     ws.send(JSON.stringify({
