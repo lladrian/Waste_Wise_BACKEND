@@ -84,13 +84,13 @@ export const get_simple_barangay_list = asyncHandler(async (req, res) => {
     
     const barangayNames = response.data.map(barangay => barangay.name);
     
-    res.json({
-      success: true,
-      count: barangayNames.length,
-      barangays: barangayNames,
-      city: 'Ormoc City'
-    });
-    
+    // res.json({
+    //   success: true,
+    //   count: barangayNames.length,
+    //   barangays: barangayNames,
+    //   city: 'Ormoc City'
+    // });
+    return res.status(200).json({ data: barangayNames });
   } catch (error) {
     console.error('API Error:', error.message);
     res.status(500).json({
