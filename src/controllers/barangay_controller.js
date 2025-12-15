@@ -107,6 +107,8 @@ export const create_barangay = asyncHandler(async (req, res) => {
         if (!barangay_name || !latitude || !longitude) {
             return res.status(400).json({ message: "Please provide all fields (latitude, position, longitude)." });
         }
+        
+        if (await Barangay.findOne({ barangay_name })) return res.status(400).json({ message: 'Barangay already exists' });
 
         const barangayData = {
             barangay_name: barangay_name,
@@ -161,6 +163,10 @@ export const update_barangay = asyncHandler(async (req, res) => {
         }
 
         const updatedBarangay = await Barangay.findById(id);
+
+        if (await Barangay.findOne({ barangay_name: barangay_name, _id: { $ne: id } })) {
+            return res.status(400).json({ message: 'Barangay already exists' });
+        }
 
         if (!updatedBarangay) {
             return res.status(404).json({ message: "Barangay not found" });

@@ -22,3 +22,4 @@ https://psgc.gitlab.io/api/cities/083738000/barangays
 https://my.locationiq.com/dashboard#accesstoken
 
 https://us1.locationiq.com/v1/search?key=pk.f3a635d5146ae8055e6a14ecb4ab9683&q=San%20Jose,%20Ormoc%20City,%20Philippines&format=json&limit=1
+    
