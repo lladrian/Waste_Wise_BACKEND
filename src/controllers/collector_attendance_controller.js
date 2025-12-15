@@ -122,6 +122,10 @@ export const get_all_collector_attendance_specific_user = asyncHandler(async (re
                     model: 'Barangay'
                 }
             })
+            .populate({
+                path: 'task.barangay_id',
+                model: 'Barangay'
+            })
             .populate('truck')
             .populate('user')
             .sort({ created_at: -1 });
