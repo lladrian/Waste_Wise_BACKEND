@@ -186,8 +186,8 @@ export const update_collector_attendance_time_out = asyncHandler(async (req, res
     const { ended_at, latitude, longitude, task, schedule_id } = req.body;
 
     try {
-        if (!ended_at || !latitude || !longitude) {
-            return res.status(400).json({ message: "Please provide all fields (ended_at, longitude, latitude)." });
+        if (!ended_at || !latitude || !longitude || !schedule_id) {
+            return res.status(400).json({ message: "Please provide all fields (ended_at, longitude, latitude, schedule_id)." });
         }
 
         const updatedCollectorAttendance = await CollectorAttendance.findOne({ user: user_id }).sort({ created_at: -1 });
