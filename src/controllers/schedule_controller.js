@@ -313,7 +313,7 @@ export const create_schedule = asyncHandler(async (req, res) => {
 
         await newSchedule.save();
 
-        await create_notification_many_garbage_collector(user, 'garbage_collector', 'A new waste collection schedule has been created. Please review the schedule details.', 'schedule', 'New Schedule Created', '/collector/management/schedules');
+        await create_notification_many_garbage_collector(user, 'garbage_collector', 'A new waste collection schedule has been created. Please review the schedule details.', 'schedule', 'New Schedule Created', '/collector/collector-schedule');
         await create_notification_many_resident(barangayIds, 'resident', 'A new waste collection schedule has been created. Please review the schedule details.', 'schedule', 'New Schedule Created', '/official/management/schedules');
         await create_notification_many_barangay(barangayIds, 'barangay_official', 'A new waste collection schedule has been created. Please review the schedule details.', 'schedule', 'New Schedule Created', '/official/management/schedules');
         await create_notification_many_enro_head('enro_staff_head', 'A new waste collection schedule has been created. Please review the schedule details.', 'schedule', 'New Schedule Created', '/staff/management/schedules');
@@ -622,7 +622,7 @@ export const update_schedule_approval = asyncHandler(async (req, res) => {
             updatedSchedule.cancelled_by_role = null;
             updatedSchedule.cancelled_by = null;
             updatedSchedule.cancelled_at = null;
-            await create_notification_many_garbage_collector(updatedSchedule.user, 'garbage_collector', 'The waste collection schedule has been approved. Please review the updated details', 'schedule', 'New Schedule Created', '/collector/management/schedules');
+            await create_notification_many_garbage_collector(updatedSchedule.user, 'garbage_collector', 'The waste collection schedule has been approved. Please review the updated details', 'schedule', 'New Schedule Created', '/collector/collector-schedule');
             await create_notification_many_enro_scheduler('enro_staff_scheduler', 'The waste collection schedule has been approved. Please review the updated details.', 'schedule', 'Schedule Approved', '/staff/management/schedules');
             await create_notification_many_barangay(barangayIds, 'barangay_official', 'The waste collection schedule has been approved. Please review the updated details.', 'schedule', 'Schedule Approved', '/official/management/schedules');
         }
