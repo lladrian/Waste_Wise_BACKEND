@@ -100,7 +100,7 @@ async function handleTruckPositionUpdate(ws, data) {
         type: 'error',
         message: 'Collector is not currently on duty.'
       }));
-      return;
+      return; 
     }
 
     // Update position
