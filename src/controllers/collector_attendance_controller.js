@@ -2,6 +2,7 @@ import asyncHandler from 'express-async-handler';
 import moment from 'moment-timezone';
 // import dotenv from 'dotenv';
 import CollectorAttendance from '../models/collector_attendance.js';
+import Schedule from '../models/schedule.js';
 
 
 function storeCurrentDate(expirationAmount, expirationUnit) {
@@ -153,6 +154,10 @@ export const get_all_collector_attendance = asyncHandler(async (req, res) => {
                     model: 'Barangay'
                 }
             })
+            .populate({
+                path: 'task.barangay_id',
+                model: 'Barangay'
+            })
             .populate('truck')
             .populate('user')
 
@@ -178,7 +183,7 @@ export const get_specific_collector_attendance = asyncHandler(async (req, res) =
 
 export const update_collector_attendance_time_out = asyncHandler(async (req, res) => {
     const { user_id } = req.params; // Get the meal ID from the request parameters
-    const { ended_at, latitude, longitude, task } = req.body;
+    const { ended_at, latitude, longitude, task, schedule_id } = req.body;
 
     try {
         if (!ended_at || !latitude || !longitude) {
@@ -186,7 +191,7 @@ export const update_collector_attendance_time_out = asyncHandler(async (req, res
         }
 
         const updatedCollectorAttendance = await CollectorAttendance.findOne({ user: user_id }).sort({ created_at: -1 });
-
+        const updatedSchedule = await Schedule.findById(schedule_id);
 
         if (!updatedCollectorAttendance) {
             return res.status(404).json({ message: "Collector attendance not found" });
@@ -209,6 +214,15 @@ export const update_collector_attendance_time_out = asyncHandler(async (req, res
             }));
         }
 
+        if (Array.isArray(task) && task.length > 0) {
+            updatedSchedule.task = task.map(t => ({
+                barangay_id: t.barangay_id,
+                order_index: t.order_index ?? 0,
+                status: 'Pending'
+            }));
+        }
+
+        await updatedSchedule.save();
         await updatedCollectorAttendance.save();
 
         const data = await CollectorAttendance.findById(updatedCollectorAttendance._id)
