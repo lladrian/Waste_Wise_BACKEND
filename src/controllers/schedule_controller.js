@@ -656,8 +656,6 @@ export const update_schedule = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters
     const { route, truck, recurring_day, remark, status, garbage_type, task } = req.body;
 
-    console.log(truck)
-     console.log(recurring_day)
     try {
         if (!route || !truck || !recurring_day || !remark || !status || !garbage_type || !task) {
             return res.status(400).json({ message: "Please provide all fields (route, truck, recurring_day, remark, status, garbage_type, task)." });
