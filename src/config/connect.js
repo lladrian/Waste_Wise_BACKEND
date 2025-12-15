@@ -58,10 +58,12 @@ function getTodayDayName() {
   return dayName.toLowerCase();
 }
 
+
 async function handleTruckPositionUpdate(ws, data) {
   const { truck_id, latitude, longitude } = data;
 
   try {
+    // Validate ObjectId (ONLY if using MongoDB _id)
     if (!mongoose.Types.ObjectId.isValid(truck_id)) {
       ws.send(JSON.stringify({
         type: 'error',
@@ -73,48 +75,60 @@ async function handleTruckPositionUpdate(ws, data) {
     if (latitude == null || longitude == null) {
       ws.send(JSON.stringify({
         type: 'error',
-        message: "Please provide both latitude and longitude."
+        message: 'Please provide both latitude and longitude.'
       }));
       return;
     }
 
-    const truck = await Truck.findById(truck_id).populate('user');
+    const truck = await Truck.findById(truck_id);
 
     if (!truck) {
       ws.send(JSON.stringify({
         type: 'error',
-        message: "Truck not found."
+        message: 'Truck not found.'
       }));
       return;
     }
-    
-    const attendance = await CollectorAttendance.findOne({ user: truck?.user?._id, flag: 1 });
 
-    // Update the truck's position
+    const attendance = await CollectorAttendance.findOne({
+      user: truck.user,
+      flag: 1
+    });
+
+    if (!attendance) {
+      ws.send(JSON.stringify({
+        type: 'error',
+        message: 'Collector is not currently on duty.'
+      }));
+      return;
+    }
+
+    // Update position
     truck.position.lat = latitude;
     truck.position.lng = longitude;
 
-    if (attendance.flag && attendance.flag === 1) {
-      await truck.save()
-    }
+    await truck.save();
+
     // Get updated schedules
-    const schedules = await Schedule.find({ recurring_day: getTodayDayName() })
+    const schedules = await Schedule.find({
+      recurring_day: getTodayDayName()
+    })
       .populate({
         path: 'task',
         populate: {
-          path: 'merge_barangay.barangay_id', // populate each barangay inside route
+          path: 'merge_barangay.barangay_id',
           model: 'Barangay'
         }
       })
       .populate({
         path: 'route',
         populate: {
-          path: 'merge_barangay.barangay_id', // populate each barangay inside route
+          path: 'merge_barangay.barangay_id',
           model: 'Barangay'
         }
       })
       .populate({
-        path: 'task.barangay_id', // ✅ populate barangay_id inside each task
+        path: 'task.barangay_id',
         model: 'Barangay'
       })
       .populate({
@@ -127,19 +141,18 @@ async function handleTruckPositionUpdate(ws, data) {
       .populate('garbage_sites')
       .populate('user')
       .populate('approved_by')
-      .populate('cancelled_by')
+      .populate('cancelled_by');
 
-
-    // Broadcast updated truck positions to all clients
+    // Broadcast update
     broadcastList('trucks', schedules);
 
-    // Send success response to the requesting client
     ws.send(JSON.stringify({
       type: 'success',
-      message: "Truck position successfully updated.",
-      name: "schedules",
+      message: 'Truck position successfully updated.',
+      name: 'schedules',
       data: schedules
     }));
+
   } catch (error) {
     console.error('Failed to update position:', error);
     ws.send(JSON.stringify({
