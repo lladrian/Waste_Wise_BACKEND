@@ -12,7 +12,7 @@ npm install axios
 npm install ws 
 npm install socket.io
 npm install googleapis
-
+npm install node-geocoder 
 
 https://psgc.gitlab.io/api/regions
 https://psgc.gitlab.io/api/regions/080000000/cities/

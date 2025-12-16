@@ -14,6 +14,11 @@ const TruckSchema = new mongoose.Schema({
         required: true,
         default: "Active"
     },
+    heading: {
+        type: Number,
+        required: true,
+        default: 0
+    },
     position: {
         lat: {
             type: Number,
