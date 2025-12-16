@@ -4,6 +4,7 @@ import * as GarbageReportController from '../controllers/garbage_report_controll
 const garbageReportRoutes = Router();
 
 garbageReportRoutes.post('/add_garbage_report', GarbageReportController.create_garbage_report);
+garbageReportRoutes.post('/add_garbage_report_guest', GarbageReportController.create_garbage_report_guest);
 garbageReportRoutes.get('/get_all_garbage_report', GarbageReportController.get_all_garbage_report);
 garbageReportRoutes.get('/get_all_garbage_report_specific_barangay/:barangay_id', GarbageReportController.get_all_garbage_report_specific_barangay);
 garbageReportRoutes.get('/get_specific_garbage_report/:id', GarbageReportController.get_specific_garbage_report);
