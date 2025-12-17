@@ -138,6 +138,8 @@ async function handleTruckPositionUpdate(ws, data) {
     }
 
     let heading = 0;
+    let heading_web = 0;
+
    
     heading = calculateBearingForReactNativeMaps(
       truck.position.lat,
