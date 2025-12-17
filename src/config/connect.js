@@ -68,21 +68,17 @@ function calculateBearingForGoogleMapsWeb(lat1, lon1, lat2, lon2) {
 
   const y = Math.sin(Δλ) * Math.cos(φ2);
   const x = Math.cos(φ1) * Math.sin(φ2) -
-    Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+            Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
 
   let bearing = toDegrees(Math.atan2(y, x));
   bearing = (bearing + 360) % 360;
-  
-  // ✅ For Google Maps Web with CSS transform rotate()
-  // No -90° adjustment needed if your truck icon points UP
-  // If your icon points RIGHT, then use: bearing = (bearing - 90 + 360) % 360;
-  
-  // Test with your icon:
-  // - If icon points UP (north): return bearing
-  // - If icon points RIGHT (east): return (bearing - 90 + 360) % 360
-  
+
+  // ✅ Adjust for RIGHT-pointing truck icon
+  bearing = (bearing - 90 + 360) % 360;
+
   return Math.round(bearing);
 }
+
 
 function calculateBearingForReactNativeMaps(lat1, lon1, lat2, lon2) {
   const toRadians = (degrees) => degrees * (Math.PI / 180);
