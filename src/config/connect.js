@@ -74,7 +74,7 @@ function calculateBearingForGoogleMapsWeb(lat1, lon1, lat2, lon2) {
   bearing = (bearing + 360) % 360;
 
   // ✅ Adjust for RIGHT-pointing truck icon
-  bearing = (bearing - 270 + 360) % 360;// 0 90 180 270
+  bearing = (bearing - 360 + 360) % 360;// 0 90 180 270 360
 
   return Math.round(bearing);
 }
