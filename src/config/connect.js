@@ -58,7 +58,7 @@ function getTodayDayName() {
   return dayName.toLowerCase();
 }
 
-function calculateBearingForGoogleMapsWeb(lat1, lon1, lat2, lon2) {
+function calculateBearingForGoogleMapsWebOrig(lat1, lon1, lat2, lon2) {
   const toRad = (deg) => deg * Math.PI / 180;
   const toDeg = (rad) => rad * 180 / Math.PI;
 
@@ -81,6 +81,32 @@ function calculateBearingForGoogleMapsWeb(lat1, lon1, lat2, lon2) {
 
   return adjustedBearing;
 }
+
+
+function calculateBearingForGoogleMapsWeb(lat1, lon1, lat2, lon2) {
+  const toRad = (deg) => deg * Math.PI / 180;
+  const toDeg = (rad) => rad * 180 / Math.PI;
+
+  const φ1 = toRad(lat1);
+  const φ2 = toRad(lat2);
+  const Δλ = toRad(lon2 - lon1);
+
+  const y = Math.sin(Δλ) * Math.cos(φ2);
+  const x =
+    Math.cos(φ1) * Math.sin(φ2) -
+    Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+
+  // Initial bearing (0–360, where 0 = North)
+  let bearing = toDeg(Math.atan2(y, x));
+  bearing = (bearing + 360) % 360;
+
+  // Icon faces RIGHT (East) → -90°
+  // Add one more 90° → total -180°
+  const adjustedBearing = (bearing - 180 + 360) % 360;
+
+  return adjustedBearing;
+}
+
 
 
 
