@@ -164,6 +164,8 @@ export const get_all_collector_attendance = asyncHandler(async (req, res) => {
             })
             .populate('truck')
             .populate('user')
+            .sort({ created_at: -1 });
+
 
 
         return res.status(200).json({ data: collector_attendances });
