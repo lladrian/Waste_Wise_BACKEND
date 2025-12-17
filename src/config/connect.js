@@ -100,6 +100,29 @@ function calculateBearingForGoogleMaps(lat1, lon1, lat2, lon2) {
 }
 
 
+
+function calculateBearingForReactNativeMaps(lat1, lon1, lat2, lon2) {
+  const toRadians = (degrees) => degrees * (Math.PI / 180);
+  const toDegrees = (radians) => radians * (180 / Math.PI);
+
+  const φ1 = toRadians(lat1);
+  const φ2 = toRadians(lat2);
+  const Δλ = toRadians(lon2 - lon1);
+
+  const y = Math.sin(Δλ) * Math.cos(φ2);
+  const x = Math.cos(φ1) * Math.sin(φ2) -
+    Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+
+  let bearing = toDegrees(Math.atan2(y, x));
+  bearing = (bearing + 360) % 360;
+  
+  // ADJUSTMENT NEEDED for RIGHT-facing icon!
+  // Subtract 90° so 0° bearing (North) becomes -90° rotation
+  const iconBearing = (bearing - 90 + 360) % 360;
+  
+  return Math.round(iconBearing);
+}
+
 async function handleTruckPositionUpdate(ws, data) {
   const { truck_id, latitude, longitude } = data;
 
@@ -133,7 +156,7 @@ async function handleTruckPositionUpdate(ws, data) {
 
     let heading = 0;
    
-    heading = calculateBearingForGoogleMaps(
+    heading = calculateBearingForReactNativeMaps(
       truck.position.lat,
       truck.position.lng,
       latitude,
