@@ -3,7 +3,16 @@ import moment from 'moment-timezone';
 // import dotenv from 'dotenv';
 import Barangay from '../models/barangay.js';
 import axios from "axios";
+import NodeGeocoder from 'node-geocoder';
 
+
+
+// Initialize geocoder (using Nominatim - OpenStreetMap)
+const geocoder = NodeGeocoder({
+  provider: 'openstreetmap',
+  httpAdapter: 'https',
+  formatter: null
+});
 
 function storeCurrentDate(expirationAmount, expirationUnit) {
     // Get the current date and time in Asia/Manila timezone
@@ -19,6 +28,77 @@ function storeCurrentDate(expirationAmount, expirationUnit) {
 }
 
 
+export const get_coordinates_by_barangay_name = asyncHandler(async (req, res) => {
+  try {
+    // const { barangay_name } = req.params;
+    
+    // if (!barangay_name || barangay_name.trim() === '') {
+    //   res.status(400);
+    //   throw new Error('Barangay name is required');
+    // }
+    const barangay_name = "Pob. 10";
+
+    // Format the search query for Ormoc City
+    const searchQuery = `${barangay_name.trim()}, Ormoc City, Leyte, Philippines`;
+    
+    console.log(`Searching for: ${searchQuery}`);
+
+    // Geocode the barangay name
+    const results = await geocoder.geocode(searchQuery);
+
+    if (!results || results.length === 0) {
+      res.status(404);
+      throw new Error(`Barangay "${barangay_name}" not found in Ormoc City`);
+    }
+
+    // Filter results to prioritize Ormoc City results
+    const ormocResults = results.filter(result => {
+      const city = result.city || result.county || '';
+      const state = result.state || '';
+      const country = result.country || '';
+      
+      return (
+        city.toLowerCase().includes('ormoc') ||
+        state.toLowerCase().includes('leyte') ||
+        (city.toLowerCase().includes('city') && country.toLowerCase().includes('philippines'))
+      );
+    });
+
+    // Use filtered results if available, otherwise use first result
+    const bestResult = ormocResults.length > 0 ? ormocResults[0] : results[0];
+
+    const coordinates = {
+      barangay_name,
+      latitude: bestResult.latitude,
+      longitude: bestResult.longitude,
+      formattedAddress: bestResult.formattedAddress,
+      city: bestResult.city || 'Ormoc City',
+      state: bestResult.state || 'Leyte',
+      country: bestResult.country || 'Philippines',
+      provider: 'OpenStreetMap'
+    };
+
+    res.status(200).json({
+      success: true,
+      data: coordinates,
+      message: 'Coordinates retrieved successfully'
+    });
+
+  } catch (error) {
+    console.error('Geocoding error:', error.message);
+    
+    // Handle specific error cases
+    if (error.message.includes('not found')) {
+      res.status(404);
+    } else if (error.message.includes('required')) {
+      res.status(400);
+    } else {
+      res.status(500);
+    }
+    
+    throw error;
+  }
+});
 
 export const get_barangay_with_coordinates = asyncHandler(async (req, res) => {
   try {

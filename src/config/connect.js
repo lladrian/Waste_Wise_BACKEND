@@ -58,6 +58,25 @@ function getTodayDayName() {
   return dayName.toLowerCase();
 }
 
+// Calculate heading from two coordinates
+function calculateBearing(lat1, lon1, lat2, lon2) {
+  const toRadians = (degrees) => degrees * (Math.PI / 180);
+  const toDegrees = (radians) => radians * (180 / Math.PI);
+
+  const φ1 = toRadians(lat1);
+  const φ2 = toRadians(lat2);
+  const Δλ = toRadians(lon2 - lon1);
+
+  const y = Math.sin(Δλ) * Math.cos(φ2);
+  const x = Math.cos(φ1) * Math.sin(φ2) -
+    Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+
+  let bearing = toDegrees(Math.atan2(y, x));
+  bearing = (bearing + 360) % 360;
+
+  return Math.round(bearing);
+}
+
 
 async function handleTruckPositionUpdate(ws, data) {
   const { truck_id, latitude, longitude } = data;
@@ -90,6 +109,17 @@ async function handleTruckPositionUpdate(ws, data) {
       return;
     }
 
+    let heading = 0;
+   
+    heading = calculateBearing(
+      truck.position.lat,
+      truck.position.lng,
+      latitude,
+      longitude
+    );
+    
+
+
     const attendance = await CollectorAttendance.findOne({
       user: truck.user,
       flag: 1
@@ -100,12 +130,13 @@ async function handleTruckPositionUpdate(ws, data) {
         type: 'error',
         message: 'Collector is not currently on duty.'
       }));
-      return; 
+      return;
     }
 
     // Update position
     truck.position.lat = latitude;
     truck.position.lng = longitude;
+    truck.heading = heading;
 
     await truck.save();
 
