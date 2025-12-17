@@ -208,6 +208,41 @@ async function create_notification_many_enro_head(user_role, notif_content, cate
     }
 } 
 
+export const create_garbage_report_guest = asyncHandler(async (req, res) => {
+    const { latitude, longitude, notes, garbage_type, report_type } = req.body;
+
+    try {
+        if (!latitude || !longitude || !garbage_type || !report_type) {
+            return res.status(400).json({ message: "Please provide all fields (latitude, longitude, garbage_type, report_type)." });
+        }
+
+        const newGarbageReportData = {
+            report_type: report_type,
+            notes: notes || null,
+            position: {
+                lat: latitude,
+                lng: longitude
+            },
+            garbage_type: garbage_type,
+            created_at: storeCurrentDate(0, "hours")
+        };
+
+        const newGarbageReport = new GarbageReport(newGarbageReportData);
+
+        await newGarbageReport.save();
+
+        await create_notification_many_enro_section_head('enro_staff_eswm_section_head', 'A new garbage report has been created. Please review the details.', 'garbage_report', 'Garbage Report', '/staff/management/garbage_reports');
+        await create_notification_many_enro_monitoring('enro_staff_monitoring', 'A new garbage report has been created. Please review the details.', 'garbage_report', 'Garbage Report', '/staff/management/garbage_reports');
+        await create_notification_many_enro_scheduler('enro_staff_scheduler', 'A new garbage report has been created. Please review the details.', 'garbage_report', 'Garbage Report', '/staff/management/garbage_reports');
+        await create_notification_many_enro_head('enro_staff_head', 'A new garbage report has been created. Please review the details.', 'garbage_report', 'Garbage Report', '/admin/management/garbage_reports');
+        await create_notification_many_admin('admin', 'A new garbage report has been created. Please review the details.', 'garbage_report', 'Garbage Report', '/admin/management/garbage_reports');
+
+        return res.status(200).json({ data: 'New garbage report successfully created.' });
+    } catch (error) {
+        return res.status(500).json({ error: 'Failed to create garbage report.' });
+    }
+});
+
 export const create_garbage_report = asyncHandler(async (req, res) => {
     const { user, latitude, longitude, notes, garbage_type, report_type } = req.body;
 
