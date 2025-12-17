@@ -53,12 +53,42 @@ function calculateBearingForReactNativeMaps(lat1, lon1, lat2, lon2) {
 }
 
 export const get_truck_rotation = asyncHandler(async (req, res) => {
-    try {
-        const barangays = await Barangay.find();
+  try {
+    const { lat1, lon1, lat2, lon2 } = req.query;
 
-
-        return res.status(200).json({ data: barangays });
-    } catch (error) {
-        return res.status(500).json({ error: 'Failed to get all barangay.' });
+    if (
+      lat1 == null || lon1 == null ||
+      lat2 == null || lon2 == null
+    ) {
+      return res.status(400).json({
+        error: 'lat1, lon1, lat2, and lon2 are required'
+      });
     }
+
+    const bearing = calculateBearingForGoogleMapsWeb(
+      Number(lat1),
+      Number(lon1),
+      Number(lat2),
+      Number(lon2)
+    );
+
+    const bearing2 = calculateBearingForReactNativeMaps(
+      Number(lat1),
+      Number(lon1),
+      Number(lat2),
+      Number(lon2)
+    );
+
+
+
+    return res.status(200).json({
+      data: { bearing, bearing2 },
+    });
+
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      error: 'Failed to calculate truck rotation'
+    });
+  }
 });

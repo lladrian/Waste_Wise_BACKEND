@@ -24,16 +24,60 @@ const TruckSchema = new mongoose.Schema({
         required: false,
         default: 0
     },
+    mobile: [{
+        lat1: {
+            type: String,
+            default: null
+        },
+        lat2: {
+            type: String,
+            default: null
+        },
+        lon1: {
+            type: String,
+            default: null
+        },
+        lon2: {
+            type: String,
+            default: null
+        },
+        heading: {
+            type: String,
+            default: null
+        },
+    }],
+    web: [{
+        lat1: {
+            type: String,
+            default: null
+        },
+        lat2: {
+            type: String,
+            default: null
+        },
+        lon1: {
+            type: String,
+            default: null
+        },
+        lon2: {
+            type: String,
+            default: null
+        },
+        heading: {
+            type: String,
+            default: null
+        },
+    }],
     position: {
         lat: {
             type: Number,
             required: false,
-            default:  11.0064
+            default: 11.0064
         },
         lng: {
             type: Number,
             required: false,
-            default:  124.6075
+            default: 124.6075
         }
     },
     created_at: {
