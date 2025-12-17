@@ -59,25 +59,29 @@ function getTodayDayName() {
 }
 
 function calculateBearingForGoogleMapsWeb(lat1, lon1, lat2, lon2) {
-  const toRadians = (degrees) => degrees * (Math.PI / 180);
-  const toDegrees = (radians) => radians * (180 / Math.PI);
+  const toRad = (deg) => deg * Math.PI / 180;
+  const toDeg = (rad) => rad * 180 / Math.PI;
 
-  const φ1 = toRadians(lat1);
-  const φ2 = toRadians(lat2);
-  const Δλ = toRadians(lon2 - lon1);
+  const φ1 = toRad(lat1);
+  const φ2 = toRad(lat2);
+  const Δλ = toRad(lon2 - lon1);
 
   const y = Math.sin(Δλ) * Math.cos(φ2);
-  const x = Math.cos(φ1) * Math.sin(φ2) -
-            Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
+  const x =
+    Math.cos(φ1) * Math.sin(φ2) -
+    Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
 
-  let bearing = toDegrees(Math.atan2(y, x));
+  let bearing = toDeg(Math.atan2(y, x));
+
+  // Normalize to 0–360
   bearing = (bearing + 360) % 360;
 
-  // ✅ Adjust for RIGHT-pointing truck icon
-  bearing = (bearing - 270 + 360) % 360;// 0 90 180 270
+  // 🔧 FIX: Icon faces RIGHT (East), so rotate -90°
+  const adjustedBearing = (bearing - 90 + 360) % 360;
 
-  return Math.round(bearing);
+  return adjustedBearing;
 }
+
 
 
 function calculateBearingForReactNativeMaps(lat1, lon1, lat2, lon2) {
@@ -95,8 +99,6 @@ function calculateBearingForReactNativeMaps(lat1, lon1, lat2, lon2) {
   let bearing = toDegrees(Math.atan2(y, x));
   bearing = (bearing + 360) % 360;
   
-  // ADJUSTMENT NEEDED for RIGHT-facing icon!
-  // Subtract 90° so 0° bearing (North) becomes -90° rotation
   const iconBearing = (bearing - 90 + 360) % 360;
   
   return Math.round(iconBearing);
