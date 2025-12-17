@@ -102,7 +102,7 @@ function calculateBearingForGoogleMapsWeb(lat1, lon1, lat2, lon2) {
 
   // Icon faces RIGHT (East) → -90°
   // Add one more 90° → total -180°
-  const adjustedBearing = (bearing - 180 + 360) % 360;
+  const adjustedBearing = (bearing - 0 + 360) % 360;
 
   return adjustedBearing;
 }
