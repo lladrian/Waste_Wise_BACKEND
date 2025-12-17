@@ -16,12 +16,12 @@ const TruckSchema = new mongoose.Schema({
     },
     heading: {
         type: Number,
-        required: true,
+        required: false,
         default: 0
     },
     heading_web: {
         type: Number,
-        required: true,
+        required: false,
         default: 0
     },
     position: {
