@@ -194,13 +194,7 @@ async function handleTruckPositionUpdate(ws, data) {
       return;
     }
 
-    // Update position
-    truck.position.lat = latitude;
-    truck.position.lng = longitude;
-    truck.heading = heading;
-    truck.heading_web = heading_web;
-
-    const newMobile = {
+     const newMobile = {
       lat1: truck.position.lat,
       lon1: truck.position.lng,
       lat2: latitude,
@@ -216,6 +210,13 @@ async function handleTruckPositionUpdate(ws, data) {
       heading: heading_web
     };
 
+    // Update position
+    truck.position.lat = latitude;
+    truck.position.lng = longitude;
+    truck.heading = heading;
+    truck.heading_web = heading_web;
+
+  
     // if (!Array.isArray(truck.web)) {
     //   truck.web = [];
     // }
