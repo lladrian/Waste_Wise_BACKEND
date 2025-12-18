@@ -214,7 +214,7 @@ async function handleTruckPositionUpdate(ws, data) {
     truck.position.lat = latitude;
     truck.position.lng = longitude;
     truck.heading = heading;
-    truck.heading_web = heading_web;
+    // truck.heading_web = heading_web;
 
   
     // if (!Array.isArray(truck.web)) {
