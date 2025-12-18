@@ -22,6 +22,8 @@ import webSocketRoutes from "./routes/web_socket_route.js";
 import collectorReportRoutes from "./routes/collector_report_route.js";
 import garbageSiteRoutes from "./routes/garbage_site_route.js";
 import barangayRequestRoutes from "./routes/barangay_request_route.js";
+import testRoutes from "./routes/test_route.js";
+
 
 
 
@@ -65,5 +67,4 @@ app.use("/collector_reports", collectorReportRoutes);
 app.use("/web_sockets", webSocketRoutes);
 app.use("/garbage_sites", garbageSiteRoutes);
 app.use("/barangay_requests", barangayRequestRoutes);
-
-
+app.use("/test", testRoutes);

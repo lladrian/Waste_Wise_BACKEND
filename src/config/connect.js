@@ -124,9 +124,9 @@ function calculateBearingForReactNativeMaps(lat1, lon1, lat2, lon2) {
 
   let bearing = toDegrees(Math.atan2(y, x));
   bearing = (bearing + 360) % 360;
-  
+
   const iconBearing = (bearing - 90 + 360) % 360;
-  
+
   return Math.round(iconBearing);
 }
 
@@ -164,22 +164,22 @@ async function handleTruckPositionUpdate(ws, data) {
     let heading = 0;
     let heading_web = 0;
 
-   
+
     heading = calculateBearingForReactNativeMaps(
       truck.position.lat,
       truck.position.lng,
       latitude,
       longitude
     );
-    
+
     heading_web = calculateBearingForGoogleMapsWeb(
       truck.position.lat,
       truck.position.lng,
       latitude,
       longitude
     );
-    
-    
+
+
 
     const attendance = await CollectorAttendance.findOne({
       user: truck.user,
@@ -200,7 +200,33 @@ async function handleTruckPositionUpdate(ws, data) {
     truck.heading = heading;
     truck.heading_web = heading_web;
 
-  
+    const newMobile = {
+      lat1: truck.position.lat,
+      lon1: truck.position.lng,
+      lat2: latitude,
+      lon2: longitude,
+      heading: heading_web
+    };
+
+    const newWeb = {
+      lat1: truck.position.lat,
+      lon1: truck.position.lng,
+      lat2: latitude,
+      lon2: longitude,
+      heading: heading_web
+    };
+
+    if (!Array.isArray(truck.web)) {
+      truck.web = [];
+    }
+
+    if (!Array.isArray(truck.mobile)) {
+      truck.mobile = [];
+    }
+
+    truck.web.push(newWeb);
+    truck.mobile.push(newMobile);
+
     await truck.save();
 
     // Get updated schedules
@@ -291,6 +317,8 @@ async function handleAttendanceTruckPositionUpdate(ws, data) {
       route_status: route_status,
       created_at: storeCurrentDate(0, "hours")
     };
+
+
 
     if (attendance.flag && attendance.flag === 1) {
 
