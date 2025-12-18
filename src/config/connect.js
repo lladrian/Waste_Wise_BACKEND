@@ -194,21 +194,21 @@ async function handleTruckPositionUpdate(ws, data) {
       return;
     }
 
-     const newMobile = {
-      lat1: truck.position.lat,
-      lon1: truck.position.lng,
-      lat2: latitude,
-      lon2: longitude,
-      heading: heading
-    };
+    //  const newMobile = {
+    //   lat1: truck.position.lat,
+    //   lon1: truck.position.lng,
+    //   lat2: latitude,
+    //   lon2: longitude,
+    //   heading: heading
+    // };
 
-    const newWeb = {
-      lat1: truck.position.lat,
-      lon1: truck.position.lng,
-      lat2: latitude,
-      lon2: longitude,
-      heading: heading_web
-    };
+    // const newWeb = {
+    //   lat1: truck.position.lat,
+    //   lon1: truck.position.lng,
+    //   lat2: latitude,
+    //   lon2: longitude,
+    //   heading: heading_web
+    // };
 
     // Update position
     truck.position.lat = latitude;
@@ -225,8 +225,8 @@ async function handleTruckPositionUpdate(ws, data) {
     //   truck.mobile = [];
     // }
 
-    truck.web.push(newWeb);
-    truck.mobile.push(newMobile);
+    // truck.web.push(newWeb);
+    // truck.mobile.push(newMobile);
 
     await truck.save();
 
