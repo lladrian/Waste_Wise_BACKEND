@@ -64,10 +64,10 @@ export const get_truck_rotation = asyncHandler(async (req, res) => {
     //   });
     // }
 
-    const lat1 = 11.0995971;
-    const lat2 = 11.0995971;
-    const lon1 = 124.5545312;
-    const lon2 = 124.5545312;
+    const lat1 = 11.0992663;
+    const lat2 = 11.0992751;
+    const lon1 = 124.5545729;
+    const lon2 = 124.5545696;
 
 
     const bearing = calculateBearingForGoogleMapsWeb(
