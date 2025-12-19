@@ -113,12 +113,16 @@ export const create_notification_garbage_collector = asyncHandler(async (req, re
             .populate('cancelled_by');
 
         // Then filter by user ID
-         const filteredSchedules = schedules.filter(schedule =>
+        const filteredSchedules = schedules.filter(schedule =>
             schedule.truck &&
             schedule.truck.user &&
             schedule.truck.user._id.toString() === user_id
         );
 
+        if (filteredSchedules.length === 0) {
+            return res.status(404).json({ message: "No schedule found for this user today." });
+        }
+        
         const notif_content = `Garbage Collection Today: Route "${filteredSchedules[0].route.route_name}". Truck ${filteredSchedules[0].truck.truck_id} will collect ${filteredSchedules[0].garbage_type} waste.`;
 
         const newNotificationData = {
@@ -135,7 +139,7 @@ export const create_notification_garbage_collector = asyncHandler(async (req, re
 
         const notifications = await Notification.find({ user: user_id, role: 'garbage_collector', recurring_day: recurring_day, created_date: storeCurrentDateDate(0, "hours") });
         const newNotification = new Notification(newNotificationData);
-      
+
         if (notifications.length === 0) {
             await newNotification.save();
         }
@@ -176,7 +180,7 @@ export const create_notification_resident = asyncHandler(async (req, res) => {
 
         const notifications = await Notification.find({ user: user_id, role: 'resident', recurring_day: recurring_day, created_date: storeCurrentDateDate(0, "hours") });
         const newNotification = new Notification(newNotificationData);
-      
+
         if (notifications.length === 0) {
             await newNotification.save();
         }
