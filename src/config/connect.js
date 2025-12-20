@@ -58,30 +58,6 @@ function getTodayDayName() {
   return dayName.toLowerCase();
 }
 
-function calculateBearingForGoogleMapsWebOrig(lat1, lon1, lat2, lon2) {
-  const toRad = (deg) => deg * Math.PI / 180;
-  const toDeg = (rad) => rad * 180 / Math.PI;
-
-  const φ1 = toRad(lat1);
-  const φ2 = toRad(lat2);
-  const Δλ = toRad(lon2 - lon1);
-
-  const y = Math.sin(Δλ) * Math.cos(φ2);
-  const x =
-    Math.cos(φ1) * Math.sin(φ2) -
-    Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
-
-  let bearing = toDeg(Math.atan2(y, x));
-
-  // Normalize to 0–360
-  bearing = (bearing + 360) % 360;
-
-  // 🔧 FIX: Icon faces RIGHT (East), so rotate -90°
-  const adjustedBearing = (bearing - 90 + 360) % 360;
-
-  return adjustedBearing;
-}
-
 
 function calculateBearingForGoogleMapsWeb(lat1, lon1, lat2, lon2) {
   const toRad = (deg) => deg * Math.PI / 180;
@@ -131,27 +107,18 @@ function calculateBearingForReactNativeMaps(lat1, lon1, lat2, lon2) {
 }
 
 async function handleTruckPositionUpdate(ws, data) {
-  const { truck_id, latitude, longitude } = data;
+  const { user_id, latitude, longitude } = data;
 
   try {
-    // Validate ObjectId (ONLY if using MongoDB _id)
-    if (!mongoose.Types.ObjectId.isValid(truck_id)) {
+    if (latitude == null || longitude == null ||  user_id == null) {
       ws.send(JSON.stringify({
         type: 'error',
-        message: 'Invalid truck_id format.'
+        message: 'Please provide both latitude, longitude and user_id.'
       }));
       return;
     }
 
-    if (latitude == null || longitude == null) {
-      ws.send(JSON.stringify({
-        type: 'error',
-        message: 'Please provide both latitude and longitude.'
-      }));
-      return;
-    }
-
-    const truck = await Truck.findById(truck_id);
+    const truck = await Truck.findOne({ user: user_id });
 
     if (!truck) {
       ws.send(JSON.stringify({
