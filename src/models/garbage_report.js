@@ -5,16 +5,20 @@ const GarbageReportSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
     },
+    barangay: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Barangay',
+    },
     position: {
         lat: {
             type: Number,
             required: false,
-            default:  11.0064
+            default: 11.0064
         },
         lng: {
             type: Number,
             required: false,
-            default:  124.6075
+            default: 124.6075
         }
     },
     notes: {
