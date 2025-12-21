@@ -209,11 +209,11 @@ async function create_notification_many_enro_head(user_role, notif_content, cate
 } 
 
 export const create_garbage_report_guest = asyncHandler(async (req, res) => {
-    const { latitude, longitude, notes, garbage_type, report_type } = req.body;
+    const { latitude, longitude, notes, garbage_type, report_type, barangay_id } = req.body;
 
     try {
-        if (!latitude || !longitude || !garbage_type || !report_type) {
-            return res.status(400).json({ message: "Please provide all fields (latitude, longitude, garbage_type, report_type)." });
+        if (!latitude || !longitude || !garbage_type || !report_type || !barangay_id) {
+            return res.status(400).json({ message: "Please provide all fields (latitude, longitude, garbage_type, report_type, barangay_id)." });
         }
 
         const newGarbageReportData = {
@@ -223,6 +223,7 @@ export const create_garbage_report_guest = asyncHandler(async (req, res) => {
                 lat: latitude,
                 lng: longitude
             },
+            barangay: barangay_id,
             garbage_type: garbage_type,
             created_at: storeCurrentDate(0, "hours")
         };
@@ -288,7 +289,8 @@ export const get_all_garbage_report = asyncHandler(async (req, res) => {
                     path: 'barangay', // populate the barangay inside user
                     model: 'Barangay'
                 }
-            });
+            })
+            .populate('barangay');
 
         return res.status(200).json({ data: garbage_reports });
     } catch (error) {
@@ -311,7 +313,8 @@ export const get_all_garbage_report_specific_user = asyncHandler(async (req, res
                     path: 'barangay', // populate the barangay inside user
                     model: 'Barangay'
                 }
-            });
+            })
+            .populate('barangay');
 
         res.status(200).json({ data: garbage_reports });
     } catch (error) {
@@ -336,7 +339,8 @@ export const get_all_garbage_report_specific_barangay = asyncHandler(async (req,
                     path: 'barangay', // populate the barangay inside user
                     model: 'Barangay'
                 }
-            });
+            })
+            .populate('barangay');
 
         res.status(200).json({ data: garbage_reports });
     } catch (error) {
@@ -348,7 +352,15 @@ export const get_specific_garbage_report = asyncHandler(async (req, res) => {
     const { id } = req.params; // Get the meal ID from the request parameters
 
     try {
-        const garbage_report = await GarbageReport.findById(id);
+        const garbage_report = await GarbageReport.findById(id)
+            .populate({
+                path: 'user',
+                populate: {
+                    path: 'barangay', // populate the barangay inside user
+                    model: 'Barangay'
+                }
+            })
+            .populate('barangay');
 
         res.status(200).json({ data: garbage_report });
     } catch (error) {
