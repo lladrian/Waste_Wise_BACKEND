@@ -330,9 +330,11 @@ export const get_all_garbage_report_specific_barangay = asyncHandler(async (req,
             return res.status(400).json({ message: "Please provide all fields (barangay_id)." });
         }
 
-        const usersInBarangay = await User.find({ barangay: barangay_id });
-        const userIds = usersInBarangay.map(user => user._id);
-        const garbage_reports = await GarbageReport.find({ user: { $in: userIds } })
+        // const usersInBarangay = await User.find({ barangay: barangay_id });
+        // const userIds = usersInBarangay.map(user => user._id);
+        // const garbage_reports = await GarbageReport.find({ user: { $in: userIds } })
+
+        const garbage_reports = await GarbageReport.find({ barangay: barangay_id })
             .populate({
                 path: 'user',
                 populate: {
